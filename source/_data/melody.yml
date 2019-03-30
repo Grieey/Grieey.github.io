@@ -86,7 +86,7 @@ katex:
 
 # Toggle fireworks (IE >= 10)
 # ---------------
-fireworks: false
+fireworks: true
 
 # Analysis
 # ---------------
