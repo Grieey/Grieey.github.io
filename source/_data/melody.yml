@@ -153,7 +153,7 @@ post_copyright:
 # Please see doc for more details: https://molunerfinn.com/hexo-theme-melody-doc/#/theme-config?id=auto-excerpt
 auto_excerpt:
   enable: true
-  length: 150
+  length: 300
 
 # slide
 # For reveal.js config, see https://github.com/hakimel/reveal.js#configuration
