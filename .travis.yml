@@ -15,13 +15,11 @@ before_script:
 
 
 script:
-  - hexo clean && hexo g -d
+  - hexo clean  
+  - hexo g -d
 
 
 after_script:
-  - cd ./themes
-  - ls -a
-  - cd ../
   - cd ./public
   - git init
   - git config user.name "Grieey"
