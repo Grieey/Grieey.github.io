@@ -53,6 +53,8 @@ tags:
 
 ## 配置主题
 
-这次选中的主题是 [melody](<https://molunerfinn.com/hexo-theme-melody-doc/zh-Hans/quick-start.html#%E5%AE%89%E8%A3%85>)
+> 这次选中的主题是 [melody](<https://molunerfinn.com/hexo-theme-melody-doc/zh-Hans/quick-start.html#%E5%AE%89%E8%A3%85>) 比较清新简洁
+
+
 
 坑：直接用git拉取到本地的主题中有也有git ，在上传时会被忽略
