@@ -31,7 +31,6 @@ after_script:
 branches:
   only:
     - source
-    # - hexo
 env:
  global:
    - GH_REF: github.com/Grieey/Grieey.github.io.git
