@@ -1,7 +1,7 @@
 ---
 title: "About"
 date: 2018-11-02T14:21:52+08:00
-about:
+about: "about"
 ---
 
 A worker for building Software. I don't create any codes, just moving it.
