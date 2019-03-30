@@ -1,6 +1,8 @@
 ---
 title: Hexo 使用
-categories: hexo
+categories: 
+    - hexo
+        - 使用手册
 tags: 
     - hexo
     - Travis-CI
