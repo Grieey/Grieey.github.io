@@ -10,7 +10,6 @@ tags:
 categories : 
     - 博客
     - Hugo
-    - 使用手册
 ---
 
 # 准备工具

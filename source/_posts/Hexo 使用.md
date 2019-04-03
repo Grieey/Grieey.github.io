@@ -3,7 +3,6 @@ title: Hexo 使用
 categories: 
     - 博客
     - hexo
-    - 使用手册
 tags: 
     - hexo
     - Travis-CI
