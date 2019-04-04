@@ -1,5 +1,6 @@
 ---
 title: Hexo 使用
+date: 2019-04-01T18:31:23+08:00
 categories: 
     - 博客
     - hexo
