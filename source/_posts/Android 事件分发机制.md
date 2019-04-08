@@ -16,7 +16,7 @@ categories :
 当事件产生时，事件首先会传递到Activity中进行处理，调用Activity的`dispatchTouchEvent` 方法，源码如下：
 
 ```java
-		/**
+		 /**
      * Called to process touch screen events.  You can override this to
      * intercept all touch screen events before they are dispatched to the
      * window.  Be sure to call this implementation for touch screen events
@@ -41,7 +41,7 @@ categories :
 - 在`Activity.dispatchTouchEvent` 中，如果是按下的操作，会调用`onUserInteraction()` 这个方法如下，它是一个空方法，实现这个方法可以知道用户通过设备主动拦截了事件，如当该activity 位于栈顶时，用户通过物理键触摸**back 、menu 、 home** 等操作都会回调这个方法。
 
   ```java
-  		/**
+  		 /**
        * Called whenever a key, touch, or trackball event is dispatched to the
        * activity.  Implement this method if you wish to know that the user has
        * interacted with the device in some way while your activity is running.
@@ -72,21 +72,21 @@ categories :
   
       ...
         
-  		@Override
+  		 @Override
       public boolean superDispatchTouchEvent(MotionEvent event) {
           return mDecor.superDispatchTouchEvent(event);
       }
   ```
 
-  这里调用了 `mDecor.superDispatchTouchEvent(event);`  mDecor 是 **DecorView** 的一个实例。这里开始其实就是一个事件向下的分发，如果最后这里有子view对该事件进行了消费，那么activity这里直接返回true，整个事件的流程便结束了，要是没有子view对这个事件消费，那么就调用activity的`onTouchEvent(ev);` 方法。
-
-  而**DecorView** 是phoneWindow类的一个内部类，是所有界面的父类，同时它继承自FrameLayout，而FrameLayout继承自ViewGroup。以下是**DecorView** 类的`dispatchTouchEvent`方法：
+  这里调用了 `mDecor.superDispatchTouchEvent(event);`  mDecor 是 **DecorView** 的一个实例，而**DecorView** 是phoneWindow类的一个内部类，是所有界面的父类，同时它继承自FrameLayout，而FrameLayout继承自ViewGroup。以下是**DecorView** 类的`dispatchTouchEvent`方法：
 
   ```java
   		public boolean superDispatchTouchEvent(MotionEvent event) {
           return super.dispatchTouchEvent(event);
       }
   ```
+
+  这里开始其实就是一个事件向下的分发，如果最后这里有子view对该事件进行了消费，那么activity这里直接返回true，整个事件的流程便结束了，要是没有子view对这个事件消费，那么就调用activity的`onTouchEvent(ev);` 方法。
 
 - 最后一句的`onTouchEvent(ev)` 调用的是activity本身的，该方法如下：
 
