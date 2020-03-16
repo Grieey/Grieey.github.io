@@ -4,6 +4,7 @@ date: 2019-07-07T09:31:23+08:00
 tag: 
     - Android
     - textView
+    - indexBarView
 categories : 
     - Android	
     - 进阶	
@@ -107,3 +108,8 @@ override fun onDraw(canvas: Canvas) {
     }
   }
 ```
+
+最后的效果如下
+
+
+
