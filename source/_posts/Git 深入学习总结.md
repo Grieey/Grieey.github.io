@@ -1,5 +1,5 @@
 ---
-title: Git 深入学习总结
+title: Git 基础学习总结
 date: 2020-04-06T18:31:23+08:00
 tags: 
     - Git
@@ -180,8 +180,34 @@ git merge --abort
 # 进阶操作
 
 > 注意：进阶操作中的命令，请先在自己的 DEMO 中多次练习熟悉后，再在实际的工程中使用，某些命令一旦出错，请千万不要 Push 到远程分支，哪怕丢弃到本地所有的修改。
+>
+> **在操作本地的 commit 时，需要考虑对远端分支的影响，尤其是多人协同的分支**
+>
+> **禁止使用 rebase 命令对任何已经提交到远程分支的 commit 进行操作**
 
-::warning:禁止使用 rebase 命令对任何已经提交到远程分支的 commit 进行操作
+### 仅合并少数几个 commit
+
+在实际工作开发中，会遵循标准的 Git Work flow，对待不同的功能，会切出不同的分支进行 coding，所以，基于什么基准分支切出来的功能分支进行 coding，这是一个很重要的问题。
+
+如果切错了基准分支，你会发现可能最终开发完成之后， merge 不回去了。或者需要将某个分支上的 commit 代码，移植到某个分支上面，就需要使用到 cherry-pick 这个 git 命令了。
+
+这个命令的用法如下，
+
+```shell
+git cherry-pick -x <commit_id>
+```
+
+其中`-x`的参数代表保留原提交者的信息，后面的`<commit_id>`的写法就是`<start-commit-id>…<end-commit-id>`这个代表一个从`startCommitId`到`endCommitId`的一个左开右闭的区别`(startId, endId]`，如果需要包含`startId`可以添加一个符号`<start-commit-id>^…<end-commit-id>`这样就是`[startId,endID]`的一个闭区间了。
+
+提交的记录可以通过`git log --pretty=oneline`来查看。
+
+![cherry-pick.png](https://i.loli.net/2020/04/14/yrAwzDYoKUSHplu.png)
+
+然后查看`master`分支的`commit`会发现刚刚合并的已经有了。
+
+合并过程中，如果出现了冲突，就和普通冲突一样，手动的解决，然后添加提交，再执行`git cherry-pick --continue`就可以继续了，直到合并完成。
+
+参考文章：[Cherry-Pick | 一日一 Git](https://juejin.im/post/5925a2d9a22b9d0058b0fd9b)
 
 ### rebase 与 merge
 
@@ -281,7 +307,7 @@ git reset --hard HEAD^
 
 这个命令可以将最新的`commit`从分支中移除掉，这样最新的`commit`就是之前的`commit`的前一条，其中几个参数说明下：
 
-`--hard`这个参数有两个值分别是`hard`和`soft`，区别在于。使用`--soft`模式，会修改版本库中的记录(从`branch`中移除该`commit`)，但是会保留`暂存区`和`工作区`，也就是将本地版本库的头指针全部重置到指定版本，且将这次提交之后的所有变更都移动到暂存区。使用`--hard`模式，三者都会被重置，一定需要注意。
+`--hard`这个参数主要使用的有三个值分别是`hard、soft和 mixed`，区别在于。使用`--soft`模式，会修改版本库中的记录(从`branch`中移除该`commit`)，但是会保留`暂存区`和`工作区`，也就是将本地版本库的头指针全部重置到指定版本，且将这次提交之后的所有变更都移动到暂存区。使用`--hard`模式，三者都会被重置，一定需要注意。 而不加参数时，默认使用的是`--mixed`，这种模式下是，保留工作区，清除暂存区。
 
 这里再讨论下更复杂的一种情况，那就是如果我丢弃的内容中，有一部分是想要的或者我还需要对照着查看。可以分为三种情况：
 
@@ -291,6 +317,14 @@ git reset --hard HEAD^
 
 参考文章：[Git reset 后的数据恢复操作](https://juejin.im/post/5af0438f5188251b8015967e)
 
+其实，对于`reset`命令来说，它的本质是**移动 HEAD 以及它所指向的 branch**，撤销对其只是在本质上附带开发的一种功能而已。但是这一点上好像和`checkout`命令有点相似，区别是`checkout`没有改变所指向的`branch`，是的，这确实是他们最大的区别，使用`checkout`命令签出某个`branch`（前面也说过，对于工作区来说这其实也是签出某个`commit`，但是在指向中，是有区别的，一个是指向了`branch`，一个是指向了`commit`）或者`commit`时，它所改变的仅仅是`HEAD`的指向。所以这里，还有一种命令
+
+```shell
+git checkout --detach
+```
+
+这行命令的效果就是，仅仅让`HEAD`脱离了指向`branch`，而直接指向了`commit`。
+
 2. 丢弃不是最新的 commit
 
    这个需求有两种命令可以实现：
@@ -299,6 +333,95 @@ git reset --hard HEAD^
 
    - 使用`git rebase --onto`命令
 
-     
+     在使用`git rebase`命令时，`git`会自动的选取起点，这个起点选取的方法就是当前的`commit`和目标的`commit`在历史记录上的交叉点作为起点（上面使用`rebase`命令的时候，都是如此）。而给`rebase`命令添加了`--onto`参数后，就可以指定起点。假如现在有如下的提交记录。
 
-     
+     ```
+     a-->b-->c-->d    master
+          \
+          	e-->f-->g  branch1
+     ```
+
+     需求上，在合并`branch1`时，只需要合并`f, g`两个`commit`，就可以这样使用
+
+     ```
+     git rebase --onto d e branch1
+     ```
+
+     注意，`rebase`命令在执行时，会排除起点的`commit`，也就是`e`这个`commit`。最后的结果就想下面这样，`f1，g1`是内容和`f,g`相同的`commit`
+
+     ```
+     a-->b-->c-->d-->f1-->g1    master
+          \
+          	e-->f-->g  branch1
+     ```
+
+     那么，同理，也可以使用`--onto`来执行撤销的操作。同样是这样的提交记录
+
+     ```
+     a-->b-->c-->d    master
+          \
+          	e-->f-->g  branch1
+     ```
+
+     现在需要撤`f`所对应的`commit`就可以这样写
+
+     ```shell
+     git rebase --onto e f branch1
+     ```
+
+     这个翻译下就是，将起点设置为`f`，然后`branch1`作为终点，这一条路径上的`commit`节点都应用到`e`之后，这样出来的结果就会没有 `f`。
+
+#### 修改已经 Push 的 commit
+
+- 如果`push`的分支是自己的分支，那么可以暴力一些，先使用上面的方法修改掉本地的`commits`，然后再`push`，需要注意的是，这个时候直接 `push`是会出错的，需要使用强制的参数
+
+  ```shell
+  git push origin branch1 -f
+  ```
+
+  `-f` 这个代表`force`执行的操作(强制性)，这种操作**尽量少用**，如果没有搞清楚就强制去覆盖远端的`commit`在多人协同的时候，很容易对同事的`commit`造成混乱。
+
+- 如果`push`的内容已经合并到了其他的分支，`git revert HEAD^`这个命令可以创建一个新的`commit`，它的内容和倒数第二个 `commit` 是相反的，从而和倒数第二个 `commit` 相互抵消，达到撤销的效果。在 `revert` 完成之后，把新的 `commit` 再 `push` 上去，这个 `commit` 的内容就被撤销了。它和前面所介绍的撤销方式相比，最主要的区别是，这次改动只是被「反转」了，并没有在历史中消失掉，你的历史中会存在两条 `commit` ：一个原始 `commit` ，一个对它的反转 `commit`。
+
+### 恢复已删除的分支
+
+有时候，不管有意无意，都可能误删了分支，**一定要及时找回**。操作步骤如下：
+
+1.使用`git reflog`命令查看`HEAD`移动的相关记录，这个记录最新的在最上面，找到与`branch1`相关的记录，如图，可以看到最后一次从`branch1`移动到`master`的记录，那么这条记录之前的`commit`肯定是`branch1`上的一条`commit`。
+
+![reflog .png](https://i.loli.net/2020/04/14/RIwtSy9oTJVeQhG.png)
+
+2.签出这个`commit`，并在该`commit`上建立之前误删的分支即可。
+
+![恢复操作.png](https://i.loli.net/2020/04/14/3S5ApdLr6UEzfRB.png)
+
+依然需要注意的一点：`git `会定期回收无引用的`commit`，所以这个操作需要及时。
+
+### 临时暂存
+
+有时候，在不同分支工作时，需要偶尔切到其他分支看一行代码，或者调试个 bug 啥的，我们都是提交一个临时的`commit`再去切，这样算是一个保险的做法，但是对于`git`来说，还有更优雅一点的就是`git stash`命令，这个命令可以将目前工作区的改动都临时保存在一个独立的地方，等你搞好了其他的工作，再回来时，使用`git stash pop`就可以恢复了。
+
+如果临时暂存时，存在未被追踪的文件，需要加上`-u `的参数，如下
+
+```shell
+git stash -u
+```
+
+> 注意：没有被 track 的文件（即从来没有被 add 过的文件不会被 stash 起来，因为 Git 会忽略它们。如果想把这些文件也一起 stash，可以加上 `-u` 参数，它是 `--include-untracked` 的简写。
+
+### Tag的使用
+
+`tag`就是标签，当我们在一个分支上构建了不同版本的应用时，可以通过`tag`来进行标记。这是一种基础的用法，
+
+```shell
+git tag -a v1.0.0 -m 'xxx build version'
+```
+
+其实，`git` 的`tag`还可以用于自动化的构建和测试当中，本地打好了`tag`后，推送到远端仓库，在远端仓库中部署`CI`等自动化的脚本，可以检测到相应的`tag`来进行一系列的自动化操作。但是这个更多的是自动化构建方面的知识，有兴趣可以了解了解。
+
+相关文章：
+
+- [基于 GitLab CI/CD 的前端自动化构建、发布实践](https://juejin.im/post/5d197e4fe51d45775b419c27)
+- [Android Gradle实用技巧(二) | 自动生成版本信息](https://www.flysnow.org/2017/03/12/android-gradle-auto-version.html)
+- [用TRAVIS CI给ANDROID项目部署GITHUB RELEASE](http://kescoode.com/travis-ci-android-github-release/)
+
