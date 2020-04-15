@@ -37,6 +37,18 @@ categories:
 
 如上图，是`git`的一个基本的工作流程：当我们在工作区域中修改了某个文件的文件内容时，`git`会自动检测到这种改动并进行了标记，然后需要我们手动的将这些改动添加(使用命令  `git add`)到暂存区中，这样我们所修改的东西就会被`git`记录下来，而没有添加到暂存区的改动在进行各种`git`命令时可能会丢失。如果我们确定了暂存区中的内容是这样的修改，就可以将暂存区的改动记录进行提交，那么这次修改的内容就会从暂存区迁移到仓库中，并在仓库中生成一个提交记录--`commit`。整个仓库中，所有的改动记录就是有一个一个的`commit`串行所构成的。
 
+以下就是文件在不同的区域的一个时序图：
+
+```mermaid
+sequenceDiagram
+participant 工作区
+participant 暂存区
+participant 仓库
+工作区 ->> 暂存区 : git add xxx文件
+暂存区 ->> 仓库   : git commit -m "xx"
+仓库 -->> 工作区 : checkout 
+```
+
 回到我们刚刚克隆的仓库中，使用命令`git log`可以查看当前仓库的一些日志。
 
 ![gitLog.png](https://i.loli.net/2020/04/13/NnOvl8WRqQdtJGi.png)
@@ -67,8 +79,22 @@ git checkout dab6cd
 
 当`HEAD`指向某个`branch`时，其实**间接的**是指向这个`branch`的某个`commit`(之所以说是间接的指向，是因为这种情况下的`HEAD`还是直接指向的`branch`，而`branch`指向的是它最新的`commit`，这样构成了间接的指向。还有直接的指向，就是使用`git checkout --detach`命令后，`HEAD`就会由指向`branch`变成指向`commit`)。如下所示
 
-```
-HEAD-->branch1-->最新的Commit  ===> HEAD-->最新的Commit<--branch1
+```mermaid
+graph LR
+subgraph 执行detach命令后
+	G1(HEAD) --> E1((commit3))
+	A1((commit1)) --> C1((commit2))
+	C1((commit2)) --> E1((commit3))
+	F1(branch1) --> E1((commit3))
+end
+subgraph 默认的状态
+	F(branch1) --> E((commit3))
+	G(HEAD) --> F(branch1)
+	A((commit1)) --> C((commit2))
+	C((commit2)) --> E((commit3))
+end
+
+
 ```
 
 `git checkout xxx`这个命令翻译为 签出，使用该命令签出某个`commit`时，工作区的内容会替换为该`commit`，并同时将 HEAD 引用指向该`commit`，当签出命令为某个分支时，会签出该分支的最新的那个`commit`
@@ -113,7 +139,7 @@ HEAD-->branch1-->最新的Commit  ===> HEAD-->最新的Commit<--branch1
 
 我们在工作区中，新增的文件，默认是不会被`git`所追踪的，也就说文件中任何的改动是不被`git`检测记录的。需要使用`git add`命令将文件添加，这样`git`才会开始追踪，所以新增一个文件时，使用`add`命令的含义其实有两层，一个将这个文件的新增作为工作区中的一种形式的改动，提交到`git`仓库中，第二层就是让文件被`git`所追踪。其他时候，当我们做出一些修改的时候，需要添加到暂存区中，也是使用此命令。
 
-需要注意的一点是，`git`中所记录的是文件内容的改动，而非文件本身，所以当添加了一次文件的修改后，又修改了相同文件的内容，还需要再添加一次刚刚的修改。
+需要注意的一点是，`git`中所记录的是文件内容的改动，而非文件本身，所以当添加了一次文件的修改后，又修改了相同文件的内容，还需要再添加一次刚刚的修改。如下操作：
 
 ```shell
 # 改动了文本的内容
@@ -235,8 +261,8 @@ git cherry-pick -x <commit_id>
 
 ```
 1-->2-->3-->4-->5-->6   master
-		 \				/
-		 	7-->8-->          branch1
+		 \				 /
+		 	7-->8-->9          branch1
 ```
 
 
