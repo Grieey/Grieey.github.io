@@ -249,7 +249,7 @@ git cherry-pick -x <commit_id>
 
 提交的记录可以通过`git log --pretty=oneline`来查看。
 
-![cherry-pick.png](https://i.loli.net/2020/04/14/yrAwzDYoKUSHplu.png)
+![cheery-pick.png](https://i.loli.net/2020/04/16/Ht8R7za3UBDWKCe.png)
 
 然后查看`master`分支的`commit`会发现刚刚合并的已经有了。
 
