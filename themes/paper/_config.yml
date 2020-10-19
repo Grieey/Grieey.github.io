@@ -1,0 +1,54 @@
+
+# html lang
+language: zh
+
+# main menu navigation
+menu:
+  Home: /
+  About: /about
+
+# stylesheets loaded in the <head>
+stylesheets:
+
+stylesheets_preload:
+- https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css # for highlight
+- https://fonts.googleapis.com/css?family=Abril+Fatface&display=swap # for font
+
+# scripts loaded in the end of the body
+scripts_defer:
+- https://cdn.bootcss.com/highlight.js/9.6.0/highlight.min.js # for highlight
+- /js/paper.js # for basic script
+
+
+social:
+  Github: https://github.com/Grieey
+  # Codepen: https://codepen.io/yours
+  # Dribbble: https://dribbble.com/yours
+  # Twitter: https://twitter.com/yours
+  # 知乎: https://www.zhihu.com/people/yours
+  掘金: https://juejin.im/user/2858385960867566
+  Mail: yangqing433520@163.com
+  # and more, you can add other link by the same way
+
+# Uncomment to disable sidebar
+# toc: false
+# link: false
+# archives: false
+# categories: false
+# tags: false
+
+# theme color
+main_color: default # forest | grass | sky | sun | sea
+
+# google Analytics
+google_analytics_id: xx-xxxxxxx-xx
+
+# commend module
+comment:
+  enable: true
+  appId: COvXgWafnfEKEiJ1zeEyqhNN-gzGzoHsz
+  appKey: 4DuhSbU89A92Ny1HFmy0uClb
+  placeholder: 说点什么呗~
+  notify: false
+  verify: false
+  avatar: mp
