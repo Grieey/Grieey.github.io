@@ -1,6 +1,11 @@
 language: node_js
 node_js: v10.16.0
 
+matrix:
+  include:
+    - dist: bionic
+    - dist: xenial
+
 # Travis-CI Caching
 cache:
   directories:
