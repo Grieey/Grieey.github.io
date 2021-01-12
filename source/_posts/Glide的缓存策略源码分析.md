@@ -22,7 +22,7 @@ categories :
 
 ![glide_engine_load](https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_engine_load.png)
 
-##内存缓存
+## 内存缓存
 
 内存缓存的设置也有两级，这里就是引言中使用的**弱引用+Lru**的方式：
 
