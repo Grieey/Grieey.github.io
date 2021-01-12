@@ -4,7 +4,7 @@ date: 2020-02-18T18:31:23+08:00
 tags: 
     - Glide
     - Android
-	- ReferenceQueue
+    - ReferenceQueue
 categories : 
     - Android
     - Glide
