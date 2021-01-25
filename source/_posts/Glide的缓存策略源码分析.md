@@ -16,7 +16,17 @@ categories :
 >
 > 文中源码版本：4.11.0
 
-当我们调用`Glide.with(context).load(url).into(view)`时，`Glide` 内部会构建一个`Request`对象去具体执行`load`的逻辑，而在`Request`的内部则是由`Engine`去实际执行的`load`方法。
+## 整体流程
+
+![glide_chche_flow3](https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_chche_flow3.png)
+
+1. 当我们调用`Glide.with(context).load(url).into(view)`时，`Glide` 内部会构建一个`Request`对象去具体执行`load`的逻辑，而在`Request`的内部则是由`Engine`去实际执行的`load`方法。
+2. `load()`方法中，首先会从**Memory**中取，这里实际的对象是`Glide`内部封装资源对象`ActiveResource`中的一个弱引用对象，如果存在即调用`weakReference.get()`去获取资源。
+3. 弱引用中没有，则去`LruCache`中查找：如果存在，则将其从`LruCache`中移除，然后新建一个`ActiveResource`。
+4. `LruCache`中也不存在，就去磁盘缓存中查找，默认的实现是`DiskLruCache`。
+5. 再没有就只有去`Remote`获取了，这里的`Remote`是个泛指。
+
+接着我们先看看第一步中的`load`方法：
 
 从下面的代码可以看到，先会从缓存中获取资源，如果不存在，才会新开线程从硬盘获取或者从其他远端（文件、网络等等）加载新资源。
 
@@ -38,7 +48,20 @@ categories :
 
 到这里为止，都是正常的流程。但我们知道，弱引用会在下一次`GC`时被回收，如果被回收了又没有加入`Lru`不就炸了么？对弱引用的使用不太了解的同学也许会存在这样的疑问，`Reference`有一个构造方法可以传入一个`ReferenceQueue`，这个队列的作用就是用于检测**对象**本身可达性发生变化时，通过Map来反向获取指向**对象**的包装引用（即`Reference`对象），将其放入到队列，来进行后续的操作，[这里有一篇关于引用队列的介绍](https://hongjiang.info/java-referencequeue/)。
 
-正如上面的介绍一样，`Glide`的内部也是通过引用队列来实现**弱引用**对象被回收时，将其放入`Lru`中，看看具体的实现：
+正如上面的介绍一样，`Glide`的内部也是通过引用队列来实现**弱引用**对象被回收时，将其放入`Lru`中。
+
+流程如下：
+
+![glide_cache_weak](https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_cache_weak.png)
+
+1. 当我们第一次加载成功后，会创建弱引用对象来缓存它。
+2. 创建弱引用对象时也会传入弱引用队列。
+3. 同时这个对象资源在初始时会新开一个线程去无限循环的检测弱引用队列。
+4. 弱引用队列的`remove()`方法是个阻塞方法，当队列中存在元素时才会执行，所以当`gc()`回收弱引用对象后，队列中就有值了
+5. 这个时候无限循环的检测中就会拿到刚刚回收的弱引用对象。就会将该对象放到`lru`中去缓存。
+6. 另一边是如果使用的资源被主动释放了，`Lru`内部是维护了一个引用计数`acquired`的数字，当这个数子为0时就代表没有引用了，也会缓存到`Lru`中去。
+
+看看具体的实现：
 
 首先`ActiveResources`的构造方法中，会生成一个子线程执行检测任务，随时检测引用队列的`remove()`方法（这是一个阻塞方法，队列没有值的时候会一直阻塞），当还没有引用别回收时，这个检测的线程就会因为阻塞而休眠，而一旦出现了被回收的对象，就会被引用队列唤醒，执行`remove`方法的后续。
 
