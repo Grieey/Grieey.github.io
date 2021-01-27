@@ -1,0 +1,177 @@
+<!DOCTYPE html><html lang="en"><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0"><meta name="description" content="动态规划 [ 胡杨日报 ] "><meta name="theme-color" content="#ebc65a"><title>动态规划 [ 胡杨日报 ] </title><link rel="shortcut icon" href="/favicon.ico"><link rel="stylesheet" href="/css/index.css"><script src="https://cdn.bootcss.com/highlight.js/9.6.0/highlight.min.js" defer></script><script src="/js/paper.js" defer></script><script src="https://www.googletagmanager.com/gtag/js?id=xx-xxxxxxx-xx" async></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'xx-xxxxxxx-xx');</script><script src="https://www.unpkg.com/valine/dist/Valine.min.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  new Valine({
+    el: '#comments',
+    appId: 'COvXgWafnfEKEiJ1zeEyqhNN-gzGzoHsz',
+    appKey: '4DuhSbU89A92Ny1HFmy0uClb',
+    notify: false,
+    verify: false,
+    avatar: 'mp',
+    placeholder: '说点什么呗~',
+  })
+})</script><link rel="stylesheet" href="/css/tocbot.css"><script src="/js/tocbot.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  tocbot.init({
+    // Where to render the table of contents.
+    tocSelector: '.toc__content',
+    // Where to grab the headings to build the table of contents.
+    contentSelector: '.article__content',
+    // Which headings to grab inside of the contentSelector element.
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    // For headings inside relative or absolute positioned containers within content.
+    hasInnerContainers: true,
+    orderedList: false,
+    collapseDepth: 2,
+  });
+})</script><link rel="preload" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css"><link rel="preload" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap"></head><body><div class="mask-border"></div><div class="head"><div class="head__inner"><h1><a href="/">胡杨日报</a></h1><p>胡杨树下</p></div></div><div class="paper-container"><div class="main"><div class="location-bar"><div class="line-1"><div class="horizontal-line" style="height: 3px"></div></div><div class="line-2"><div class="horizontal-line" style="height: 1px"></div></div><p class="text">动态规划</p><div class="switch-button"><input class="container_toggle" type="checkbox" id="switch" name="mode"><label for="switch">Toggle</label></div><div class="line-3"><div class="horizontal-line" style="height: 1px"></div></div></div><div class="main__2-col"><article class="post-view__article"><div class="article__infomation"><div class="posts-item"><h2 class="posts-item__title"><a href>动态规划</a></h2><span class="post__date">2020-04-06</span><a href="/tags/打家劫舍/"><span class="post__tags">#打家劫舍</span></a><a href="/tags/鸡蛋掉落/"><span class="post__tags">#鸡蛋掉落</span></a><a href="/tags/动态规划/"><span class="post__tags">#动态规划</span></a></div></div><div class="article__content"><h2 id="斐波那契数列"><a href="#斐波那契数列" class="headerlink" title="斐波那契数列"></a>斐波那契数列</h2><p>这是最基本可以用来描述动态规划的算法题了，先看看定义</p>
+<p>$$ F(N)= \begin{cases} n,\quad x &lt; 2 \\ F(N - 1) + F(N - 2),\quad x \geq 2 \end{cases} $$</p>
+<p>这个题目在书本上尝尝用于来示例递归函数，使用递归确实能很简单的解出这道题，我们可以定义一个方法，然后不断的递归这个方法，递归过程中减少N，同时使用备忘录来消除动态规划中的重叠子问题。那么这个题就算解决了，这是一种符合常规思维的自上而下的解法，伪代码如下</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">val</span> memo = mutableMapOf&lt;<span class="hljs-built_in">Int</span>, <span class="hljs-built_in">Int</span>&gt;()
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">fib</span><span class="hljs-params">(n:<span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> &#123;
+  	<span class="hljs-keyword">if</span> (n &lt; <span class="hljs-number">2</span>) <span class="hljs-keyword">return</span> n
+  
+  	<span class="hljs-keyword">if</span> (memo.containsKey(n)) <span class="hljs-keyword">return</span> memo[n] <span class="hljs-keyword">as</span> <span class="hljs-built_in">Int</span>
+  	
+  	<span class="hljs-keyword">val</span> res = fib(n - <span class="hljs-number">1</span>) + fib(n - <span class="hljs-number">2</span>)
+  	memo[n] = res
+  	<span class="hljs-keyword">return</span> res
+&#125;</code></pre>
+<p>这个解法比较轻松的能画出一颗二叉树，再在二叉树上划去因为备忘录而省去计算的分支，会发现最后留下的是一条笔直的分支。这其实对应的就是另一种自下而上的思路。</p>
+<p>针对斐波那契数列，原本的题意是从所求参数依次往<strong>base case（F(0),F(1)）</strong>去求。换个思路就是，从<strong>base case </strong>向所求参数去凑。比如<strong>F(4)</strong>，用自顶向下的思路就是因为要求<strong>F(4)</strong>，所以我需要先求<strong>F(3)</strong>和<strong>F(2)</strong>(这样满足公式嘛)，而自底向上的思路就是要求<strong>F(4)</strong>，我可以先求<strong>F(2)</strong>(因为<strong>F(0)</strong>和<strong>F(1)</strong>已知，很轻易可以求出<strong>F(2)</strong>)，这样往我们需要求的参数一步一步向上去凑，直到求到<strong>F(4)</strong>。</p>
+<p>那么这种思路的伪代码就如下：</p>
+<pre><code class="hljs kotlin"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">fib</span><span class="hljs-params">(n:<span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> &#123;
+  	<span class="hljs-keyword">if</span> (n &lt; <span class="hljs-number">2</span>) <span class="hljs-keyword">return</span> n
+  	
+  	<span class="hljs-keyword">var</span> fn = <span class="hljs-number">1</span>
+  	<span class="hljs-keyword">var</span> fn1 = <span class="hljs-number">0</span>
+  	<span class="hljs-keyword">var</span> res = fn + fn1
+  	<span class="hljs-keyword">for</span> (i <span class="hljs-keyword">in</span> <span class="hljs-number">2</span>..n) &#123;
+      	res = fn + fn1
+      	fn1 = fn
+      	fn = res
+       &#125;
+  
+  	<span class="hljs-keyword">return</span> res
+&#125;</code></pre>
+<p>每一步向上求，只和前两个值有关，所以这里一共需要三个变量就可以解决。</p>
+<h2 id="打家劫舍的问题"><a href="#打家劫舍的问题" class="headerlink" title="打家劫舍的问题"></a>打家劫舍的问题</h2><p>一般针对有求解最值的题目，可以考虑使用动态规划来处理，在打家劫舍这一系列的题目中，我们需要求的都是能打劫到的最多的钱。</p>
+<p>1.明确状态：可以理解为，状态是为选择提供的一种基础，对于抢劫来说，基础就是有人被你抢，所以这个题目中，一间间房屋就是我们需要的状态。（像凑硬币的题目，一种硬币其实就是一种状态）</p>
+<p>2.明确选择：状态分析出来后，针对状态我们存在的选择只有两个，抢劫或者不抢。</p>
+<p>3.dp方程式：dp的值要计算的当前的房间进行操作后，能得到的钱是多少，比如在第一间房，如果选择抢，那么得到的钱应该是当前房间的钱加上下下间房屋里抢的钱（中间需要间隔一个），而如果选择不抢，那么直接计算下个房间就可以了。</p>
+<pre><code class="hljs kotlin">dp = max(dp1, currentRoomMoney + dp2)
+<span class="hljs-comment">// 这里做数据更新</span>
+dp2 = dp1
+dp1 = dp</code></pre>
+<p>4.baseCase:其实可以从两个角度想，一个是当你下个房间能抢到的数目为0时，其实就已经结束了（因为题目给的数是非零正整数），而另一个就是房间的数目是有限的，遍历完就是结束了。</p>
+<p>这个的时间复杂度的计算，就是子问题的个数*解决一个子问题的时间，对于抢劫一间房，执行的时间是O(1)，而子问题的个数是N，所以总的来说是O(N)的时间复杂度。</p>
+<p>同样有<strong>自顶向下</strong>和<strong>自底向上</strong> 两种思路来实现。一般画了二叉树，使用自顶向下的方案会比较容易理解，因为这个方案是从暴力解中优化来了，解决了重叠子问题的问题。伪代码的逻辑如下，</p>
+<pre><code class="hljs kotlin"><span class="hljs-comment">// 自顶向下的伪代码</span>
+<span class="hljs-comment">// 使用备忘录来优化重叠子问题</span>
+<span class="hljs-keyword">val</span> memo = mutableMapOf&lt;<span class="hljs-built_in">Int</span>, <span class="hljs-built_in">Int</span>&gt;()
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">rob</span><span class="hljs-params">(nums: <span class="hljs-type">IntArray</span>,  start:<span class="hljs-type">Int</span>)</span></span> &#123;
+  ...
+  <span class="hljs-keyword">if</span> (memo.containsKey(start)) <span class="hljs-keyword">return</span> memo[start]
+  <span class="hljs-keyword">val</span> res =  max(rob(next), nums[current] + rob(next+<span class="hljs-number">1</span>))
+  memo[start] = res
+  <span class="hljs-keyword">return</span> res
+&#125;
+
+<span class="hljs-comment">// 自底向上的伪代码</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">rob</span> <span class="hljs-params">(nums:<span class="hljs-type">IntArray</span>)</span></span> &#123;
+  <span class="hljs-keyword">for</span> ( i <span class="hljs-keyword">in</span> nums.lastIndex downTo <span class="hljs-number">0</span>) &#123;
+  	dp = max (dp1, nums[i] + dp2)
+       dp2 = dp1
+       dp1 = dp
+  &#125;
+  
+  <span class="hljs-keyword">return</span> dp
+&#125;</code></pre>
+<p>第二个题将数组变成了环形了，环形的问题就是首尾的房间不能同时被抢，所以分别计算抢首部和抢尾部两种方法的钱，就知道了</p>
+<pre><code class="hljs kotlin"><span class="hljs-comment">// 将上面的循环遍历的区间从整个数组修改为指定的即可</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">rob</span> <span class="hljs-params">(nums: <span class="hljs-type">IntArray</span>)</span></span> &#123;
+  <span class="hljs-keyword">return</span> max(robRange(nums,  <span class="hljs-number">0</span> ,  nums.lastIndex - <span class="hljs-number">1</span>)
+            , robRange(nums, <span class="hljs-number">1</span> ,nums.lastIndex)
+   )
+&#125;</code></pre>
+<p>第三个问题将数组变成了二叉树，在树结构上相邻的两个房间不能别抢，就是父节点如果抢了的话，就不能去抢子节点了，而是应该去抢子节点的子节点,<code>注意：这两的子节点的子节点应该是四个了，分别是左子树的两个子节点和右子树的两个子节点</code>。如果没有抢，那么就直接就计算子节点。</p>
+<pre><code class="hljs kotlin"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">rob</span><span class="hljs-params">(node:<span class="hljs-type">Node</span>?)</span></span> &#123;
+  <span class="hljs-comment">// 当前房间要抢，那最终的钱就是当前房间的加上子节点的子节点的钱</span>
+  rob = node.monkey + (rob(node.left?.left) ?: <span class="hljs-number">0</span> + rob(node.left?.right ?: <span class="hljs-number">0</span>)) + (rob(node.right?.left ?: <span class="hljs-number">0</span>) + rob(node.right?.right ?: <span class="hljs-number">0</span>))
+  notRob = rob(node.left) + rob(node.right)
+  
+  <span class="hljs-keyword">return</span> max(rob, notRob)
+&#125;</code></pre>
+<p>当然，上面的方案仍然要使用备忘录来进行优化，记录已经计算过的节点。</p>
+<p>最后是另有一个比较不错的解法</p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">rob</span><span class="hljs-params">(TreeNode root)</span> </span>&#123;
+    <span class="hljs-keyword">int</span>[] res = dp(root);
+    <span class="hljs-keyword">return</span> Math.max(res[<span class="hljs-number">0</span>], res[<span class="hljs-number">1</span>]);
+&#125;
+
+<span class="hljs-comment">/* 返回一个大小为 2 的数组 arr
+arr[0] 表示不抢 root 的话，得到的最大钱数
+arr[1] 表示抢 root 的话，得到的最大钱数 */</span>
+<span class="hljs-keyword">int</span>[] dp(TreeNode root) &#123;
+    <span class="hljs-keyword">if</span> (root == <span class="hljs-keyword">null</span>)
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-keyword">int</span>[]&#123;<span class="hljs-number">0</span>, <span class="hljs-number">0</span>&#125;;
+    <span class="hljs-keyword">int</span>[] left = dp(root.left);
+    <span class="hljs-keyword">int</span>[] right = dp(root.right);
+    <span class="hljs-comment">// 抢，下家就不能抢了</span>
+    <span class="hljs-keyword">int</span> rob = root.val + left[<span class="hljs-number">0</span>] + right[<span class="hljs-number">0</span>];
+    <span class="hljs-comment">// 不抢，下家可抢可不抢，取决于收益大小</span>
+    <span class="hljs-keyword">int</span> not_rob = Math.max(left[<span class="hljs-number">0</span>], left[<span class="hljs-number">1</span>])
+                + Math.max(right[<span class="hljs-number">0</span>], right[<span class="hljs-number">1</span>]);
+
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-keyword">int</span>[]&#123;not_rob, rob&#125;;
+&#125;</code></pre>
+<p>这个解法的思路类似于股票买卖问题，在决定一个房间是不是需要抢的选择时，可以决定下一个房间（股票问题是当前的利润来自前面一天的决定）。对于房间来说，如果当前抢了，那么下间房间一定不能抢，而如果没有抢，那么下间房间可能抢也可能不抢（股票的问题是，第i天时，手上没有持有股票，可能来自两种操作的结果，一个是前一天卖掉了，二个是前一天也没有买，所以今天也就延续了前一天的状态）。</p>
+<h2 id="鸡蛋掉落问题"><a href="#鸡蛋掉落问题" class="headerlink" title="鸡蛋掉落问题"></a>鸡蛋掉落问题</h2><p>题目的简单描述，就是说给你<strong>K</strong>个鸡蛋，然后有<strong>N</strong>层楼，问最少需要多少次能测出鸡蛋在几楼掉落刚好不碎（或者说可以测出鸡蛋的质量）。</p>
+<p>这是一道很经典的动态规划的问题，解法还是和之前一样，有自顶向下和自底向上两种思路可以来解决这个问题。</p>
+<h4 id="自顶向下"><a href="#自顶向下" class="headerlink" title="自顶向下"></a>自顶向下</h4><p>在这个题目中，状态有两个，一个是鸡蛋的个数，另一个是楼层。所以对应状态的变化就是两种，首先是楼层的变化，我们可以想象为有一个鸡蛋，那么至少需要多少次可以去确定楼层，这里可以用二分搜索的方式来处理，就是$\log(N)$的时间复杂度；第二个就是鸡蛋个数的变化，其实就是可操作次数的<strong>Max</strong>值。</p>
+<p>状态如何转移呢，当我们在一层楼落下鸡蛋时，只有两个可能的结果，就是蛋碎了或者蛋没有碎，蛋碎了就减少一个蛋的数目，然后继续向上搜索楼层，没碎则直接进行向下搜索楼层的操作。最后我们需要的至少的次数，就是遍历过程中最小的操作。那么dp的状态转移方程就是</p>
+<p>$$dp = min \lbrace dp(k, n - mid) + 1, dp(k - 1, mid - 1) + 1; k \in K, mid = (lo + hi)  / 2 \rbrace$$</p>
+<p>这个方程的详细解释就是，当我们使用二分法进行楼层的搜索时，这层的状态结果有两个，其中$dp(k, mid - 1)$对应的是在这层路鸡蛋掉下去没有碎，鸡蛋的个数不会减少的情况下，后面总共还需要多少次来测试，所以后面加1的目的是加上这次，同时，因为鸡蛋没有碎，说明楼层的高度还不够，那么下次就应该搜索当前楼层的上面楼层区间了；后面也是一样，如果鸡蛋碎了，鸡蛋数目需要减少，同时应该搜索的区间就是当前楼层的下面楼层了。</p>
+<p>最后的就是结束条件(base case)，什么情况下就不能测试了，需要看我们的状态：首先是楼层，当楼层<strong>N</strong> 为0的时候，肯定没有法测了，这就是不存在的条件；第二，如果鸡蛋数目<strong>K</strong>为1的时候，不就是上面我们讲的最简单的情况了，不过需要注意的是，这个考虑的是最坏的情况，不是说一个鸡蛋，用二分的方式至少$log(N)$次就可以了，而是需要$N$次，最坏的情况就是从一楼开始，到楼顶才测出来。</p>
+<p>伪代码如下：</p>
+<pre><code class="hljs kotlin"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">dp</span><span class="hljs-params">(K:<span class="hljs-type">Int</span>, N:<span class="hljs-type">Int</span>)</span></span>:<span class="hljs-built_in">Int</span> &#123;
+  	<span class="hljs-keyword">if</span> (K == <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> n
+  	<span class="hljs-keyword">if</span> (N == <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+  	<span class="hljs-comment">// 使用备忘录模式来优化重叠子问题</span>
+  	<span class="hljs-keyword">if</span> (memo[K][N] != -<span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> memo[K][N]
+  
+       <span class="hljs-keyword">var</span> lo = <span class="hljs-number">1</span>
+  	<span class="hljs-keyword">var</span> hi = N
+  	<span class="hljs-keyword">var</span> res = <span class="hljs-built_in">Int</span>.MAX_VALUE
+  	<span class="hljs-keyword">while</span> (lo &lt;= hi) &#123;
+      	<span class="hljs-keyword">val</span> mid = (lo + hi) / <span class="hljs-number">2</span>
+      	<span class="hljs-comment">// 碎了，那么接下来需要计算的是K- 1个鸡蛋在(N - mid) 楼中掉落的子问题</span>
+      	<span class="hljs-keyword">val</span> brohen = dp(K - <span class="hljs-number">1</span>,  n - mid)
+      	<span class="hljs-keyword">val</span> notBrohen = dp(K, mid - <span class="hljs-number">1</span>)
+      	
+      	<span class="hljs-keyword">if</span> (borken &gt; notBroken) &#123;
+          	hi = mid - <span class="hljs-number">1</span>
+          	res = min(res, borken + <span class="hljs-number">1</span>)
+           &#125; <span class="hljs-keyword">else</span> &#123;
+          	lo = mid + <span class="hljs-number">1</span>
+          	res = min(res, notBroken + <span class="hljs-number">1</span>)
+          &#125;
+      	memo[K][N] = res
+      &#125;
+  	<span class="hljs-keyword">return</span> res
+&#125;</code></pre>
+<p>时间复杂度：有两个状态，每一个状态组合下的子问题解决的时间复杂度是$log(N)$，一共有$K \cdot N$个问题，所以总的时间复杂度就是$ K \cdot N \cdot log(N)$。</p>
+<h4 id="自底向上"><a href="#自底向上" class="headerlink" title="自底向上"></a>自底向上</h4><p>自底向上就是使用dp数组来解决问题，可以换个思路来思考题目，题目说的是在<strong>N</strong>层楼的情况下，<strong>K</strong>个鸡蛋至少需要<strong>F</strong>次才知道哪层楼才能刚好摔碎$\implies$也就是说我们可以算，<strong>K</strong>个鸡蛋，操作<strong>F</strong>次的情况下，最多可以测试的最高楼层数是多少，只要这个最高楼层数大于等于题目给出的<strong>N</strong>，那么这个<strong>F</strong>就是我们的答案了。</p>
+<p>根据这个思路可以得出dp的计算方式<code>dp[k] = dp[k] + dp[k - 1] + 1</code>，<code>dp[k]</code> 代表的在当前的楼层，是<strong>k</strong>个鸡蛋的时候，能测出的楼层数目，所有最后的<code>+1</code>代表的就是本次楼层，等于后面的<code>dp[k]</code>代表的是本次楼层落下后，鸡蛋没有碎，那么继续向上测试楼层总共能测出还有多少楼，而<code>dp[k - 1]</code>代表的是如果鸡蛋正好在本层楼落下碎了，想楼下测试总共还能测出多少楼。最后就是看<code>dp[K]</code>和<code>N</code>的关系，当<code>dp[K] &gt; N</code>时，就符合上面说的<strong>K</strong>个鸡蛋操作了<strong>F</strong>次后，最多有<strong>dp[K]</strong>层楼刚刚碎。 代码如下:</p>
+<pre><code class="hljs kotlin"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">dp</span><span class="hljs-params">(K;<span class="hljs-built_in">Int</span>, N:<span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> &#123;
+ 	<span class="hljs-keyword">val</span> dp = IntArray(K + <span class="hljs-number">1</span>)
+   <span class="hljs-keyword">var</span> ans = <span class="hljs-number">0</span>
+   <span class="hljs-keyword">while</span> (dp[K] &lt; N) &#123;
+       <span class="hljs-comment">// 这里为啥是K倒序到1 而不是从1正序遍历，还没搞懂</span>
+     	<span class="hljs-keyword">for</span> (k <span class="hljs-keyword">in</span> K downTo <span class="hljs-number">1</span>) dp[k] = dp[k] + dp[k - <span class="hljs-number">1</span>] + <span class="hljs-number">1</span>
+     	ans++
+   &#125;
+   <span class="hljs-keyword">return</span> ans
+&#125;</code></pre>
+<p>这样计算的时间复杂度就更好一些，为 $O(KN)$。</p>
+</div></article><div class="post-view__sidebar"><div class="sidebar"><div class="tocbot"><h2>Toc</h2><div class="toc__content"></div></div><h2>Links</h2><div class="sidebar__link"><ul><li><a href="https://github.com/Grieey">Github</a></li><li><a href="https://juejin.im/user/2858385960867566">掘金</a></li><li><a href="/yangqing433520@163.com">Mail</a></li></ul></div><h2>Archives</h2><div class="sidebar__archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/">2018</a></li></ul></div><h2>Categories</h2><div class="sidebar__categories"><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/">Android</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/">Glide</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/">Kotlin</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/工具/">工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/">设计模式</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/学习记录/">学习记录</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/">博客</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/博客/Hugo/">Hugo</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/hexo/">hexo</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/旅途/">旅途</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a></li></ul></div><h2>Tags</h2><div class="sidebar__tags"><ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Charles/">Charles</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Glide/">Glide</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Handler/">Handler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hugo/">Hugo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kotlin/">Kotlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mac/">Mac</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ReferenceQueue/">ReferenceQueue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Retrofit/">Retrofit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis-CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vcs/">Vcs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/打家劫舍/">打家劫舍</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/抓包/">抓包</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/杂谈/">杂谈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码分析/">源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码学习/">源码学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/碧峰峡/">碧峰峡</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/踏青/">踏青</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/鸡蛋掉落/">鸡蛋掉落</a></li></ul></div></div></div></div><div class="horizontal-line" style="height: 1px"></div><div class="main__bottom"><div class="pre-next"><a class="pre-button" href="/2020/04/06/Git 深入学习总结/">Git 基础学习总结</a><a class="next-button" href="/2020/02/18/Glide的缓存策略源码分析/">Glide的缓存策略源码分析</a></div><div id="comments"></div></div></div></div><div class="footer"><span>©️2019-2021 Designed By&nbsp;<strong><a href="https://github.com/random-yang">RandomYang</a></strong> Powered By&nbsp;</span><strong><a href="https://hexo.io">hexo</a></strong></div><div class="darkmode-mask" id="darkmode-mask"></div><div class="sidebar__button"></div></body></html>

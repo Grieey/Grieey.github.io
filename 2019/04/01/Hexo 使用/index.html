@@ -1,0 +1,84 @@
+<!DOCTYPE html><html lang="en"><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0"><meta name="description" content="Hexo 使用 [ 胡杨日报 ] "><meta name="theme-color" content="#ebc65a"><title>Hexo 使用 [ 胡杨日报 ] </title><link rel="shortcut icon" href="/favicon.ico"><link rel="stylesheet" href="/css/index.css"><script src="https://cdn.bootcss.com/highlight.js/9.6.0/highlight.min.js" defer></script><script src="/js/paper.js" defer></script><script src="https://www.googletagmanager.com/gtag/js?id=xx-xxxxxxx-xx" async></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'xx-xxxxxxx-xx');</script><script src="https://www.unpkg.com/valine/dist/Valine.min.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  new Valine({
+    el: '#comments',
+    appId: 'COvXgWafnfEKEiJ1zeEyqhNN-gzGzoHsz',
+    appKey: '4DuhSbU89A92Ny1HFmy0uClb',
+    notify: false,
+    verify: false,
+    avatar: 'mp',
+    placeholder: '说点什么呗~',
+  })
+})</script><link rel="stylesheet" href="/css/tocbot.css"><script src="/js/tocbot.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  tocbot.init({
+    // Where to render the table of contents.
+    tocSelector: '.toc__content',
+    // Where to grab the headings to build the table of contents.
+    contentSelector: '.article__content',
+    // Which headings to grab inside of the contentSelector element.
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    // For headings inside relative or absolute positioned containers within content.
+    hasInnerContainers: true,
+    orderedList: false,
+    collapseDepth: 2,
+  });
+})</script><link rel="preload" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css"><link rel="preload" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap"></head><body><div class="mask-border"></div><div class="head"><div class="head__inner"><h1><a href="/">胡杨日报</a></h1><p>胡杨树下</p></div></div><div class="paper-container"><div class="main"><div class="location-bar"><div class="line-1"><div class="horizontal-line" style="height: 3px"></div></div><div class="line-2"><div class="horizontal-line" style="height: 1px"></div></div><p class="text">Hexo 使用</p><div class="switch-button"><input class="container_toggle" type="checkbox" id="switch" name="mode"><label for="switch">Toggle</label></div><div class="line-3"><div class="horizontal-line" style="height: 1px"></div></div></div><div class="main__2-col"><article class="post-view__article"><div class="article__infomation"><div class="posts-item"><h2 class="posts-item__title"><a href>Hexo 使用</a></h2><span class="post__date">2019-04-01</span><a href="/tags/hexo/"><span class="post__tags">#hexo</span></a><a href="/tags/Travis-CI/"><span class="post__tags">#Travis-CI</span></a></div></div><div class="article__content"><h2 id="准备环境"><a href="#准备环境" class="headerlink" title="准备环境"></a>准备环境</h2><ul>
+<li><strong>Node.JS</strong></li>
+<li><strong>npm</strong></li>
+<li><strong>Hexo</strong></li>
+</ul>
+<ol>
+<li><p>在<a href="http://nodejs.cn/download/" target="_blank" rel="noopener">Node.js</a> 的下载页面下载对应的版本，<strong>macOS</strong> 版本下载下来的<strong>pkg</strong>文件直接双击就可以安装，安装好了后可以使用命令<code>npm -v</code>查看npm的版本。</p>
+</li>
+<li><p>更改npm源，<code>$ npm config set registry https://registry.npm.taobao.org npm info underscore</code></p>
+</li>
+<li><p>使用npm安装hexo <code>npm install -g hexo-cli</code>。</p>
+<p>在安装hexo时报错了<code>permission denied</code>的问题，这里我采取的方案是将npm的默认目录修改掉，然后再安装即可。</p>
+<pre><code class="hljs shell"><span class="hljs-meta">#</span> 创建一个新目录
+mkdir ~/.npm-global
+<span class="hljs-meta">#</span> 将npm配置新目录
+npm config set prefix '~/.npm-global'
+<span class="hljs-meta">#</span> 打开或者创建 ~/.profile
+<span class="hljs-meta">#</span> 将这句添加到 .profile文件中
+export PATH=~/.npm-global/bin:$PATH
+<span class="hljs-meta">#</span> 执行
+source ~/.profile</code></pre>
+</li>
+</ol>
+<ol start="4">
+<li><p>如果安装后第二次打开命令行使用<code>hexo -v</code>出现<code>hexo: command not found</code>，则说明hexo的位置没有添加到环境变量中，找到上面配置的npm-global路径，查看lib文件夹下的<strong>node_modules</strong>中是否有hexo的文件夹，存在就打开hexo/bin，将该路径添加到上面的<code>.profile</code>文件中;不存在就回到第三步重新安装hexo</p>
+<pre><code class="hljs shell">export PATH=~/路径/hexo/bin:$PATH</code></pre>
+</li>
+</ol>
+<ol start="5">
+<li><p>在安装好hexo后，如果是hexo3.0版本以上，还需要安装hexo-server(3.0以上将server单独弄了出来),</p>
+<p><code>npm install hexo-server --save</code></p>
+</li>
+</ol>
+<h2 id="初始化hexo"><a href="#初始化hexo" class="headerlink" title="初始化hexo"></a>初始化hexo</h2><p>新建一个文件夹，用命令行打开这个目录后执行<code>hexo init</code>。这样就将一个hexo项目初始化好了，执行<code>hexo server</code>启动服务器就可以在浏览器上输入<code>http://localhost:4000</code>来预览默认主题。</p>
+<h2 id="配置主题"><a href="#配置主题" class="headerlink" title="配置主题"></a>配置主题</h2><blockquote>
+<p>这次选中的主题是 <a href="https://molunerfinn.com/hexo-theme-melody-doc/zh-Hans/quick-start.html#%E5%AE%89%E8%A3%85" target="_blank" rel="noopener">melody</a> 比较清新简洁，主题作者说自己做了这个主题最开始是来撩妹的&lt;–_&lt;–</p>
+</blockquote>
+<p>说点基本的使用，在themes文件夹下拉取主题<a href="git clone -b master https://github.com/Molunerfinn/hexo-theme-melody themes/melody">melody</a> 然后回到整个hexo的站点，其目录结构如下</p>
+<p>​    _config.yml</p>
+<p>​    db.json</p>
+<p>​    node_modules</p>
+<p>​        …</p>
+<p>​    package-lock.json</p>
+<p>​    package.json</p>
+<p>​    scaffolds</p>
+<p>​    source</p>
+<p>​        _posts</p>
+<p>​    themes</p>
+<p>​        landscope</p>
+<p>其中主要的几个文件作用如下：</p>
+<ul>
+<li><strong>_config.yml</strong>  : 这个文件是整个博客站点的配置文件，我们的基本信息配置在这里面，如 <strong>title</strong>  、<strong>description</strong> 、<strong>theme</strong> 等等。</li>
+<li><strong>source</strong> 文件夹中的<strong>_posts</strong> ：这里存放的是我们写的md文档，<strong>source</strong> 文件下还会生成其他文件夹，这个就配合具体的主题使用了。</li>
+<li><strong>themes</strong> :主题存放文件夹，当喜欢的主题的代码放在这里面就可以使用了。</li>
+</ul>
+<p>​    </p>
+<p>坑：直接用git拉取到本地的主题中有也有git ，在上传时会被忽略</p>
+</div></article><div class="post-view__sidebar"><div class="sidebar"><div class="tocbot"><h2>Toc</h2><div class="toc__content"></div></div><h2>Links</h2><div class="sidebar__link"><ul><li><a href="https://github.com/Grieey">Github</a></li><li><a href="https://juejin.im/user/2858385960867566">掘金</a></li><li><a href="/yangqing433520@163.com">Mail</a></li></ul></div><h2>Archives</h2><div class="sidebar__archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/">2018</a></li></ul></div><h2>Categories</h2><div class="sidebar__categories"><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/">Android</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/">Glide</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/">Kotlin</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/工具/">工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/">设计模式</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/学习记录/">学习记录</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/">博客</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/博客/Hugo/">Hugo</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/hexo/">hexo</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/旅途/">旅途</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a></li></ul></div><h2>Tags</h2><div class="sidebar__tags"><ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Charles/">Charles</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Glide/">Glide</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Handler/">Handler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hugo/">Hugo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kotlin/">Kotlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mac/">Mac</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ReferenceQueue/">ReferenceQueue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Retrofit/">Retrofit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis-CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vcs/">Vcs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/打家劫舍/">打家劫舍</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/抓包/">抓包</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/杂谈/">杂谈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码分析/">源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码学习/">源码学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/碧峰峡/">碧峰峡</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/踏青/">踏青</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/鸡蛋掉落/">鸡蛋掉落</a></li></ul></div></div></div></div><div class="horizontal-line" style="height: 1px"></div><div class="main__bottom"><div class="pre-next"><a class="pre-button" href="/2019/04/03/Charles Mac配置抓包/">Charles Mac配置抓包</a><a class="next-button" href="/2019/02/01/hello-world/">Hello World</a></div><div id="comments"></div></div></div></div><div class="footer"><span>©️2019-2021 Designed By&nbsp;<strong><a href="https://github.com/random-yang">RandomYang</a></strong> Powered By&nbsp;</span><strong><a href="https://hexo.io">hexo</a></strong></div><div class="darkmode-mask" id="darkmode-mask"></div><div class="sidebar__button"></div></body></html>

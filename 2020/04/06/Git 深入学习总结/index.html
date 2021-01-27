@@ -1,0 +1,265 @@
+<!DOCTYPE html><html lang="en"><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0"><meta name="description" content="Git 基础学习总结 [ 胡杨日报 ] "><meta name="theme-color" content="#ebc65a"><title>Git 基础学习总结 [ 胡杨日报 ] </title><link rel="shortcut icon" href="/favicon.ico"><link rel="stylesheet" href="/css/index.css"><script src="https://cdn.bootcss.com/highlight.js/9.6.0/highlight.min.js" defer></script><script src="/js/paper.js" defer></script><script src="https://www.googletagmanager.com/gtag/js?id=xx-xxxxxxx-xx" async></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'xx-xxxxxxx-xx');</script><script src="https://www.unpkg.com/valine/dist/Valine.min.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  new Valine({
+    el: '#comments',
+    appId: 'COvXgWafnfEKEiJ1zeEyqhNN-gzGzoHsz',
+    appKey: '4DuhSbU89A92Ny1HFmy0uClb',
+    notify: false,
+    verify: false,
+    avatar: 'mp',
+    placeholder: '说点什么呗~',
+  })
+})</script><link rel="stylesheet" href="/css/tocbot.css"><script src="/js/tocbot.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  tocbot.init({
+    // Where to render the table of contents.
+    tocSelector: '.toc__content',
+    // Where to grab the headings to build the table of contents.
+    contentSelector: '.article__content',
+    // Which headings to grab inside of the contentSelector element.
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    // For headings inside relative or absolute positioned containers within content.
+    hasInnerContainers: true,
+    orderedList: false,
+    collapseDepth: 2,
+  });
+})</script><link rel="preload" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css"><link rel="preload" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap"></head><body><div class="mask-border"></div><div class="head"><div class="head__inner"><h1><a href="/">胡杨日报</a></h1><p>胡杨树下</p></div></div><div class="paper-container"><div class="main"><div class="location-bar"><div class="line-1"><div class="horizontal-line" style="height: 3px"></div></div><div class="line-2"><div class="horizontal-line" style="height: 1px"></div></div><p class="text">Git 基础学习总结</p><div class="switch-button"><input class="container_toggle" type="checkbox" id="switch" name="mode"><label for="switch">Toggle</label></div><div class="line-3"><div class="horizontal-line" style="height: 1px"></div></div></div><div class="main__2-col"><article class="post-view__article"><div class="article__infomation"><div class="posts-item"><h2 class="posts-item__title"><a href>Git 基础学习总结</a></h2><span class="post__date">2020-04-06</span><a href="/tags/Git/"><span class="post__tags">#Git</span></a><a href="/tags/Vcs/"><span class="post__tags">#Vcs</span></a></div></div><div class="article__content"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>版本控制系统<code>VCS(Version Control System)</code>，是一种用于管理控制代码版本的工具系统，通过该种系统能够实现对代码的追踪维护等功能。目前在使用的主流系统中，主要有以下两种</p>
+<h4 id="集中化的版本控制系统-Centralized-Version-Control-Systems，简称-CVCS"><a href="#集中化的版本控制系统-Centralized-Version-Control-Systems，简称-CVCS" class="headerlink" title="集中化的版本控制系统(Centralized Version Control Systems，简称 CVCS)"></a>集中化的版本控制系统(Centralized Version Control Systems，简称 CVCS)</h4><p>该类系统的主要的运作流程是，由单一的服务器承担中央仓库的角色，保存代码修订的所有版本及记录。然后各个协同人员通过拉取和推送代码进行协作开发，协同人员本地只需要留存需要修改的指定代码版本。这种做法对于早期靠着本地数据库维护的代码版本控制系统来说，管理员能更加清晰的了解到协同开发人员每次的修改及对他们的权限控制。当然，这样的系统也是存在一些致命的弱点的，单一的服务器作为最主要的角色，一旦出现了问题，那么所有连接服务器的客户端都无法提交或者更新代码，如果更严重一些，服务器的磁盘出了问题，整个工程的代码及代码历史都会丢失。国内一般使用是的 <code>SVN</code>，现在依然有一些企业使用的是这种管理工具</p>
+<h4 id="分布化的版本控制系统-Distributed-Version-Control-System，简称-DVCS"><a href="#分布化的版本控制系统-Distributed-Version-Control-System，简称-DVCS" class="headerlink" title="分布化的版本控制系统(Distributed Version Control System，简称 DVCS)"></a>分布化的版本控制系统(Distributed Version Control System，简称 DVCS)</h4><p>为了解决集中化的版本控制系统所存在的隐患问题，分布式的版本控制系统就面世了，如<code>Git、Mercurial、Bazaar 以及 Darcs</code>等。其最明显与集中化系统的区别就是，在分布式的系统中，每一个客户端都保存有完整的修订历史记录的快照。这样每次代码修改的操作，都是其他客户端进行了一些代码仓库快照的备份，当某一个仓库出现问题时，可以通过其他仓库的完整记录来进行恢复。这里可能有一个疑问，就是每个客户端都保存有完整的修改历史仓库，那每一份仓库会不会都很大，对各个协同的人员来说，同步与备份或者本地的存储等有一定的压力。事实上，除去资源文件，代码的修订记录的大小是很可观的，同时，<code>git</code>中也针对这些进行了一定的优化，在同步与本地的存储上，实际使用的体验的还是很可观的。所以，如果项目中的资源文件较大时，依然可以考虑使用中央式的版本控制系统来进行管理。</p>
+<h1 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h1><p>一般来说，开始使用<code>git</code>的场景分为从远程服务器克隆已存在的项目和开始新项目，初始化仓库。前者直接使用<code>git clone XXXXX(远程仓库地址)</code>就可以将远端的仓库完整的拷贝到本地。</p>
+<p><img src="https://i.loli.net/2020/04/15/ufl9qD1b2c56RdZ.png" alt="git 克隆.png"></p>
+<p>不过从头开始初始化一个本地仓库，更容易去理解<code>git</code>的工作流程。命令<code>git init</code>可以将一个文件目录初始化为一个仓库， <code>git</code>会相应的生成一个<code>.git</code>的文件夹，这个文件夹就是 <strong>本地仓库（Local Repository）</strong>，这个文件夹中就会保存该目录中<strong>之后</strong>所有文件的改动记录，而这个目录在<code>git</code>中就被称为<code>工作区(Working Directory)</code>。</p>
+<p><img src="https://i.loli.net/2020/04/15/pePHJtBnAflXv6s.png" alt="git 初始化.png"></p>
+<p>除了<code>工作区</code>以外，<code>git</code>中还有<code>暂存区</code>。(注意：这里我是新建了一个文件夹，进行的初始化操作，如果新建的文件夹是刚刚克隆的<code>git</code>目录中，在已存在的仓库中再次<code>git init</code>一个仓库会不会有什么问题，答案是并不会，<code>git</code>中使用的是目录管理而不是设备管理，一个仓库只会对应的管理其对应的目录，不会相互影响)</p>
+<p><img src="https://i.loli.net/2020/04/08/ou1smnrKayeh3TW.png" alt="工作区.png"></p>
+<p>如上图，是<code>git</code>的一个基本的工作流程：当我们在工作区域中修改了某个文件的文件内容时，<code>git</code>会自动检测到这种改动并进行了标记，然后需要我们手动的将这些改动添加(使用命令  <code>git add</code>)到暂存区中，这样我们所修改的东西就会被<code>git</code>记录下来，而没有添加到暂存区的改动在进行各种<code>git</code>命令时可能会丢失。如果我们确定了暂存区中的内容是这样的修改，就可以将暂存区的改动记录进行提交，那么这次修改的内容就会从暂存区迁移到仓库中，并在仓库中生成一个提交记录–<code>commit</code>。整个仓库中，所有的改动记录就是有一个一个的<code>commit</code>串行所构成的。</p>
+<p>以下就是文件在不同的区域的一个时序图：</p>
+<pre><code class="hljs mermaid">sequenceDiagram
+participant 工作区
+participant 暂存区
+participant 仓库
+工作区 -&gt;&gt; 暂存区 : git add xxx文件
+暂存区 -&gt;&gt; 仓库   : git commit -m &quot;xx&quot;
+仓库 --&gt;&gt; 工作区 : checkout</code></pre>
+<p>回到我们刚刚克隆的仓库中，使用命令<code>git log</code>可以查看当前仓库的一些日志。</p>
+<p><img src="https://i.loli.net/2020/04/13/NnOvl8WRqQdtJGi.png" alt="gitLog.png"></p>
+<p>分析图中出现的数据，就衍生出来 <code>git</code> 中的几个重要的概念：</p>
+<h4 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h4><p>简单来说，<code>git</code>中的引用就是指向某个<code>commit</code>的快捷方式，我们通过操作引用能够快速的操作到某个具体的<code>commit</code>，可以看到上图中红圈中的内容，记录中显示，远端仓库只有一次<code>commit</code>，该<code>commit</code>的后面跟着一串字符串，这个字符串是根据该<code>commit</code>计算出来的<code>SHA-1</code>值(一种算法计算出来的值，两个 <code>commit</code> 计算出来的值很少能重复)，<code>commit</code>将其作为唯一的标识。大多数时候，我们需要操作具体的某个<code>commit</code>时，可以直接使用该值的前几位来代表这个<code>commit</code>，如</p>
+<pre><code class="hljs shell">git checkout dab6cd</code></pre>
+<p> 上面这个命令就会签出<code>dab6cd</code>这个<code>commit</code>。</p>
+<h4 id="HEAD"><a href="#HEAD" class="headerlink" title="HEAD"></a>HEAD</h4><p>这个引用比较特殊，它指的是<strong>指向当前<code>commit</code>的引用</strong>，当我们从远端仓库拉取代码时或者<code>checkout</code>新的分支时，<code>HEAD</code>指向会随着我们的操作相应的修改，使得它始终指向的是当前<strong>工作区</strong>中对应的<code>commit</code>。</p>
+<h4 id="master"><a href="#master" class="headerlink" title="master"></a>master</h4><p>这个是<code>git</code>在创建时，默认生成的一个分支。大多数工程都将该分支作为主分支使用，在开发时，建立其他分支来开发工作，最后将完善的功能合并到主分支中。上图中的<code>origin/master, origin/HEAD</code>代表的是远程仓库的<code>master</code>分支最新的<code>commit</code>和远程仓库的<code>HEAD</code>指向的<code>commit</code>都是<code>dab6cd</code>，值得一提的是，无论本地的<code>HEAD</code>如何修改，远程仓库中的<code>HEAD</code>永远指向的是<code>master</code>分支。</p>
+<h4 id="branch"><a href="#branch" class="headerlink" title="branch"></a>branch</h4><p>分支，既然有默认的分支，那也代表我们可以创建其他分支。其实，在整个<code>git</code>仓库中，是由一个个的分支构成，而分支由一个个的<code>commit</code>构成。形象一点说就是<code>git</code>仓库像一颗大树，<code>master</code>分支就是大树成长时的主干，慢慢随着长大，出现了许多的树枝，这些树枝就是我们自己新建的<code>branch</code>，而树枝上的树叶就是一个个<code>commit</code>。</p>
+<p>当<code>HEAD</code>指向某个<code>branch</code>时，其实<strong>间接的</strong>是指向这个<code>branch</code>的某个<code>commit</code>(之所以说是间接的指向，是因为这种情况下的<code>HEAD</code>还是直接指向的<code>branch</code>，而<code>branch</code>指向的是它最新的<code>commit</code>，这样构成了间接的指向。还有直接的指向，就是使用<code>git checkout --detach</code>命令后，<code>HEAD</code>就会由指向<code>branch</code>变成指向<code>commit</code>)。如下所示</p>
+<pre><code class="hljs mermaid">graph LR
+subgraph 执行detach命令后
+	G1(HEAD) --&gt; E1((commit3))
+	A1((commit1)) --&gt; C1((commit2))
+	C1((commit2)) --&gt; E1((commit3))
+	F1(branch1) --&gt; E1((commit3))
+end
+subgraph 默认的状态
+	F(branch1) --&gt; E((commit3))
+	G(HEAD) --&gt; F(branch1)
+	A((commit1)) --&gt; C((commit2))
+	C((commit2)) --&gt; E((commit3))
+end</code></pre>
+<p><code>git checkout xxx</code>这个命令翻译为 签出，使用该命令签出某个<code>commit</code>时，工作区的内容会替换为该<code>commit</code>，并同时将 HEAD 引用指向该<code>commit</code>，当签出命令为某个分支时，会签出该分支的最新的那个<code>commit</code></p>
+<p><code>branch</code>的构成是一条从起始<code>commit</code>到该<code>branch</code>最新的<code>commit</code>的一条路径，它所包含的信息就是这条<code>commit</code>链上所有的<code>commit</code>。</p>
+<h1 id="基本流程中的操作"><a href="#基本流程中的操作" class="headerlink" title="基本流程中的操作"></a>基本流程中的操作</h1><h3 id="完整流程"><a href="#完整流程" class="headerlink" title="完整流程"></a>完整流程</h3><p>假设我们已经将文件改动好了，可以使用<code>git status</code>命令来查看当前的一些状态</p>
+<p><img src="https://i.loli.net/2020/04/13/woNW8mTt4dyxu3a.png" alt="修改了未提交.png"></p>
+<p>可以看到<code>git</code>对修改的文件进行了标识，显示为红色的 <code>modified</code>，红色的意思是代表这些改动还没有被添加到暂存区中，也就是处于一种被标记了，但是没有被记录的状态。</p>
+<p>然后执行<code>git add .</code>，将修改添加到暂存区中，再次查看</p>
+<p><img src="https://i.loli.net/2020/04/13/rCF9ODRsqfQvTWa.png" alt="修改后进行了提交.png"></p>
+<p>可以看到刚刚的红色变成了绿色，这表示已经添加到了暂存区中。</p>
+<p>最后使用<code>git commit -m &quot;本次提交的描述&quot;</code>命令可以将暂存区中的改动记录提交到仓库中</p>
+<p><img src="https://i.loli.net/2020/04/13/TmyFNjPniKubzf9.png" alt="本地的状态.png"></p>
+<p>通过上图可以看到，现在仓库中存在两条<code>commit</code>记录，<code>HEAD</code>也指向了刚刚提交的最新的<code>commit</code>,而远端依然指向的是克隆时的<code>commit</code>，因为没有人提交了<code>commit</code>到远端。</p>
+<p>现在，可以将刚刚的改动提交到远端，但是正常情况下，我们其实并不知道远端是否有新的改动，所以一个比较保险的做法，先进行一次拉取操作<code>git pull</code>，这样如果远端有人提交了改动，我们就能先拉取合并。再把最后合并和的提交一起推到远端仓库。</p>
+<p><img src="https://i.loli.net/2020/04/13/RydD6ZjoPhWtBY9.png" alt="推送到远端.png"></p>
+<p>现在再查看下本地的状态，可以看到，远端的<code>HEAD</code>也指向了最新<code>commit</code></p>
+<p><img src="https://i.loli.net/2020/04/13/FIRrU94yxMcXVOP.png" alt="本地推送后的状态.png"></p>
+<p>这算是一次比较顺利的工作流程，从本地修改文件，然后提交记录，再推送到远端进行了合并，以方便其他同事拉取你的修改。但是大多数情况下，并不会这么顺利，会产生比较多的冲突。</p>
+<p>###关于CLONE</p>
+<p>当我们使用<code>git clone</code>的命令时，<code>git</code>首先是将远程仓库的快照下载到本地。然后根据快照中的分支和<code>commit</code>去下载对应的<code>commit</code>。然后<code>git</code>会从第一个起点的<code>commit</code>开始，一个一个的应用<code>commit</code>链上的<code>commit</code>到工作区中，直到最新的那个<code>commit</code>被应用上。</p>
+<h3 id="关于-ADD"><a href="#关于-ADD" class="headerlink" title="关于 ADD"></a>关于 ADD</h3><p>刚刚的流程中使用了<code>add</code>命令，我使用的是<code>git add .</code>后面跟了一个<code>.</code>这个的意思是，<strong>全部暂存</strong>。如果你不想全部暂存，就需要把<code>.</code>替换成需要暂存的<strong>文件名</strong>。</p>
+<p>我们在工作区中，新增的文件，默认是不会被<code>git</code>所追踪的，也就说文件中任何的改动是不被<code>git</code>检测记录的。需要使用<code>git add</code>命令将文件添加，这样<code>git</code>才会开始追踪，所以新增一个文件时，使用<code>add</code>命令的含义其实有两层，一个将这个文件的新增作为工作区中的一种形式的改动，提交到<code>git</code>仓库中，第二层就是让文件被<code>git</code>所追踪。其他时候，当我们做出一些修改的时候，需要添加到暂存区中，也是使用此命令。</p>
+<p>需要注意的一点是，<code>git</code>中所记录的是文件内容的改动，而非文件本身，所以当添加了一次文件的修改后，又修改了相同文件的内容，还需要再添加一次刚刚的修改。如下操作：</p>
+<pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 改动了文本的内容</span>
+vim xxx.txt
+<span class="hljs-meta">#</span><span class="bash"> 添加到暂存区</span>
+git add . 
+<span class="hljs-meta">#</span><span class="bash"> 再次改动文本的内容</span>
+vim xxx.txt
+<span class="hljs-meta">#</span><span class="bash"> 注意这里还需要添加刚刚改动的内容到暂存区中</span>
+git add .
+<span class="hljs-meta">#</span><span class="bash"> 这样两次改动才会都被仓库记录</span></code></pre>
+<h3 id="关于-PULL"><a href="#关于-PULL" class="headerlink" title="关于 PULL"></a>关于 PULL</h3><p><code>git pull</code>操作其实就做了两件事，先将远端的<code>commits</code>拉取到本地，然后进行一次合并操作</p>
+<h3 id="关于-PUSH"><a href="#关于-PUSH" class="headerlink" title="关于 PUSH"></a>关于 PUSH</h3><p>刚刚的操作中，使用<code>git push</code>就将<code>master</code>分支上新的<code>commit</code>推到了远端仓库，与远端仓库的<code>master</code>分支进行了合并。这其实是一种粗略的说法，一笔带过了。</p>
+<p><code>git push</code> 会将默认分支的本地提交记录上传到远程分支上进行合并，如果不指定的话，所更新的分支为<code>git config 中的 push.default的值对应的分支，这个值默认为:current</code>  其中的值<code>git config</code> 命令来进行修改， 进而改变 push 时的行为，详情查看<a href="https://git-scm.com/docs/git-config#git-config-pushdefault" target="_blank" rel="noopener">git config</a>。如果需要提交记录的分支不是默认的分支，需要在命令中添加几个新的参数</p>
+<pre><code class="hljs shell">git push origin target_feature</code></pre>
+<p>那么这次的 push 会推向远程分支的<code>target_feature</code>分支</p>
+<p><strong>注意：push 时不会上传 HEAD 的指向，远程分支的 HEAD 永远指向的是 <code>master</code> </strong> </p>
+<h1 id="分支相关的操作"><a href="#分支相关的操作" class="headerlink" title="分支相关的操作"></a>分支相关的操作</h1><h3 id="分支的创建和删除"><a href="#分支的创建和删除" class="headerlink" title="分支的创建和删除"></a>分支的创建和删除</h3><ol>
+<li>创建 <code>branch</code> 的方式是 <code>git branch 名称</code> 或 <code>git checkout -b 名称</code>（创建后自动切换）；</li>
+<li>切换的方式是 <code>git checkout 名称</code>；</li>
+<li>删除的方式是 <code>git branch -d 名称</code>。</li>
+</ol>
+<h3 id="分支的合并-Merge"><a href="#分支的合并-Merge" class="headerlink" title="分支的合并 Merge"></a>分支的合并 Merge</h3><p>多数情况下，我们需要将不同的分支的代码进行合并，那么就需要使用到<code>git merge</code>命令，该命令具体做的事情是：<strong>从目标 <code>commit</code> 和当前 <code>commit</code> （即 <code>HEAD</code> 所指向的 <code>commit</code>）分叉的位置起，把目标 <code>commit</code> 的路径上的所有 <code>commit</code> 的内容一并应用到当前 <code>commit</code>，然后自动生成一个新的 <code>commit</code>。</strong></p>
+<p>在合并时，最舒服的状态就是，新的分支的改动是领先于合并的分支的，这时候只需要将新分支的<code>commits</code>直接移过来，就完成了一次合并，在<code>git</code>中被叫做<code>fast-forward</code>。不过大多数时候，还是不那么舒服的。</p>
+<h4 id="解决冲突"><a href="#解决冲突" class="headerlink" title="解决冲突"></a>解决冲突</h4><p>首先我们需要切换到<code>branch1</code>分支，对<code>README.md</code>文件进行修改。并按照流程进行了提交。</p>
+<p>然后切换回<code>master</code>分支，同样的对<code>README.md</code>文件进行了修改，也进行了提交。</p>
+<p>那么这个时候，同一文件，在不同的分支上都进行了改动，对于<code>git</code> 而言，可以分为良性情况和恶性情况(<code>git</code>中没有这个定义，只是为了理解)。什么是良性的呢，就是两次改动的地方不一样，比如有5行文本，<code>branch1</code>分支中改下了第4行，而<code>master</code>分支中修改了第3行，这样<code>git</code>就能知道两个分支改的东西不一样，就能自动合并，最后新生成的<code>commit</code>就是第3行和第4行都被修改了。对应来说，恶性的就是两个分支的改动，改了同一处地方，<code>git</code>并不知道哪个分支的改动才是我们想要的，所以最后的决定权交到了我们自己手里，这个时候就需要手动的处理冲突。</p>
+<p>在<code>git</code>中，对于这种冲突，会做一些明显的标识如下</p>
+<pre><code class="hljs undefined">&gt;&gt;&gt;&gt;&gt;&gt;&gt; HEAD
+第4行内容master分支的修改
+=========
+第4行内容 branch1分支的修改
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; branch1</code></pre>
+<p>这个很容易理解，上面的内容是<code>HEAD</code>所在的<code>master</code>分支的修改，下面的是<code>branch1</code>分支的修改，我们根据具体的需求进行修改，删除<code>git</code>自动生成的<code>&gt;&gt;&gt;&gt;&gt;</code>和<code>======</code>。这算一次新的改动了，所以需要再次进行<code>add .</code>和<code>commit</code>。</p>
+<p><img src="https://i.loli.net/2020/04/13/TANn3Ddi2CqOGHp.png" alt="合并冲突.png"></p>
+<p>可以看到，这个过程中一共生成了3个<code>commit</code>。</p>
+<h4 id="不解决冲突"><a href="#不解决冲突" class="headerlink" title="不解决冲突"></a>不解决冲突</h4><p>上诉的操作代表正常处理了一次冲突，如果不需要处理，想要放弃。可以使用以下命令</p>
+<pre><code class="hljs shell">git merge --abort</code></pre>
+<p>之后便回到 <code>merge</code> 前的状态。如图所示，在合并时，产生了冲突<code>both modified: README.md</code>，执行命令后，状态回到了<code>master</code>合并之前。</p>
+<p><img src="https://i.loli.net/2020/04/13/QyJh7kvu5W3EoMp.png" alt="放弃冲突.png"></p>
+<h1 id="进阶操作"><a href="#进阶操作" class="headerlink" title="进阶操作"></a>进阶操作</h1><blockquote>
+<p>注意：进阶操作中的命令，请先在自己的 DEMO 中多次练习熟悉后，再在实际的工程中使用，某些命令一旦出错，请千万不要 Push 到远程分支，哪怕丢弃掉本地所有的修改。</p>
+<p><strong>在操作本地的 commit 时，需要考虑对远端分支的影响，尤其是多人协同的分支</strong></p>
+<p><strong>禁止使用 rebase 命令对任何已经提交到远程分支的 commit 进行操作</strong></p>
+</blockquote>
+<h3 id="仅合并少数几个-commit"><a href="#仅合并少数几个-commit" class="headerlink" title="仅合并少数几个 commit"></a>仅合并少数几个 commit</h3><p>在实际工作开发中，会遵循标准的 Git Work flow，对待不同的功能，会切出不同的分支进行 coding，所以，基于什么基准分支切出来的功能分支进行 coding，这是一个很重要的问题。</p>
+<p>如果切错了基准分支，你会发现可能最终开发完成之后， merge 不回去了。或者需要将某个分支上的 commit 代码，移植到某个分支上面，就需要使用到 cherry-pick 这个 git 命令了。</p>
+<p>这个命令的用法如下，</p>
+<pre><code class="hljs shell">git cherry-pick -x &lt;commit_id&gt;</code></pre>
+<p>其中<code>-x</code>的参数代表保留原提交者的信息，后面的<code>&lt;commit_id&gt;</code>的写法就是<code>&lt;start-commit-id&gt;…&lt;end-commit-id&gt;</code>这个代表一个从<code>startCommitId</code>到<code>endCommitId</code>的一个左开右闭的区别<code>(startId, endId]</code>，如果需要包含<code>startId</code>可以添加一个符号<code>&lt;start-commit-id&gt;^…&lt;end-commit-id&gt;</code>这样就是<code>[startId,endID]</code>的一个闭区间了。</p>
+<p>提交的记录可以通过<code>git log --pretty=oneline</code>来查看。</p>
+<p><img src="https://i.loli.net/2020/04/16/Ht8R7za3UBDWKCe.png" alt="cheery-pick.png"></p>
+<p>然后查看<code>master</code>分支的<code>commit</code>会发现刚刚合并的已经有了。</p>
+<p>合并过程中，如果出现了冲突，就和普通冲突一样，手动的解决，然后添加提交，再执行<code>git cherry-pick --continue</code>就可以继续了，直到合并完成。</p>
+<p>参考文章：<a href="https://juejin.im/post/5925a2d9a22b9d0058b0fd9b" target="_blank" rel="noopener">Cherry-Pick | 一日一 Git</a></p>
+<h3 id="rebase-与-merge"><a href="#rebase-与-merge" class="headerlink" title="rebase 与 merge"></a>rebase 与 merge</h3><p><code>rebase</code>的直译是改变基点，其实这个指令的功能也差不多是这个意思。那我们看看这个命令的具体使用及应用场景。</p>
+<p>通过上面的命令，可以知道在执行<code>merge</code>操作时，会生成一个新的<code>commit</code>，同时整个历史记录上也会保留合并的痕迹(<code>branch1</code>会与<code>master</code>形成一个回路的形式)，这样对代码的历史并不是线性的，看起来不是很直观。</p>
+<pre><code class="hljs undefined">1--&gt;2--&gt;3--&gt;4--&gt;5--&gt;6   master
+		 \				 /
+		 	7--&gt;8--&gt;9          branch1</code></pre>
+<p>那么使用<code>rebase</code>命令的效果是什么样的呢。</p>
+<p>首先，我们需要<strong>切换分支到<code>branch1</code>分支上使用<code>rebase</code>命令 </strong>，这一点需要注意，就是在哪个分支执行这个命令。</p>
+<pre><code class="hljs shell">git checkout branch1
+git rebase master</code></pre>
+<p><img src="https://i.loli.net/2020/04/14/arA5WG21LdvEQcT.gif" alt="执行 reabase命令.gif"></p>
+<p>上面的命令执行之后，<code>git</code>所做的事如上图所示，切换分支后，<code>HEAD</code>指向移动到了 <code>branch1</code>分支的最新<code>commit</code>上，然后执行<code>git rebase master</code>，这个命令会将从<code>master</code>分支与<code>branch1</code>交叉开始之后的<code>commits</code>的基点都修改到<code>master</code>分支上，并移动<code>branch1</code>和<code>HEAD</code>的指向，但是需要注意的是，这个操作完成之后，在<code>master</code>上的<code>7、8</code>的<code>commit</code>和之前的<code>5、6</code>仅仅是内容相同，本质上依然属于两个不同的<code>commit</code>。这样操作就完了么？并没有，还需要回到<code>master</code>分支，执行一次<code>merge</code>，因为刚刚的操作结果仅仅是将<code>branch1</code>分支的<code>commit</code>接在了<code>master</code>上，而<code>master</code>的指向依然是之前的<code>commit</code>，所以这里的操作相当于执行了一次<code>fast-forward</code>。</p>
+<pre><code class="hljs shell">git checkout master
+git merge branch1</code></pre>
+<p><img src="https://i.loli.net/2020/04/14/9OJTHdLobU215As.gif" alt="master 合并 branch1.gif"></p>
+<p>这样，整个过程才算完成了。这样看起来好像比直接<code>merge</code>的操作要复杂很多，那么它的意义在哪儿呢，这个就得看具体的需求了，关于<code>rebase 和 merge</code>更深入的理解可以参考文章<a href="https://www.cnblogs.com/kidsitcn/p/5339382.html" target="_blank" rel="noopener">rebase 和 merge 详解</a>。</p>
+<p>熟悉了理论后，根据上面的知识点进行一次实际的操作来加深理解。</p>
+<p>同样的，现在在<code>master</code>分支和<code>branch1</code>分支上都进行了修改，那么我们现在处于<code>branch1</code>分支中，执行<code>rebase</code>命令。</p>
+<p><img src="https://i.loli.net/2020/04/14/yq4Nb3f9ZeXldmB.png" alt="rebaseContinue.png"></p>
+<p>在<code>branch1</code>中的最新<code>commit</code>是<code>这是 branch1上的第二次提交</code>，在<code>rebase</code>过程中和<code>master</code>最新的<code>commit</code>产生了冲突，这个时候手动的编辑文件，解决冲突。使用<code>add .</code>命令将合并后的改动添加到暂存区。然后，和<code>merge</code>不一样的操作就是，这里需要执行不是<code>git commit</code>而是<code>git rebase --continue</code>，同理，如果需要放弃，也可以使用<code>git rebase --abort</code>，这里细看其实上面的命令描述中都有提示。我们解决了冲突，那就执行继续的命令。</p>
+<p><img src="https://i.loli.net/2020/04/14/XwBfhzbWngVmUMp.png" alt="afterRebasing.png"></p>
+<p>第一步完成后，查看<code>branch1</code>上的提交，可以看到，最新的<code>commit</code>后面是<code>master</code>的<code>commit</code>，所以这里的实际情况和上面的动图有一些不一样在于，这一步之后，<code>branch1</code>上的<code>commits</code>就已经变成了整合了 <code>master</code>上的<code>commit</code>的一个分支，现在的<code>branch1</code>已经是拥有了两个分支完整的<code>commit</code>了。但是，我们需要的是<code>master</code>分支更完整。</p>
+<pre><code class="hljs undefined"># 执行前 master 和 branch1的情况
+1--&gt;2--&gt;3--&gt;4--&gt;5--&gt;6  master
+		 \
+		 	7--&gt;8--&gt;9        branch1
+# 执行完 rebase 后 mater 和 branch1的情况
+1--&gt;2--&gt;3--&gt;4--&gt;5--&gt;6  master
+		 \
+		 	3--&gt;4--&gt;5--&gt;6--&gt;7--&gt;8--&gt;9        branch1</code></pre>
+<p>现在回到<code>master</code>分支，再执行<code>merge</code>命令就可以理解为什么是一次<code>fast-forward</code>了。最后的结果如下:</p>
+<p><img src="https://i.loli.net/2020/04/14/UyIldTLhHZkAjEv.png" alt="result.png"></p>
+<h3 id="修正已提交的-Commit"><a href="#修正已提交的-Commit" class="headerlink" title="修正已提交的 Commit"></a>修正已提交的 Commit</h3><h4 id="修正最新的-commit"><a href="#修正最新的-commit" class="headerlink" title="修正最新的 commit"></a>修正最新的 commit</h4><p>如果是最新提交的<code>commit</code>被发现有问题，<code>git</code>中提供了直接的命令可以修改<code>git commit --amend</code>。</p>
+<p>如何使用呢，假设现在已经有一个最新的提交<code>1</code>，我们发现其中有几个地方写错了，那就进行修改，然后一如既往的<code>add</code>，现在我们需要不是把这个新提交一个<code>commit</code>，而是修改，所以现在就不是使用<code>git commit -m &quot;xxx&quot;</code>而是<code>git commit --amend</code>，</p>
+<p><img src="https://i.loli.net/2020/04/14/sio4OcWBeaZXh3t.png" alt="修正.png"></p>
+<p>这个时候会出现一个信息编辑界面，显示着最新的<code>commit</code>的信息，点击<code>i</code>进入编辑模式，修改提交的<code>message</code>，然后退出保存即可，再调用<code>git log</code>可以看到最新的<code>commit</code>已经被改了。</p>
+<p>这里有一点需要注意的是，最新的<code>commit</code>并不是被直接修改，而是被<strong>替换</strong>掉了，<code>git commit --amend</code>会生成一个新的<code>commit</code> 来替换最新的那个<code>commit</code>，在<code>git</code>中，每一个已经提交的<code>commit</code>都是无法被修改的，我们的操作只是基于一条<code>commit</code>链进行替换、复制和删除等等，仅仅是取消了对<code>commit</code>的引用和链接。</p>
+<h4 id="修改不是最新的-commit"><a href="#修改不是最新的-commit" class="headerlink" title="修改不是最新的 commit"></a>修改不是最新的 commit</h4><p>当需要改正的<code>commit</code>不是最新的那个，上面的方法就不太适用了。这个时候需要用的是<code>rebase -i</code>命令(<code>rebase --interactive</code>交互式<code>rebase</code>的缩写)，这也是<code>rebase</code>命令的另一个比较常见的适用场景。</p>
+<p>现在，我们假设如图的<code>commit</code>有了错误的提交。首先使用以下命令，将<code>HEAD</code>指向移动到当前<code>commit</code>的后面3个<code>commit</code>。</p>
+<p><img src="https://i.loli.net/2020/04/14/GrgfnCIAvOUaTLc.png" alt="假设错误的提交.png"></p>
+<pre><code class="hljs shell">git rebase -i HEAD~3</code></pre>
+<blockquote>
+<p>说明：在 Git 中，有两个「偏移符号」： <code>^</code> 和 <code>~</code>。</p>
+<p><code>^</code> 的用法：在 <code>commit</code> 的后面加一个或多个 <code>^</code> 号，可以把 <code>commit</code> 往回偏移，偏移的数量是 <code>^</code> 的数量。例如：<code>master^</code> 表示 <code>master</code> 指向的 <code>commit</code> 之前的那个 <code>commit</code>； <code>HEAD^^</code> 表示 <code>HEAD</code> 所指向的 <code>commit</code> 往前数两个 <code>commit</code>。</p>
+<p><code>~</code> 的用法：在 <code>commit</code> 的后面加上 <code>~</code> 号和一个数，可以把 <code>commit</code> 往回偏移，偏移的数量是 <code>~</code> 号后面的数。例如：<code>HEAD~5</code> 表示 <code>HEAD</code> 指向的 <code>commit</code>往前数 5 个 <code>commit</code>。</p>
+</blockquote>
+<p>会出现下图界面</p>
+<p><img src="https://i.loli.net/2020/04/14/ZEfXkqARnpYy1Cm.png" alt="rebaseI.png"></p>
+<p>根据提示，进入编辑模式，在我们需要修改的<code>commit</code>前，将<code>pick</code>修改为<code>edit</code>模式。<code>edit</code>模式的意思就是应用当前的<code>commit</code>并修正。</p>
+<p>之后退出保存，这个时候，当前的工作区中就是我们需要修改的这个<code>commit</code>了，和上面修改最新的<code>commit</code>一样，改动当前<code>commit</code>的内容并使用<code>git commit --amend</code>进行修正。完成后，<code>git rebase --continue</code>。</p>
+<p><img src="https://i.loli.net/2020/04/14/vFfcW8e5TSr1ZlE.png" alt="rebase 结果.png"></p>
+<p>从结果上看，我们需要修正的那个<code>commit</code>已经被替换修改了。</p>
+<h4 id="丢弃-commit"><a href="#丢弃-commit" class="headerlink" title="丢弃 commit"></a>丢弃 commit</h4><p> 1.丢弃最新的 commit</p>
+<p>当我们因为各种原因，导致最新的<code>commit</code>不再是我们想要的那个<code>commit</code>的时候，怎么去撤销它呢</p>
+<pre><code class="hljs shell">git reset --hard HEAD^</code></pre>
+<p>这个命令可以将最新的<code>commit</code>从分支中移除掉，这样最新的<code>commit</code>就是之前的<code>commit</code>的前一条，其中几个参数说明下：</p>
+<p><code>--hard</code>这个参数主要使用的有三个值分别是<code>hard、soft和 mixed</code>，区别在于。使用<code>--soft</code>模式，会修改版本库中的记录(从<code>branch</code>中移除该<code>commit</code>)，但是会保留<code>暂存区</code>和<code>工作区</code>，也就是将本地版本库的头指针全部重置到指定版本，且将这次提交之后的所有变更都移动到暂存区。使用<code>--hard</code>模式，三者都会被重置，一定需要注意。 而不加参数时，默认使用的是<code>--mixed</code>，这种模式下是，保留工作区，清除暂存区。</p>
+<p>这里再讨论下更复杂的一种情况，那就是如果我丢弃的内容中，有一部分是想要的或者我还需要对照着查看。可以分为三种情况：</p>
+<ul>
+<li>已经 <code>commit</code>了，这种其实是最常见的一种情况，因为有<code>SHA-1</code>值，可以使用<code>git reflog</code>来查看我们操作的历史，找到刚刚<code>commit</code>的<code>SHA-1</code>值就可以找到被丢弃的那个<code>commit</code>。(需要注意的一点是，对于没有引用的<code>commit</code>，<code>git</code>会在一定时间内进行自动清理)</li>
+<li>还没有<code>commit</code>，但是 添加到了暂存区中。这个就麻烦一些了，因为没有生成对应的<code>SHA-1</code>值，无法通过第一种情况的方法找到，就需要使用另一个的命令<code>git fsck --lost-found</code>操作，如果返回成功的结果，我们就可以在<code>.git/lost-found/</code>目录中找到刚刚丢弃的文件。</li>
+<li>连暂存区都没有添加到，这种情况下，只能靠<strong>IDE</strong>的本地历史记录来寻找了。</li>
+</ul>
+<p>参考文章：<a href="https://juejin.im/post/5af0438f5188251b8015967e" target="_blank" rel="noopener">Git reset 后的数据恢复操作</a></p>
+<p>其实，对于<code>reset</code>命令来说，它的本质是<strong>移动 HEAD 以及它所指向的 branch</strong>，撤销对其只是在本质上附带开发的一种功能而已。但是这一点上好像和<code>checkout</code>命令有点相似，区别是<code>checkout</code>没有改变所指向的<code>branch</code>，是的，这确实是他们最大的区别，使用<code>checkout</code>命令签出某个<code>branch</code>（前面也说过，对于工作区来说这其实也是签出某个<code>commit</code>，但是在指向中，是有区别的，一个是指向了<code>branch</code>，一个是指向了<code>commit</code>）或者<code>commit</code>时，它所改变的仅仅是<code>HEAD</code>的指向。所以这里，还有一种命令</p>
+<pre><code class="hljs shell">git checkout --detach</code></pre>
+<p>这行命令的效果就是，仅仅让<code>HEAD</code>脱离了指向<code>branch</code>，而直接指向了<code>commit</code>。</p>
+<ol start="2">
+<li><p>丢弃不是最新的 commit</p>
+<p>这个需求有两种命令可以实现：</p>
+<ul>
+<li><p>这个从理论上来说，本质上和修改不是最新的 <code>commit</code>是一样的。使用<code>git rebase -i</code>的命令，查看需要修改的几个<code>commit</code>，和修改不一样的在于，修改时我们是修改<code>pick</code>为<code>edit</code>。这里现在有两种做法，一个是将需要丢弃的 <code>commit</code>那行直接删除，这样在<code>rebase</code>命令执行过程中就会过滤掉被删除那行的<code>commit</code>，还有一种更标准的做法就是将<code>pick</code>修改为<code>drop</code>。最后再执行<code>git rebase --continue</code>即可。关于<code>drop</code>和删除一行的讨论，在<a href="https://stackoverflow.com/questions/35846154/git-rebase-interactive-drop-vs-deleting-the-commit-line" target="_blank" rel="noopener">科学传送门</a>这里有一些讨论可以参考。</p>
+</li>
+<li><p>使用<code>git rebase --onto</code>命令</p>
+<p>在使用<code>git rebase</code>命令时，<code>git</code>会自动的选取起点，这个起点选取的方法就是当前的<code>commit</code>和目标的<code>commit</code>在历史记录上的交叉点作为起点（上面使用<code>rebase</code>命令的时候，都是如此）。而给<code>rebase</code>命令添加了<code>--onto</code>参数后，就可以指定起点。假如现在有如下的提交记录。</p>
+<pre><code class="hljs undefined">a--&gt;b--&gt;c--&gt;d    master
+     \
+     	e--&gt;f--&gt;g  branch1</code></pre>
+<p>需求上，在合并<code>branch1</code>时，只需要合并<code>f, g</code>两个<code>commit</code>，就可以这样使用</p>
+<pre><code class="hljs undefined">git rebase --onto d e branch1</code></pre>
+<p>注意，<code>rebase</code>命令在执行时，会排除起点的<code>commit</code>，也就是<code>e</code>这个<code>commit</code>。最后的结果就想下面这样，<code>f1，g1</code>是内容和<code>f,g</code>相同的<code>commit</code></p>
+<pre><code class="hljs undefined">a--&gt;b--&gt;c--&gt;d--&gt;f1--&gt;g1    master
+     \
+     	e--&gt;f--&gt;g  branch1</code></pre>
+<p>那么，同理，也可以使用<code>--onto</code>来执行撤销的操作。同样是这样的提交记录</p>
+<pre><code class="hljs undefined">a--&gt;b--&gt;c--&gt;d    master
+     \
+     	e--&gt;f--&gt;g  branch1</code></pre>
+<p>现在需要撤<code>f</code>所对应的<code>commit</code>就可以这样写</p>
+<pre><code class="hljs shell">git rebase --onto e f branch1</code></pre>
+<p>这个翻译下就是，将起点设置为<code>f</code>，然后<code>branch1</code>作为终点，这一条路径上的<code>commit</code>节点都应用到<code>e</code>之后，这样出来的结果就会没有 <code>f</code>。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="修改已经-Push-的-commit"><a href="#修改已经-Push-的-commit" class="headerlink" title="修改已经 Push 的 commit"></a>修改已经 Push 的 commit</h4><ul>
+<li><p>如果<code>push</code>的分支是自己的分支，那么可以暴力一些，先使用上面的方法修改掉本地的<code>commits</code>，然后再<code>push</code>，需要注意的是，这个时候直接 <code>push</code>是会出错的，需要使用强制的参数</p>
+<pre><code class="hljs shell">git push origin branch1 -f</code></pre>
+<p><code>-f</code> 这个代表<code>force</code>执行的操作(强制性)，这种操作<strong>尽量少用</strong>，如果没有搞清楚就强制去覆盖远端的<code>commit</code>在多人协同的时候，很容易对同事的<code>commit</code>造成混乱。</p>
+</li>
+<li><p>如果<code>push</code>的内容已经合并到了其他的分支，<code>git revert HEAD^</code>这个命令可以创建一个新的<code>commit</code>，它的内容和倒数第二个 <code>commit</code> 是相反的，从而和倒数第二个 <code>commit</code> 相互抵消，达到撤销的效果。在 <code>revert</code> 完成之后，把新的 <code>commit</code> 再 <code>push</code> 上去，这个 <code>commit</code> 的内容就被撤销了。它和前面所介绍的撤销方式相比，最主要的区别是，这次改动只是被「反转」了，并没有在历史中消失掉，你的历史中会存在两条 <code>commit</code> ：一个原始 <code>commit</code> ，一个对它的反转 <code>commit</code>。</p>
+</li>
+</ul>
+<h3 id="恢复已删除的分支"><a href="#恢复已删除的分支" class="headerlink" title="恢复已删除的分支"></a>恢复已删除的分支</h3><p>有时候，不管有意无意，都可能误删了分支，<strong>一定要及时找回</strong>。操作步骤如下：</p>
+<p>1.使用<code>git reflog</code>命令查看<code>HEAD</code>移动的相关记录，这个记录最新的在最上面，找到与<code>branch1</code>相关的记录，如图，可以看到最后一次从<code>branch1</code>移动到<code>master</code>的记录，那么这条记录之前的<code>commit</code>肯定是<code>branch1</code>上的一条<code>commit</code>。</p>
+<p><img src="https://i.loli.net/2020/04/14/RIwtSy9oTJVeQhG.png" alt="reflog .png"></p>
+<p>2.签出这个<code>commit</code>，并在该<code>commit</code>上建立之前误删的分支即可。</p>
+<p><img src="https://i.loli.net/2020/04/14/3S5ApdLr6UEzfRB.png" alt="恢复操作.png"></p>
+<p>依然需要注意的一点：<code>git</code>会定期回收无引用的<code>commit</code>，所以这个操作需要及时。</p>
+<h3 id="临时暂存"><a href="#临时暂存" class="headerlink" title="临时暂存"></a>临时暂存</h3><p>有时候，在不同分支工作时，需要偶尔切到其他分支看一行代码，或者调试个 bug 啥的，我们都是提交一个临时的<code>commit</code>再去切，这样算是一个保险的做法。还有更优雅一点的做法就是<code>git stash</code>命令，这个命令可以将目前工作区的改动都临时保存在一个独立的地方，等你搞好了其他的工作，再回来时，使用<code>git stash pop</code>就可以恢复了。</p>
+<p>如果临时暂存时，存在未被追踪的文件，需要加上<code>-u</code>的参数，如下</p>
+<pre><code class="hljs shell">git stash -u</code></pre>
+<blockquote>
+<p>注意：没有被 track 的文件（即从来没有被 add 过的文件不会被 stash 起来，因为 Git 会忽略它们。如果想把这些文件也一起 stash，可以加上 <code>-u</code> 参数，它是 <code>--include-untracked</code> 的简写。</p>
+</blockquote>
+<h3 id="Tag的使用"><a href="#Tag的使用" class="headerlink" title="Tag的使用"></a>Tag的使用</h3><p><code>tag</code>就是标签，当我们在一个分支上构建了不同版本的应用时，可以通过<code>tag</code>来进行标记。这是一种基础的用法，</p>
+<pre><code class="hljs shell">git tag -a v1.0.0 -m 'xxx build version'</code></pre>
+<p>其实，<code>git</code> 的<code>tag</code>还可以用于自动化的构建和测试当中，本地打好了<code>tag</code>后，推送到远端仓库，在远端仓库中部署<code>CI</code>等自动化的脚本，可以检测到相应的<code>tag</code>来进行一系列的自动化操作。但是这个更多的是自动化构建方面的知识，有兴趣可以了解了解。</p>
+<p>相关文章：</p>
+<ul>
+<li><a href="https://juejin.im/post/5d197e4fe51d45775b419c27" target="_blank" rel="noopener">基于 GitLab CI/CD 的前端自动化构建、发布实践</a></li>
+<li><a href="https://www.flysnow.org/2017/03/12/android-gradle-auto-version.html" target="_blank" rel="noopener">Android Gradle实用技巧(二) | 自动生成版本信息</a></li>
+<li><a href="http://kescoode.com/travis-ci-android-github-release/" target="_blank" rel="noopener">用TRAVIS CI给ANDROID项目部署GITHUB RELEASE</a></li>
+</ul>
+</div></article><div class="post-view__sidebar"><div class="sidebar"><div class="tocbot"><h2>Toc</h2><div class="toc__content"></div></div><h2>Links</h2><div class="sidebar__link"><ul><li><a href="https://github.com/Grieey">Github</a></li><li><a href="https://juejin.im/user/2858385960867566">掘金</a></li><li><a href="/yangqing433520@163.com">Mail</a></li></ul></div><h2>Archives</h2><div class="sidebar__archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/">2018</a></li></ul></div><h2>Categories</h2><div class="sidebar__categories"><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/">Android</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/">Glide</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/">Kotlin</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/工具/">工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/">设计模式</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/学习记录/">学习记录</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/">博客</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/博客/Hugo/">Hugo</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/hexo/">hexo</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/旅途/">旅途</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a></li></ul></div><h2>Tags</h2><div class="sidebar__tags"><ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Charles/">Charles</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Glide/">Glide</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Handler/">Handler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hugo/">Hugo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kotlin/">Kotlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mac/">Mac</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ReferenceQueue/">ReferenceQueue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Retrofit/">Retrofit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis-CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vcs/">Vcs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/打家劫舍/">打家劫舍</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/抓包/">抓包</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/杂谈/">杂谈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码分析/">源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码学习/">源码学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/碧峰峡/">碧峰峡</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/踏青/">踏青</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/鸡蛋掉落/">鸡蛋掉落</a></li></ul></div></div></div></div><div class="horizontal-line" style="height: 1px"></div><div class="main__bottom"><div class="pre-next"><a class="pre-button" href="/2020/04/14/Retrofit学习总结/">Retrofit学习总结</a><a class="next-button" href="/2020/04/06/动态规划系列的总结/">动态规划</a></div><div id="comments"></div></div></div></div><div class="footer"><span>©️2019-2021 Designed By&nbsp;<strong><a href="https://github.com/random-yang">RandomYang</a></strong> Powered By&nbsp;</span><strong><a href="https://hexo.io">hexo</a></strong></div><div class="darkmode-mask" id="darkmode-mask"></div><div class="sidebar__button"></div></body></html>

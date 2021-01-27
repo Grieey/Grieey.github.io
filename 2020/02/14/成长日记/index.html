@@ -1,0 +1,909 @@
+<!DOCTYPE html><html lang="en"><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0"><meta name="description" content="成长日记 [ 胡杨日报 ] "><meta name="theme-color" content="#ebc65a"><title>成长日记 [ 胡杨日报 ] </title><link rel="shortcut icon" href="/favicon.ico"><link rel="stylesheet" href="/css/index.css"><script src="https://cdn.bootcss.com/highlight.js/9.6.0/highlight.min.js" defer></script><script src="/js/paper.js" defer></script><script src="https://www.googletagmanager.com/gtag/js?id=xx-xxxxxxx-xx" async></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'xx-xxxxxxx-xx');</script><script src="https://www.unpkg.com/valine/dist/Valine.min.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  new Valine({
+    el: '#comments',
+    appId: 'COvXgWafnfEKEiJ1zeEyqhNN-gzGzoHsz',
+    appKey: '4DuhSbU89A92Ny1HFmy0uClb',
+    notify: false,
+    verify: false,
+    avatar: 'mp',
+    placeholder: '说点什么呗~',
+  })
+})</script><link rel="stylesheet" href="/css/tocbot.css"><script src="/js/tocbot.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  tocbot.init({
+    // Where to render the table of contents.
+    tocSelector: '.toc__content',
+    // Where to grab the headings to build the table of contents.
+    contentSelector: '.article__content',
+    // Which headings to grab inside of the contentSelector element.
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    // For headings inside relative or absolute positioned containers within content.
+    hasInnerContainers: true,
+    orderedList: false,
+    collapseDepth: 2,
+  });
+})</script><link rel="preload" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css"><link rel="preload" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap"></head><body><div class="mask-border"></div><div class="head"><div class="head__inner"><h1><a href="/">胡杨日报</a></h1><p>胡杨树下</p></div></div><div class="paper-container"><div class="main"><div class="location-bar"><div class="line-1"><div class="horizontal-line" style="height: 3px"></div></div><div class="line-2"><div class="horizontal-line" style="height: 1px"></div></div><p class="text">成长日记</p><div class="switch-button"><input class="container_toggle" type="checkbox" id="switch" name="mode"><label for="switch">Toggle</label></div><div class="line-3"><div class="horizontal-line" style="height: 1px"></div></div></div><div class="main__2-col"><article class="post-view__article"><div class="article__infomation"><div class="posts-item"><h2 class="posts-item__title"><a href>成长日记</a></h2><span class="post__date">2020-02-14</span><a href="/tags/Android/"><span class="post__tags">#Android</span></a><a href="/tags/Kotlin/"><span class="post__tags">#Kotlin</span></a></div></div><div class="article__content"><h2 id="2020-02-14"><a href="#2020-02-14" class="headerlink" title="2020/02/14"></a>2020/02/14</h2><h3 id="不同设备的行间距不一致的问题处理"><a href="#不同设备的行间距不一致的问题处理" class="headerlink" title="不同设备的行间距不一致的问题处理"></a>不同设备的行间距不一致的问题处理</h3><p>Textview 设置了<code>lineSpacingMultiplier</code>和<code>lineSpaceExtra</code>之后，在不同的设备型号上表现的不一样，有些设备（vivo）上最后一行也存在行间距，而华为的设备上最后一行没有行间距，导致布局的间距不一样。</p>
+<p>根据下图所示的文字绘制</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/379614-cfb6c687adfc2103.jpg" alt="图1"></p>
+<p>要去除最后一行的行间距，就需要整体的高度减去最后一行的 rect.bottom - descent 这个值。核心逻辑如下:</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculateExtraSpace</span><span class="hljs-params">()</span></span>: <span class="hljs-built_in">Int</span> &#123;
+    <span class="hljs-keyword">var</span> lastRowSpace = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">if</span> (lineCount &gt; <span class="hljs-number">0</span>) &#123;
+      <span class="hljs-comment">//实际最后一行</span>
+      <span class="hljs-keyword">val</span> actualLastRowIndex = lineCount - <span class="hljs-number">1</span>
+      <span class="hljs-comment">//显示的最后一行</span>
+      <span class="hljs-keyword">val</span> lastRowIndex = Math.min(maxLines, lineCount) - <span class="hljs-number">1</span>
+      <span class="hljs-keyword">if</span> (lastRowIndex &gt;= <span class="hljs-number">0</span>) &#123;
+        <span class="hljs-keyword">val</span> layout = layout
+        <span class="hljs-comment">//显示的最后一行文字基线坐标</span>
+        <span class="hljs-keyword">val</span> baseline = getLineBounds(lastRowIndex, mLastLineShowRect)
+        getLineBounds(actualLastRowIndex, mLastLineActualIndexRect)
+        <span class="hljs-comment">//测量显示的高度（measureHeight）等于TextView实际高度（layout.getHeight()）或者等于实际高度减去不可见部分的高度（mLastLineActualIndexRect.bottom - mLastLineShowRect.bottom）</span>
+        <span class="hljs-keyword">if</span> (measuredHeight == layout.height - (mLastLineActualIndexRect.bottom - mLastLineShowRect.bottom)) &#123;
+          lastRowSpace = mLastLineShowRect.bottom - (baseline + layout.paint.fontMetricsInt.descent)
+        &#125;
+      &#125;
+    &#125;
+    <span class="hljs-keyword">return</span> lastRowSpace
+  &#125;
+  
+<span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onMeasure</span><span class="hljs-params">(widthMeasureSpec: <span class="hljs-type">Int</span>, heightMeasureSpec: <span class="hljs-type">Int</span>)</span></span> &#123;
+    <span class="hljs-keyword">super</span>.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    <span class="hljs-comment">//去除显示的最后一行的行间距</span>
+    <span class="hljs-comment">//设置行间距 &amp;&amp; 设置MaxLines &amp;&amp; 实际行数大于MaxLines时，显示的最后一行会增加行间距</span>
+    <span class="hljs-comment">//Redmi 3(android 5.1.1)</span>
+    <span class="hljs-comment">//HuaWei nova youth(EMUI 5.1 andorid 7.0)</span>
+    <span class="hljs-comment">//oppo R7(ColorOs v2.1 android 4.4.4)，只要设置了间距，默认最后一行都会增加间距</span>
+    setMeasuredDimension(measuredWidth, measuredHeight - calculateExtraSpace())
+  &#125;</code></pre>
+<h2 id="2020-02-18"><a href="#2020-02-18" class="headerlink" title="2020/02/18"></a>2020/02/18</h2><h3 id="关于-textView-中-measure-错误的-bug-分析"><a href="#关于-textView-中-measure-错误的-bug-分析" class="headerlink" title="关于 textView 中 measure 错误的 bug 分析"></a>关于 textView 中 measure 错误的 bug 分析</h3><blockquote>
+<p>现象是在某些情况下，textView 的高度与内容的高度不一致，导致显示不完全，页面刷新重新绘制后就好了</p>
+</blockquote>
+<p>看了网路上一篇文章的大概分析，主要的代码为 textview 中关于 setText 方法调用后，有没有触发 requestLayout 方法（这个方法中会调用控件的 onMeasure方法和 onLayout 方法，重新测量）,核心方法是 textView 的 checkForRelayout()这个方法中的判断，如果控件的宽度为 wrap_content 的话，会直接调用，大概的判断逻辑如下：</p>
+<pre><code class="hljs java"><span class="hljs-comment">/**
+   * Check whether entirely new text requires a new view layout
+   * or merely a new text layout.
+   */</span>
+  <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">checkForRelayout</span><span class="hljs-params">()</span> </span>&#123;
+      <span class="hljs-comment">// If we have a fixed width, we can just swap in a new text layout</span>
+      <span class="hljs-comment">// if the text height stays the same or if the view height is fixed.</span>
+
+      <span class="hljs-keyword">if</span> ((mLayoutParams.width != LayoutParams.WRAP_CONTENT
+              || (mMaxWidthMode == mMinWidthMode &amp;&amp; mMaxWidth == mMinWidth))
+              &amp;&amp; (mHint == <span class="hljs-keyword">null</span> || mHintLayout != <span class="hljs-keyword">null</span>)
+              &amp;&amp; (mRight - mLeft - getCompoundPaddingLeft() - getCompoundPaddingRight() &gt; <span class="hljs-number">0</span>)) &#123;
+          <span class="hljs-comment">// Static width, so try making a new text layout.</span>
+
+          <span class="hljs-keyword">int</span> oldht = mLayout.getHeight();
+          <span class="hljs-keyword">int</span> want = mLayout.getWidth();
+          <span class="hljs-keyword">int</span> hintWant = mHintLayout == <span class="hljs-keyword">null</span> ? <span class="hljs-number">0</span> : mHintLayout.getWidth();
+
+          <span class="hljs-comment">/*
+           * No need to bring the text into view, since the size is not
+           * changing (unless we do the requestLayout(), in which case it
+           * will happen at measure).
+           */</span>
+          makeNewLayout(want, hintWant, UNKNOWN_BORING, UNKNOWN_BORING,
+                        mRight - mLeft - getCompoundPaddingLeft() - getCompoundPaddingRight(),
+                        <span class="hljs-keyword">false</span>);
+
+          <span class="hljs-keyword">if</span> (mEllipsize != TextUtils.TruncateAt.MARQUEE) &#123;
+              <span class="hljs-comment">// In a fixed-height view, so use our new text layout.</span>
+              <span class="hljs-keyword">if</span> (mLayoutParams.height != LayoutParams.WRAP_CONTENT
+                      &amp;&amp; mLayoutParams.height != LayoutParams.MATCH_PARENT) &#123;
+                  autoSizeText();
+                  invalidate();
+                  <span class="hljs-keyword">return</span>;
+              &#125;
+
+              <span class="hljs-comment">// Dynamic height, but height has stayed the same,</span>
+              <span class="hljs-comment">// so use our new text layout.</span>
+              <span class="hljs-keyword">if</span> (mLayout.getHeight() == oldht
+                      &amp;&amp; (mHintLayout == <span class="hljs-keyword">null</span> || mHintLayout.getHeight() == oldht)) &#123;
+                  autoSizeText();
+                  invalidate();
+                  <span class="hljs-keyword">return</span>;
+              &#125;
+          &#125;
+
+          <span class="hljs-comment">// We lose: the height has changed and we have a dynamic height.</span>
+          <span class="hljs-comment">// Request a new view layout using our new text layout.</span>
+          requestLayout();
+          invalidate();
+      &#125; <span class="hljs-keyword">else</span> &#123;
+          <span class="hljs-comment">// Dynamic width, so we have no choice but to request a new</span>
+          <span class="hljs-comment">// view layout with a new text layout.</span>
+          nullLayouts();
+          requestLayout();
+          invalidate();
+      &#125;
+  &#125;</code></pre>
+<p>所以暂时将控件的宽度修改为 wrap_content 来解决，但是该问题没有完全找到复现的原因，这是猜测，后续可以进行 demo 复现，还有一点思考的是只有这个地方出现了这种情况，测试的环境是弱网的特别容易复现</p>
+<h2 id="2020-02-19"><a href="#2020-02-19" class="headerlink" title="2020/02/19"></a>2020/02/19</h2><h3 id="使用-EpoxyModelGroup-时动态改变-items-的问题"><a href="#使用-EpoxyModelGroup-时动态改变-items-的问题" class="headerlink" title="使用 EpoxyModelGroup 时动态改变 items 的问题"></a>使用 EpoxyModelGroup 时动态改变 items 的问题</h3><p>在分离了动态流中一个动态的各个部分后，为了复用，使用 EpoxyModelGroup 来实现的转发动态的展示，但是不同类型的转发动态展示的 item 不一样，造成 items 的改变，然后就给报错了，看了 EpoxyModelGroup 的类注释，因为它在第一次使用的时候，会根据第一次传入的 items 的 Model 来加载对应的布局，所有后面无法动态改变，所以要实现加载不同转发类型的 item，就只有将所有的类型罗列出，并按照<strong>一定的顺序</strong>排列，依次加载响应的布局，如果不需要显示，就生成空的 item（但是这个 item 的类型要和需要显示的一致，这样加载的布局才会是正确的），然后调用 <code>hide()</code>方法</p>
+<h2 id="2020-02-21"><a href="#2020-02-21" class="headerlink" title="2020/02/21"></a>2020/02/21</h2><h3 id="使用-ViewStub-加载布局的坑"><a href="#使用-ViewStub-加载布局的坑" class="headerlink" title="使用 ViewStub 加载布局的坑"></a>使用 ViewStub 加载布局的坑</h3><p>使用 ViewStub 加载布局时，cardView 会失效，具体的原因没有深入源码研究</p>
+<h3 id="viewModel-死掉的原因分析"><a href="#viewModel-死掉的原因分析" class="headerlink" title="viewModel 死掉的原因分析"></a>viewModel 死掉的原因分析</h3><p>之前一直有偶发性造成 viewModel 假死的情况，已知的是如果用来保存 state 的 Store 在分发订阅时，如果 block 中的代码出现了异常，会造成该线程死掉。分析了 <code>RealMvRxStateStore</code>的代码后发现，该类只会在初始化时进行一次线程的订阅，如果这个订阅的子线程发生了错误，造成线程死掉，后续的操作就无法再唤醒这个线程了，具体造成线程死掉的代码还没有分析到（为死掉后包括 throw 的异常都无法抛出），目前的解决方法就是，增加一个标志位，在线程死掉后，再次增加事件时，会重新订阅。这种处理方法有不妥的地方就是，这次失败的订阅无法回调给上层，需要后续有一次操作来触发重新订阅</p>
+<p>后记：最后是暴露出来了一个 callback，用于回调处理发生错误时的后续</p>
+<h2 id="2020-02-24"><a href="#2020-02-24" class="headerlink" title="2020/02/24"></a>2020/02/24</h2><h3 id="animation-在部分手机上存在掉帧的情况"><a href="#animation-在部分手机上存在掉帧的情况" class="headerlink" title="animation 在部分手机上存在掉帧的情况"></a>animation 在部分手机上存在掉帧的情况</h3><p><strong>TODO</strong> :这个在小米手机上很明显，即使是使用线性插值器，中间有一段的数据回调会突然陡增然后恢复，这种情况目前没有测试出原因是什么</p>
+<h2 id="2020-03-05"><a href="#2020-03-05" class="headerlink" title="2020/03/05"></a>2020/03/05</h2><h3 id="关于-kotlin-中的泛型"><a href="#关于-kotlin-中的泛型" class="headerlink" title="关于 kotlin 中的泛型"></a>关于 kotlin 中的泛型</h3><ul>
+<li><strong>out </strong> 关键字：等同于 <code>Java</code> 中的<code>? extend</code>，上界通配符，在泛型中允许泛型的子类赋值</li>
+<li><strong>in </strong>关键字：等同于<code>Java</code>中的<code>? super</code>，下界通配符，在泛型中允许泛型的父类赋值</li>
+</ul>
+<p>如果需要在泛型中确定某一个泛型的类型，需要使用类型擦除</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">inline</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-type">&lt;<span class="hljs-keyword">reified</span> T : BaseSysExtraDataBean&gt;</span> <span class="hljs-title">getExtraBean</span><span class="hljs-params">()</span></span>: T? &#123;
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">try</span> &#123;
+      GsonUtils.fromJson(<span class="hljs-keyword">this</span>.<span class="hljs-keyword">data</span>, T::<span class="hljs-class"><span class="hljs-keyword">class</span>.<span class="hljs-title">java</span>)</span>
+    &#125; <span class="hljs-keyword">catch</span> (e: Exception) &#123;
+      LogUtils.e(<span class="hljs-string">"IMMessage：extraBean获取失败 <span class="hljs-subst">$&#123;e.cause&#125;</span>"</span>)
+      <span class="hljs-literal">null</span>
+    &#125;
+  &#125;
+&#125;</code></pre>
+<p> 在上诉代码中，通过使用 <code>inline</code>和<code>reified</code>来实现 Kotlin 中的类型擦除</p>
+<h3 id="This-指针逃逸"><a href="#This-指针逃逸" class="headerlink" title="This 指针逃逸"></a>This 指针逃逸</h3><p><strong>TODO</strong>:在阅读到并发编程的对象的共享章节时，书中举例了关于 this 逃逸的案例，不太明白，需要理解</p>
+<h3 id="Kotlin调用-Java-中的方法可见性的问题"><a href="#Kotlin调用-Java-中的方法可见性的问题" class="headerlink" title="Kotlin调用 Java 中的方法可见性的问题"></a>Kotlin调用 Java 中的方法可见性的问题</h3><p>今天使用 Kotlin 调用一个 Java 接口时，实现其方法报错了，错误是<code>&#39;public&#39; function exposes its &#39;public/*package*/&#39; parameter type</code> 因为在 Java 中的可见性和 Kotlin 不一样(Java 默认是 <strong>default</strong>，而 Kotlin 默认是 <strong>public</strong>)，所以需要把报错的 class 显示修改为 public</p>
+<h2 id="2020-03-08"><a href="#2020-03-08" class="headerlink" title="2020/03/08"></a>2020/03/08</h2><h3 id="cannot-inline-bytecode-built-with-jvm-target-1-8-into-bytecode-that-is-being-built-with-jvm-target-1错误解决方案"><a href="#cannot-inline-bytecode-built-with-jvm-target-1-8-into-bytecode-that-is-being-built-with-jvm-target-1错误解决方案" class="headerlink" title="cannot inline bytecode built with jvm target 1.8 into bytecode that is being built with jvm target 1错误解决方案"></a>cannot inline bytecode built with jvm target 1.8 into bytecode that is being built with jvm target 1错误解决方案</h3><pre><code class="hljs groovy">android &#123;
+    ...
+    compileOptions &#123;
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    &#125;
+
+    kotlinOptions &#123;
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    &#125;
+&#125;</code></pre>
+<h3 id="getLocationInWindow-和-getLocationOnScreen-两个方法的区别"><a href="#getLocationInWindow-和-getLocationOnScreen-两个方法的区别" class="headerlink" title="getLocationInWindow 和 getLocationOnScreen 两个方法的区别"></a>getLocationInWindow 和 getLocationOnScreen 两个方法的区别</h3><p>顾名思义，前者为获取控件在窗口中的坐标，后者为获取控件在屏幕中的坐标，计算窗口内的坐标时，如果没有特殊设置，不会包含顶部状态栏，实际上计算的就是 activity 顶层 view 内的坐标，而计算屏幕的坐标就是以屏幕为坐标系来计算的</p>
+<h2 id="2020-03-11"><a href="#2020-03-11" class="headerlink" title="2020/03/11"></a>2020/03/11</h2><h3 id="关于事件分发的理解"><a href="#关于事件分发的理解" class="headerlink" title="关于事件分发的理解"></a>关于事件分发的理解</h3><p>所有的事件都是由 <strong>DOWN</strong> 事件开始，由<strong>UP</strong>结束，中间夹杂一系列<strong>MOVE</strong>或者<strong>POINTER_DOWN</strong>的事件，所以在进行事件的分发处理时，如果要子 View 对对应的事件做出一定的响应，那么需要根据响应事件所需要的基本事件进行分发，比如，<strong>Click</strong>事件，在某些区域响应点击事件，那么首先 <strong>DOWN</strong> 事件都得分发下去，以便子 View 对后续的事件的判断，然后再根据<strong>UP</strong>的点击区域判断，是否需要将<strong>UP</strong>事件分发还是由自己进行处理</p>
+<h2 id="2020-03-13"><a href="#2020-03-13" class="headerlink" title="2020/03/13"></a>2020/03/13</h2><h3 id="Flutter-wait-for-another-……问题解决方案"><a href="#Flutter-wait-for-another-……问题解决方案" class="headerlink" title="Flutter wait for another ……问题解决方案"></a>Flutter wait for another ……问题解决方案</h3><p>首先到<code>SDK/bin/cache/</code>目录下，删除<code>lockfile</code>，然后回到项目中，运行<code>Flutter doctor</code></p>
+<h2 id="2020-03-16"><a href="#2020-03-16" class="headerlink" title="2020/03/16"></a>2020/03/16</h2><h3 id="实现-recyclerview-的分组吸顶效果和分割线的大体思路"><a href="#实现-recyclerview-的分组吸顶效果和分割线的大体思路" class="headerlink" title="实现 recyclerview 的分组吸顶效果和分割线的大体思路"></a>实现 recyclerview 的分组吸顶效果和分割线的大体思路</h3><p>可以通过继承<strong>ItemDecoration</strong>来实现，我这里的主要思路是，将数据源中，分组的第一项设置为一个单独的<strong>Item</strong>，然后在自定义的<strong>ItemDecoration</strong>中获取该Item 会非常方便了。</p>
+<p>1.分割线的实现</p>
+<p>分割线的实现分为简单的增加分离距离和自定义分割线：</p>
+<p>前者只需要重写<code>getItemOffsets</code>，根据获取当前的 Item 来获取 Item的位置<code>parent.getChildAdapterPosition(view)</code>,其中的<code>parent</code>和<code>view</code>都是回调返回的变量。然后 设置不同的间距即可（设置<code>OutRect</code>）简单示例：</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getItemOffsets</span><span class="hljs-params">(
+   outRect: <span class="hljs-type">Rect</span>,
+   view: <span class="hljs-type">View</span>,
+   parent: <span class="hljs-type">RecyclerView</span>,
+   state: <span class="hljs-type">RecyclerView</span>.<span class="hljs-type">State</span>
+ )</span></span> &#123;
+ 	<span class="hljs-keyword">val</span> position = parent.getChildAdapterPosition(view)
+ 	<span class="hljs-comment">// 获取到 position 后可以根据需求，设置不同的 position 需要什么样的间距</span>
+ 	<span class="hljs-keyword">if</span> (position == XXX)&#123;
+ 		... 	
+ 		outRect.top = XXX
+ 	&#125; <span class="hljs-keyword">else</span> &#123;
+ 		...
+ 		outRect.top = XXX
+ 	&#125;
+ &#125;</code></pre>
+<p>如果还要实现自定义的分割线效果，除了上诉一样将间距分开后，还需要重写<code>onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State)</code>方法来具体绘制每一个 Item的分割线，这个方法中会回调回来<strong>Canvas</strong>对象，可以用它进行各种的自定义绘制，示例：</p>
+<pre><code class="hljs kotlin"><span class="hljs-comment">// recyclerview 每一次的绘制都会回调，例如滑动时</span>
+<span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onDraw</span><span class="hljs-params">(c: <span class="hljs-type">Canvas</span>, parent: <span class="hljs-type">RecyclerView</span>, state: <span class="hljs-type">RecyclerView</span>.<span class="hljs-type">State</span>)</span></span> &#123;
+     <span class="hljs-keyword">val</span> count = parent.adapter?.itemCount ?: <span class="hljs-number">0</span>
+     <span class="hljs-keyword">for</span> (i <span class="hljs-keyword">in</span> <span class="hljs-number">0</span>..count) &#123;
+       <span class="hljs-keyword">val</span> item = parent.getChildAt(i)
+       item?.let &#123;
+         <span class="hljs-keyword">val</span> offsetX = item.x.toInt()
+         <span class="hljs-keyword">val</span> offsetY = item.y.toInt()
+         <span class="hljs-comment">// 绘制中间的竖直分割线</span>
+         <span class="hljs-keyword">if</span> ((i + <span class="hljs-number">1</span>) % <span class="hljs-number">4</span> != <span class="hljs-number">0</span>) &#123;
+           <span class="hljs-keyword">val</span> top = <span class="hljs-keyword">if</span> (i &lt; <span class="hljs-number">4</span>) offsetY <span class="hljs-keyword">else</span> offsetY - <span class="hljs-number">10</span>
+           c.drawRect(
+             Rect(
+               offsetX + item.width,
+               top,
+               offsetX + item.width + <span class="hljs-number">10</span>,
+               offsetY + item.height
+             ),
+             paint
+           )
+         &#125;
+
+         <span class="hljs-comment">// 除了第一排，绘制顶部的分割线</span>
+         <span class="hljs-keyword">if</span> (i &gt; <span class="hljs-number">3</span>) &#123;
+           c.drawRect(
+             Rect(
+               offsetX,
+               offsetY - <span class="hljs-number">10</span>,
+               offsetX + item.width,
+               offsetY
+             ),
+             paint
+           )
+         &#125;
+       &#125;
+     &#125;
+   &#125;</code></pre>
+<p>2.吸顶效果的实现</p>
+<p>吸顶效果的实现主要依靠的重写<code>onDrawOver(c: Canvas, parent: RecyclerView, state: RecyclerView.State)</code>这个方法来实现，这个方法回调回来的<strong>Canvas</strong>对象所绘制的内容是处于 Item 的上层的，一种遮罩的感觉。同时也会返回 <strong>recyclerView</strong>对象，通过它可以获取 item 的位置和 item 的 View，通过<code>parent.findViewHolderForAdapterPosition(firstCompleteVisibleIP)?.itemView</code>来获取 View 对象，这样可以根据想要操作的 Item 来定制化吸顶的效果。代码示例：</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onDrawOver</span><span class="hljs-params">(c: <span class="hljs-type">Canvas</span>, parent: <span class="hljs-type">RecyclerView</span>, state: <span class="hljs-type">RecyclerView</span>.<span class="hljs-type">State</span>)</span></span> &#123;
+   <span class="hljs-comment">// 首先是分组的 Item 位置和内容，依靠这个 map 来维护</span>
+   <span class="hljs-keyword">if</span> (indexMap.isNotEmpty()) &#123;
+     <span class="hljs-comment">// 找到第一个完全可见的 Item,这个是用来实现吸顶时的效果</span>
+     <span class="hljs-keyword">val</span> firstCompleteVisibleIP =
+       (parent.layoutManager <span class="hljs-keyword">as</span> GridLayoutManager).findFirstCompletelyVisibleItemPosition()
+     <span class="hljs-comment">// 找到第一个可见的 Item，这个用来确定吸顶的文本显示</span>
+     <span class="hljs-keyword">val</span> firstVisibleIP =
+       (parent.layoutManager <span class="hljs-keyword">as</span> GridLayoutManager).findFirstCompletelyVisibleItemPosition()
+     <span class="hljs-comment">// 根据firstCompleteVisibleIP获取到完全可见的 Item 的 view 对象</span>
+     <span class="hljs-keyword">val</span> firstCompleteVisibleItemView =
+       parent.findViewHolderForAdapterPosition(firstCompleteVisibleIP)?.itemView
+     <span class="hljs-comment">// 这个 bottom 是吸顶的内容的高度</span>
+     <span class="hljs-keyword">val</span> bottom = <span class="hljs-keyword">when</span> &#123;
+       <span class="hljs-comment">// 如果完全可见的 Item 是分组的 Item的时候,即进行吸顶效果的切换的时候，下一个分组顶掉了上一个分组的切换效果</span>
+       indexMap.keys.contains(firstCompleteVisibleIP) -&gt; &#123;
+         <span class="hljs-comment">// 当完全可见的 Item 的 top 为0时，说明切换效果已经结束了，这个时候，吸顶显示的应该是下一个（相对于吸顶效果切换时）分组的内容 </span>
+         <span class="hljs-keyword">if</span> (firstCompleteVisibleItemView?.top == <span class="hljs-number">0</span>) &#123;
+           itemHeaderHeight
+         &#125; <span class="hljs-keyword">else</span> &#123;
+           <span class="hljs-comment">// 吸顶切换进行的时候，不断的改变吸顶内容的高度来实现切换的效果，高度根据第一个完全可见的 view 的 top 来决定（这个时候第一个完全可见的 View 应该是下一个分组的 Item）</span>
+           min(
+             itemHeaderHeight,
+             firstCompleteVisibleItemView?.top ?: itemHeaderHeight
+           )
+         &#125;
+       &#125;
+       <span class="hljs-keyword">else</span> -&gt; itemHeaderHeight
+     &#125;
+     <span class="hljs-comment">// 这里的逻辑是，根据第一个可见的 Item来寻找距离它最近的前一个分组 Item 的位置和后一个的位置</span>
+     <span class="hljs-comment">// 主要用于前一个，因为上面的逻辑，在回调过程中，firstCompleteVisibleItemView.top 的值不是每一次都会回调，也就是 == 0的条件不一定能触发，所以不能根据上面的逻辑来觉得切换是否已经完成</span>
+     <span class="hljs-comment">// 下面找到的 Item位置能保证当切换完成时找到的是位置就是本身，未完成时，找的都是上一个分组位置</span>
+     <span class="hljs-keyword">val</span> lastAndNextTitle = findLastAndNextTitlePositionOfCurrentItem(firstVisibleIP)
+     titleStr = indexMap[lastAndNextTitle.first]
+
+     <span class="hljs-comment">// 最后就是绘制了</span>
+     titleStr?.let &#123; title -&gt;
+       c.drawRect(
+         <span class="hljs-number">0F</span>,
+         <span class="hljs-number">0F</span>,
+         parent.width.toFloat(),
+         bottom.toFloat(),
+         itemHeaderBackGroundPaint
+       )
+       c.drawText(
+         title,
+         SizeUtils.dp2px(<span class="hljs-number">16F</span>).toFloat(),
+         <span class="hljs-comment">// android text的绘制参考文章：https://hencoder.com/ui-1-3/</span>
+         bottom - itemHeaderHeight / <span class="hljs-number">2</span> + (textPaint.fontMetrics.bottom - textPaint.fontMetrics.top) / <span class="hljs-number">2</span> - textPaint.fontMetrics.bottom,
+         textPaint
+       )
+     &#125;
+   &#125;
+ &#125;</code></pre>
+<h3 id="日期得计算"><a href="#日期得计算" class="headerlink" title="日期得计算"></a>日期得计算</h3><p>Date获取年份、月份和日期得方法已经被废弃了，现在获取需要使用<code>Calendar</code>类，具体如下</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">val</span> cal = Calendar.getInstance()
+cal.time = curDate <span class="hljs-comment">// Date 对象</span>
+<span class="hljs-keyword">val</span> curYear = cal.<span class="hljs-keyword">get</span>(Calendar.YEAR)
+<span class="hljs-comment">// 月份需要加1</span>
+<span class="hljs-keyword">val</span> curMonth = cal.<span class="hljs-keyword">get</span>(Calendar.MONTH) + <span class="hljs-number">1</span>
+<span class="hljs-comment">// 这个月得第几天</span>
+<span class="hljs-comment">// 还有方法可以获取今年的第几天</span>
+<span class="hljs-keyword">val</span> curDay = cal.<span class="hljs-keyword">get</span>(Calendar.DAY_OF_MONTH)
+<span class="hljs-comment">// 本月的第几周</span>
+<span class="hljs-keyword">val</span> weekOfMonth = cal.<span class="hljs-keyword">get</span>(Calendar.WEEK_OF_MONTH)</code></pre>
+<h2 id="2020-03-19"><a href="#2020-03-19" class="headerlink" title="2020/03/19"></a>2020/03/19</h2><h3 id="关于-ImageFilterView-中圆角的计算公式"><a href="#关于-ImageFilterView-中圆角的计算公式" class="headerlink" title="关于 ImageFilterView 中圆角的计算公式"></a>关于 ImageFilterView 中圆角的计算公式</h3><p>从源码中知道<code>ImageFilterView</code>是这样计算圆角的，所以拿到设计稿的 dp 时，反推就知道该设置多少的<code>roundPercent</code></p>
+<pre><code class="hljs java"><span class="hljs-keyword">float</span> r = (<span class="hljs-keyword">float</span>)Math.min(w, h) * ImageFilterView.<span class="hljs-keyword">this</span>.mRoundPercent / <span class="hljs-number">2.0F</span>;</code></pre>
+<h2 id="2020-03-23"><a href="#2020-03-23" class="headerlink" title="2020/03/23"></a>2020/03/23</h2><h3 id="关于-CoordinatorLayout-和-MotionLayout-结合使用的简单总结"><a href="#关于-CoordinatorLayout-和-MotionLayout-结合使用的简单总结" class="headerlink" title="关于 CoordinatorLayout 和 MotionLayout 结合使用的简单总结"></a>关于 CoordinatorLayout 和 MotionLayout 结合使用的简单总结</h3><p>需求是实现一个个人主页，吸顶加列表的样式，那么整个 xml 的结构如下</p>
+<pre><code class="hljs undefined">-- CoordinatorLayout
+		-- AppBarLayout
+				-- CollapsibleToolbar
+		-- Content</code></pre>
+<p>坑记:</p>
+<ul>
+<li><p>需要<code>Content</code>随着<code>AppBarLayout</code>移动，需要在<code>Content</code>的 xml 中的顶级 View 设置<code>app:layout_behavior=&quot;@string/appbar_scrolling_view_behavior&quot;</code>属性，其值为：<code>&lt;string name=&quot;appbar_scrolling_view_behavior&quot; translatable=&quot;false&quot;&gt;android.support.design.widget.AppBarLayout$ScrollingViewBehavior&lt;/string&gt;</code></p>
+<p>如果需要更复杂的滑动联动效果，就需要自己自定义这个 <code>behavior</code> 了</p>
+</li>
+<li><p>如果需要去除<code>AppBarLayout 的阴影</code>，需要设置<code>app:elevation=&quot;0dp&quot;</code>使用的是<code>app</code>而不是<code>android</code></p>
+</li>
+<li><p>如果<code>Content</code>中存在列表，设置联动的形式，可以设置CollapsibleToolbar 的<code>app:layout_scrollFlags=&quot;scroll|exitUntilCollapsed&quot;</code>这个属性的几个标签详解：<a href="https://www.jianshu.com/p/7caa5f4f49bd" target="_blank" rel="noopener">Android 详细分析AppBarLayout的五种ScrollFlags</a></p>
+</li>
+</ul>
+<h2 id="2020-03-28"><a href="#2020-03-28" class="headerlink" title="2020/03/28"></a>2020/03/28</h2><h3 id="关于使用-MotionLayou实现个人的顶部吸顶效果"><a href="#关于使用-MotionLayou实现个人的顶部吸顶效果" class="headerlink" title="关于使用 MotionLayou实现个人的顶部吸顶效果"></a>关于使用 MotionLayou实现个人的顶部吸顶效果</h3><p>目前采用的改变单一一个 view 控件在初始状态和终止状态约束的不同，然后由代码进行控制，动态设置背景的高度，静态 xml 的布局如下</p>
+<pre><code class="hljs xml"><span class="hljs-meta">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">androidx.constraintlayout.motion.widget.MotionLayout</span>
+    <span class="hljs-attr">xmlns:android</span>=<span class="hljs-string">"http://schemas.android.com/apk/res/android"</span>
+    <span class="hljs-attr">xmlns:app</span>=<span class="hljs-string">"http://schemas.android.com/apk/res-auto"</span>
+    <span class="hljs-attr">xmlns:tools</span>=<span class="hljs-string">"http://schemas.android.com/tools"</span>
+    <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@+id/motionLayout"</span>
+    <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+    <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"match_parent"</span>
+    <span class="hljs-attr">app:layoutDescription</span>=<span class="hljs-string">"@xml/scene_03_2"</span>
+    <span class="hljs-attr">tools:context</span>=<span class="hljs-string">".MotionActivity"</span>
+    &gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">ImageView</span>
+      <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@+id/bgCover"</span>
+      <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+      <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"200dp"</span>
+      <span class="hljs-attr">android:background</span>=<span class="hljs-string">"@drawable/google_plex_cover"</span>
+      <span class="hljs-attr">android:contentDescription</span>=<span class="hljs-string">"@null"</span>
+      <span class="hljs-attr">android:fitsSystemWindows</span>=<span class="hljs-string">"true"</span>
+      /&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">TextView</span>
+      <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@+id/headerTv"</span>
+      <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+      <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"300dp"</span>
+      <span class="hljs-attr">android:background</span>=<span class="hljs-string">"@color/colorPrimaryDark90"</span>
+      <span class="hljs-attr">android:gravity</span>=<span class="hljs-string">"center"</span>
+      <span class="hljs-attr">android:text</span>=<span class="hljs-string">"我是顶部信息"</span>
+      <span class="hljs-attr">android:textColor</span>=<span class="hljs-string">"#fff"</span>
+      <span class="hljs-attr">android:textSize</span>=<span class="hljs-string">"32sp"</span>
+      /&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">include</span>
+      <span class="hljs-attr">layout</span>=<span class="hljs-string">"@layout/content_scrolling"</span>
+      /&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">TextView</span>
+      <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@+id/statusView"</span>
+      <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+      <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"20dp"</span>
+      <span class="hljs-attr">android:background</span>=<span class="hljs-string">"@color/colorAccent"</span>
+      <span class="hljs-attr">android:gravity</span>=<span class="hljs-string">"center"</span>
+      <span class="hljs-attr">android:text</span>=<span class="hljs-string">"我是状态栏"</span>
+      <span class="hljs-attr">android:textColor</span>=<span class="hljs-string">"#000"</span>
+      /&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">TextView</span>
+      <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@+id/navTv"</span>
+      <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+      <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"44dp"</span>
+      <span class="hljs-attr">android:background</span>=<span class="hljs-string">"@color/colorAccent"</span>
+      <span class="hljs-attr">android:gravity</span>=<span class="hljs-string">"center"</span>
+      <span class="hljs-attr">android:text</span>=<span class="hljs-string">"我是导航栏"</span>
+      <span class="hljs-attr">android:textColor</span>=<span class="hljs-string">"#fff"</span>
+      <span class="hljs-attr">android:textSize</span>=<span class="hljs-string">"18sp"</span>
+      /&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">androidx.constraintlayout.motion.widget.MotionLayout</span>&gt;</span></code></pre>
+<p>对应的 scene 描述文件</p>
+<pre><code class="hljs xml"><span class="hljs-meta">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">MotionScene</span>
+    <span class="hljs-attr">xmlns:android</span>=<span class="hljs-string">"http://schemas.android.com/apk/res/android"</span>
+    <span class="hljs-attr">xmlns:app</span>=<span class="hljs-string">"http://schemas.android.com/apk/res-auto"</span>
+    <span class="hljs-attr">xmlns:motion</span>=<span class="hljs-string">"http://schemas.android.com/apk/res-auto"</span>
+    &gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">Transition</span>
+      <span class="hljs-attr">motion:constraintSetEnd</span>=<span class="hljs-string">"@id/end"</span>
+      <span class="hljs-attr">motion:constraintSetStart</span>=<span class="hljs-string">"@id/start"</span>
+      <span class="hljs-attr">motion:duration</span>=<span class="hljs-string">"500"</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">OnSwipe</span>
+        <span class="hljs-attr">motion:dragDirection</span>=<span class="hljs-string">"dragUp"</span>
+        <span class="hljs-attr">motion:touchAnchorId</span>=<span class="hljs-string">"@+id/bgCover"</span>
+        <span class="hljs-attr">motion:touchAnchorSide</span>=<span class="hljs-string">"bottom"</span> /&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">KeyFrameSet</span>&gt;</span>
+
+      <span class="hljs-tag">&lt;<span class="hljs-name">KeyAttribute</span>
+          <span class="hljs-attr">android:alpha</span>=<span class="hljs-string">"0"</span>
+          <span class="hljs-attr">motion:framePosition</span>=<span class="hljs-string">"70"</span>
+          <span class="hljs-attr">motion:motionTarget</span>=<span class="hljs-string">"@id/headerTv"</span> /&gt;</span>
+
+      <span class="hljs-tag">&lt;<span class="hljs-name">KeyAttribute</span>
+          <span class="hljs-attr">android:alpha</span>=<span class="hljs-string">"0"</span>
+          <span class="hljs-attr">motion:framePosition</span>=<span class="hljs-string">"70"</span>
+          <span class="hljs-attr">motion:motionTarget</span>=<span class="hljs-string">"@id/bgCover"</span> /&gt;</span>
+
+      <span class="hljs-tag">&lt;<span class="hljs-name">KeyAttribute</span>
+          <span class="hljs-attr">android:alpha</span>=<span class="hljs-string">"1"</span>
+          <span class="hljs-attr">motion:framePosition</span>=<span class="hljs-string">"70"</span>
+          <span class="hljs-attr">motion:motionTarget</span>=<span class="hljs-string">"@id/statusView"</span> /&gt;</span>
+
+      <span class="hljs-tag">&lt;<span class="hljs-name">KeyAttribute</span>
+          <span class="hljs-attr">android:alpha</span>=<span class="hljs-string">"1"</span>
+          <span class="hljs-attr">motion:framePosition</span>=<span class="hljs-string">"70"</span>
+          <span class="hljs-attr">motion:motionTarget</span>=<span class="hljs-string">"@id/navTv"</span> /&gt;</span>
+
+    <span class="hljs-tag">&lt;/<span class="hljs-name">KeyFrameSet</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;/<span class="hljs-name">Transition</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">ConstraintSet</span> <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@+id/start"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Constraint</span>
+        <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@id/bgCover"</span>
+        <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+        <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"20dp"</span>
+        <span class="hljs-attr">app:layout_constraintBottom_toTopOf</span>=<span class="hljs-string">"@id/scrollable"</span>
+        /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Constraint</span>
+        <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@id/headerTv"</span>
+        <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+        <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"300dp"</span>
+        <span class="hljs-attr">app:layout_constraintBottom_toTopOf</span>=<span class="hljs-string">"@id/scrollable"</span>
+        <span class="hljs-attr">app:layout_constraintTop_toBottomOf</span>=<span class="hljs-string">"@id/statusView"</span>
+        /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Constraint</span>
+        <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@id/scrollable"</span>
+        <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+        <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"0dp"</span>
+        <span class="hljs-attr">app:layout_constraintBottom_toBottomOf</span>=<span class="hljs-string">"parent"</span>
+        <span class="hljs-attr">app:layout_constraintTop_toBottomOf</span>=<span class="hljs-string">"@id/headerTv"</span>
+        /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Constraint</span>
+        <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@id/statusView"</span>
+        <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+        <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"1dp"</span>
+        <span class="hljs-attr">android:alpha</span>=<span class="hljs-string">"0.7"</span>
+        <span class="hljs-attr">app:layout_constraintTop_toTopOf</span>=<span class="hljs-string">"parent"</span>
+        /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Constraint</span>
+        <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@id/navTv"</span>
+        <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+        <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"44dp"</span>
+        <span class="hljs-attr">android:alpha</span>=<span class="hljs-string">"0"</span>
+        <span class="hljs-attr">app:layout_constraintTop_toBottomOf</span>=<span class="hljs-string">"@id/statusView"</span>
+        /&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">ConstraintSet</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">ConstraintSet</span> <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@+id/end"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Constraint</span>
+        <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@id/bgCover"</span>
+        <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+        <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"20dp"</span>
+        <span class="hljs-attr">android:alpha</span>=<span class="hljs-string">"0"</span>
+        <span class="hljs-attr">app:layout_constraintBottom_toTopOf</span>=<span class="hljs-string">"@id/scrollable"</span>
+        /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Constraint</span>
+        <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@id/headerTv"</span>
+        <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+        <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"300dp"</span>
+        <span class="hljs-attr">android:alpha</span>=<span class="hljs-string">"0"</span>
+        <span class="hljs-attr">app:layout_constraintBottom_toTopOf</span>=<span class="hljs-string">"@id/scrollable"</span>
+        /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Constraint</span>
+        <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@id/scrollable"</span>
+        <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+        <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"0dp"</span>
+        <span class="hljs-attr">app:layout_constraintBottom_toBottomOf</span>=<span class="hljs-string">"parent"</span>
+        <span class="hljs-attr">app:layout_constraintTop_toBottomOf</span>=<span class="hljs-string">"@id/navTv"</span>
+        /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Constraint</span>
+        <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@id/statusView"</span>
+        <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+        <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"1dp"</span>
+        <span class="hljs-attr">android:alpha</span>=<span class="hljs-string">"1"</span>
+        <span class="hljs-attr">app:layout_constraintTop_toTopOf</span>=<span class="hljs-string">"parent"</span>
+        /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Constraint</span>
+        <span class="hljs-attr">android:id</span>=<span class="hljs-string">"@id/navTv"</span>
+        <span class="hljs-attr">android:layout_width</span>=<span class="hljs-string">"match_parent"</span>
+        <span class="hljs-attr">android:layout_height</span>=<span class="hljs-string">"44dp"</span>
+        <span class="hljs-attr">android:alpha</span>=<span class="hljs-string">"1"</span>
+        <span class="hljs-attr">app:layout_constraintTop_toBottomOf</span>=<span class="hljs-string">"@id/statusView"</span>
+        /&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">ConstraintSet</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">MotionScene</span>&gt;</span></code></pre>
+<p>这个描述文件中，主要操作是改变了底部可滑动布局在不同状态的约束，开始时，约束于顶部的 header 信息布局，这样能保证信息的完整显示，在终态下，需要吸顶顶部的导航栏。动画效果具体的控制则是由<code>KeyFrameSet</code>控制。</p>
+<p>背景图片的大小和状态栏的适配，需要在代码中获取到状态栏的高度后，再去更新相应的约束</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">val</span> statusBarH = Resources.getSystem()
+      .getDimensionPixelSize(resources.getIdentifier(<span class="hljs-string">"status_bar_height"</span>, <span class="hljs-string">"dimen"</span>, <span class="hljs-string">"android"</span>))
+    scrollable.postDelayed(&#123;
+      motionLayout.getConstraintSet(R.id.start)?.let &#123; <span class="hljs-keyword">set</span> -&gt;
+        <span class="hljs-keyword">set</span>.constrainHeight(R.id.statusView, statusBarH)
+        <span class="hljs-keyword">set</span>.constrainHeight(R.id.bgCover, statusBarH + headerTv.height)
+      &#125;
+
+      motionLayout.getConstraintSet(R.id.end)?.let &#123; <span class="hljs-keyword">set</span> -&gt;
+        <span class="hljs-keyword">set</span>.constrainHeight(R.id.statusView, statusBarH)
+        <span class="hljs-keyword">set</span>.constrainHeight(R.id.bgCover, statusBarH + headerTv.height)
+      &#125;
+      motionLayout.requestLayout()
+    &#125;, <span class="hljs-number">100</span>)</code></pre>
+<h2 id="2020-04-07"><a href="#2020-04-07" class="headerlink" title="2020/04/07"></a>2020/04/07</h2><h3 id="关于-Kotlin-中的函数引用多个参数时的用法"><a href="#关于-Kotlin-中的函数引用多个参数时的用法" class="headerlink" title="关于 Kotlin 中的函数引用多个参数时的用法"></a>关于 Kotlin 中的函数引用多个参数时的用法</h3><pre><code class="hljs kotlin"><span class="hljs-meta">@Test</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">testFunReference</span><span class="hljs-params">()</span></span> &#123;
+  <span class="hljs-keyword">val</span> result = (::func)(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
+  println((::func)(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>))
+&#125;
+<span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">func</span><span class="hljs-params">(a: <span class="hljs-type">Int</span>, b: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> &#123;
+  <span class="hljs-keyword">return</span> a + b
+&#125;</code></pre>
+<h2 id="2020-04-20"><a href="#2020-04-20" class="headerlink" title="2020/04/20"></a>2020/04/20</h2><h3 id="聊天页面的LayoutManager优化"><a href="#聊天页面的LayoutManager优化" class="headerlink" title="聊天页面的LayoutManager优化"></a>聊天页面的LayoutManager优化</h3><blockquote>
+<p>需求：聊天页面中是最新的在底部显示，但是没有达到一屏的依然会显示在顶部，所以只有重新写 layoutManager来动态适配这样的规则，在搜索了一番后，发现 LinearLayoutManager 中有一个 onAnchorReady 的空方法提供给开发者扩展</p>
+</blockquote>
+<p>通过查看源码发现，<code>linearlayoutmanager</code>中主要通过<code>AnchorInfo</code>的辅助类来实现<code>item</code>的布局的起点位置和方向。在<code>layoutChildren</code>的方法中，开始调用真正布局的<code>fill</code>方法之前会先回调<code>onAnchorReady</code>方法。所以我的思路是可以重写这个方法，修改<code>anchorInfo</code>变量中的位置信息达到动态改变布局方向的要求。</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onAnchorReady</span><span class="hljs-params">(
+    recycler: <span class="hljs-type">RecyclerView</span>.<span class="hljs-type">Recycler</span>?,
+    state: <span class="hljs-type">RecyclerView</span>.<span class="hljs-type">State</span>?,
+    anchorInfo: <span class="hljs-type">AnchorInfo</span>?,
+    firstLayoutItemDirection: <span class="hljs-type">Int</span>
+  )</span></span> &#123;
+    <span class="hljs-keyword">if</span> (recycler != <span class="hljs-literal">null</span> &amp;&amp; anchorInfo != <span class="hljs-literal">null</span>) &#123;
+      detachAndScrapAttachedViews(recycler)
+      <span class="hljs-keyword">var</span> totalHeight = <span class="hljs-number">0</span>
+      <span class="hljs-keyword">for</span> (position <span class="hljs-keyword">in</span> <span class="hljs-number">0</span> until itemCount) &#123;
+        <span class="hljs-keyword">val</span> view = recycler.getViewForPosition(position)
+        measureChild(view, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
+        totalHeight += getDecoratedMeasuredHeight(view)
+      &#125;
+
+      <span class="hljs-keyword">if</span> (totalHeight != <span class="hljs-number">0</span> &amp;&amp; maxHeightForRecyclerView != <span class="hljs-number">0</span>) &#123;
+        <span class="hljs-keyword">if</span> (totalHeight &gt; maxHeightForRecyclerView) &#123;
+          anchorInfo.mLayoutFromEnd = <span class="hljs-literal">true</span>
+          anchorInfo.mPosition = itemCount - <span class="hljs-number">1</span>
+          setStackFromEndByUser = <span class="hljs-literal">false</span>
+          <span class="hljs-comment">/**
+           * 调用[LinearLayoutManager.setStackFromEnd]这个方法时，会调用[assertNotInLayoutOrScroll] 和 [requestLayout]
+           * 上面的方法重写，屏蔽了调用的逻辑，仅用于赋值
+           */</span>
+          stackFromEnd = <span class="hljs-literal">true</span>
+        &#125;
+      &#125;
+    &#125;
+  &#125;</code></pre>
+<p>在这个方法中，通过<code>recycler</code>中拿到所有的<code>item</code>进行测量，并和从外传入的参数进行比较（因为最大的可展示高度应该是由外部决定的）。</p>
+<p>但是仅这样处理发现并没有效果，追踪了代码发现在布局代码的后面还存在一个修正的方法，源码如下</p>
+<pre><code class="hljs java"><span class="hljs-comment">// changes may cause gaps on the UI, try to fix them.</span>
+<span class="hljs-comment">// TODO we can probably avoid this if neither stackFromEnd/reverseLayout/RTL values have</span>
+<span class="hljs-comment">// changed</span>
+<span class="hljs-keyword">if</span> (getChildCount() &gt; <span class="hljs-number">0</span>) &#123;
+    <span class="hljs-comment">// because layout from end may be changed by scroll to position</span>
+    <span class="hljs-comment">// we re-calculate it.</span>
+    <span class="hljs-comment">// find which side we should check for gaps.</span>
+    <span class="hljs-keyword">if</span> (mShouldReverseLayout ^ mStackFromEnd) &#123;
+        <span class="hljs-keyword">int</span> fixOffset = fixLayoutEndGap(endOffset, recycler, state, <span class="hljs-keyword">true</span>);
+        startOffset += fixOffset;
+        endOffset += fixOffset;
+        fixOffset = fixLayoutStartGap(startOffset, recycler, state, <span class="hljs-keyword">false</span>);
+        startOffset += fixOffset;
+        endOffset += fixOffset;
+    &#125; <span class="hljs-keyword">else</span> &#123;
+        <span class="hljs-keyword">int</span> fixOffset = fixLayoutStartGap(startOffset, recycler, state, <span class="hljs-keyword">true</span>);
+        startOffset += fixOffset;
+        endOffset += fixOffset;
+        fixOffset = fixLayoutEndGap(endOffset, recycler, state, <span class="hljs-keyword">false</span>);
+        startOffset += fixOffset;
+        endOffset += fixOffset;
+    &#125;
+&#125;</code></pre>
+<p>它依然会根据<code>mStackFromEnd</code>这个变量的值来动态修正。所以导致我们改变的锚点信息没有用（这个变量的赋值在代码中除了手动设置以外，也是由<code>anchorInfo</code>的变量得出来的）</p>
+<p>所以在修改<code>anchorInfo</code>的同时，还需要修改这个变量。带来的另一个问题是，这个变量的 <code>set</code>方法时，会检查当前的状态是否是正在<code>layout</code>，会调用<code>requestLayout()</code>方法</p>
+<pre><code class="hljs java"> <span class="hljs-comment">/**
+  * Compatibility support for &#123;<span class="hljs-doctag">@link</span> android.widget.AbsListView#setStackFromBottom(boolean)&#125;
+  */</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">setStackFromEnd</span><span class="hljs-params">(<span class="hljs-keyword">boolean</span> stackFromEnd)</span> </span>&#123;
+		<span class="hljs-comment">// 这个方法会检查是否处于滚动或者布局中</span>
+    assertNotInLayoutOrScroll(<span class="hljs-keyword">null</span>);
+    <span class="hljs-keyword">if</span> (mStackFromEnd == stackFromEnd) &#123;
+        <span class="hljs-keyword">return</span>;
+    &#125;
+    mStackFromEnd = stackFromEnd;
+    <span class="hljs-comment">// 重新布局</span>
+    requestLayout();
+&#125;</code></pre>
+<p>而我们想要的，仅仅是修改<code>mStackFromEnd</code>这个变量的值。所以在我们的代码里，重写了这两个方法，如果是因为我们的测量而手动设置<code>mStatckFromEnd</code>时，上面的两个方法都不需要调用。完整的代码如下</p>
+<pre><code class="hljs kotlin"><span class="hljs-comment">// 因为 anchorInfo 方法的可见性为 default(对应 kotlin 中的 internal)，所以需要同包名</span>
+<span class="hljs-keyword">package</span> androidx.recyclerview.widget
+
+<span class="hljs-keyword">import</span> android.content.Context
+
+<span class="hljs-comment">/**
+ * description: 适配了聊天页面布局的 layoutmanager
+ * <span class="hljs-doctag">@date</span>: 2020-04-15 17:07
+ * <span class="hljs-doctag">@author</span>: Grieey
+ */</span>
+<span class="hljs-keyword">internal</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ChatLayoutManager</span></span>(context: Context) : LinearLayoutManager(context) &#123;
+
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">var</span> isAnchorInfoHandled = <span class="hljs-literal">false</span>
+  <span class="hljs-comment">/**
+   * 这个标识用于处理动态修改 stackFromEnd ，取消调用requestLayout
+   */</span>
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">var</span> setStackFromEndByUser = <span class="hljs-literal">true</span>
+  <span class="hljs-comment">/**
+   * 这个值是用于判断是否需要修改 setStackFromEnd 属性
+   * 当测量的 item 高度大于该值的时候，才需要动态的修改
+   */</span>
+  <span class="hljs-keyword">var</span> maxHeightForRecyclerView: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>
+
+  <span class="hljs-comment">/**
+   * setStackFromEnd 方法中，会调用这个方法进行检查，由我们自己处理这个赋值的时候，屏蔽调用
+   * <span class="hljs-doctag">@param</span> message
+   */</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">assertNotInLayoutOrScroll</span><span class="hljs-params">(message: <span class="hljs-type">String</span>?)</span></span> &#123;
+    <span class="hljs-keyword">if</span> (setStackFromEndByUser) &#123;
+      <span class="hljs-keyword">super</span>.assertNotInLayoutOrScroll(message)
+    &#125;
+  &#125;
+
+  <span class="hljs-comment">/**
+   * 重写方法作用同理上面
+   */</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">requestLayout</span><span class="hljs-params">()</span></span> &#123;
+    <span class="hljs-keyword">if</span> (setStackFromEndByUser) &#123;
+      <span class="hljs-keyword">super</span>.requestLayout()
+    &#125; <span class="hljs-keyword">else</span> &#123;
+      setStackFromEndByUser = <span class="hljs-literal">true</span>
+    &#125;
+  &#125;
+
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onAnchorReady</span><span class="hljs-params">(
+    recycler: <span class="hljs-type">RecyclerView</span>.<span class="hljs-type">Recycler</span>?,
+    state: <span class="hljs-type">RecyclerView</span>.<span class="hljs-type">State</span>?,
+    anchorInfo: <span class="hljs-type">AnchorInfo</span>?,
+    firstLayoutItemDirection: <span class="hljs-type">Int</span>
+  )</span></span> &#123;
+    <span class="hljs-keyword">if</span> (recycler != <span class="hljs-literal">null</span> &amp;&amp; anchorInfo != <span class="hljs-literal">null</span>) &#123;
+      detachAndScrapAttachedViews(recycler)
+      <span class="hljs-keyword">var</span> totalHeight = <span class="hljs-number">0</span>
+      <span class="hljs-keyword">for</span> (position <span class="hljs-keyword">in</span> <span class="hljs-number">0</span> until itemCount) &#123;
+        <span class="hljs-keyword">val</span> view = recycler.getViewForPosition(position)
+        measureChild(view, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
+        totalHeight += getDecoratedMeasuredHeight(view)
+      &#125;
+
+      <span class="hljs-keyword">if</span> (totalHeight != <span class="hljs-number">0</span> &amp;&amp; maxHeightForRecyclerView != <span class="hljs-number">0</span> &amp;&amp; !isAnchorInfoHandled) &#123;
+        <span class="hljs-keyword">if</span> (totalHeight &gt; maxHeightForRecyclerView) &#123;
+          anchorInfo.mLayoutFromEnd = <span class="hljs-literal">true</span>
+          anchorInfo.mPosition = itemCount - <span class="hljs-number">1</span>
+          setStackFromEndByUser = <span class="hljs-literal">false</span>
+          <span class="hljs-comment">/**
+           * 调用[LinearLayoutManager.setStackFromEnd]这个方法时，会调用[assertNotInLayoutOrScroll] 和 [requestLayout]
+           * 上面的方法重写，屏蔽了调用的逻辑，仅用于赋值
+           */</span>
+          stackFromEnd = <span class="hljs-literal">true</span>
+        &#125;
+      &#125;
+    &#125;
+  &#125;
+&#125;</code></pre>
+<h2 id="2020-04-22"><a href="#2020-04-22" class="headerlink" title="2020/04/22"></a>2020/04/22</h2><h3 id="kotlin中的函数引用多参数使用"><a href="#kotlin中的函数引用多参数使用" class="headerlink" title="kotlin中的函数引用多参数使用"></a>kotlin中的函数引用多参数使用</h3><p>对于<code>kotlin</code>中函数引用的更多用于，如果只是一个参数，像之前那样使用就可以了，如果存在多个函数呢，并且存在返回值，比如以下这样的场景</p>
+<pre><code class="hljs kotlin"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">safe</span><span class="hljs-params">(a:<span class="hljs-type">Int</span>?, b:<span class="hljs-type">Int</span>?, block:(<span class="hljs-type">a</span>:<span class="hljs-type">Int</span>, b:<span class="hljs-type">Int</span> )</span></span> -&gt; <span class="hljs-built_in">Unit</span>)&#123;
+	<span class="hljs-keyword">if</span> (a != <span class="hljs-literal">null</span> &amp;&amp; b != <span class="hljs-literal">null</span>) &#123;
+		block(a, b)
+	&#125;
+&#125;
+
+<span class="hljs-comment">// 使用时</span>
+safe(a, b)&#123; a1, b1 -&gt; 
+  ...
+&#125;</code></pre>
+<p>这样其实也没有问题，但是可以有更优雅的写法，那就是利用函数引用。我们可以看看，后面的<code>block</code>本质上是一个高阶函数，高阶函数其实是一个函数对象。而函数引用，本质上也是将引用指向一个具有和函数功能相同的对象。这个有点抽象，从实际的例子中看看，首先看怎么用的</p>
+<pre><code class="hljs kotlin"><span class="hljs-comment">// 创建一个和block一样功能的函数</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">function</span><span class="hljs-params">(a:<span class="hljs-type">Int</span>, b:<span class="hljs-type">Int</span>)</span></span>&#123;
+	...
+&#125;
+
+<span class="hljs-comment">// 使用时</span>
+safe(a, b, ::function)</code></pre>
+<p>因为这个<code>function</code>的函数接收两个参数，而<code>block</code>这个高阶函数，也需要接收两个参数，但是在这里，他们是两个东西，一个是函数，一个是函数类型的对象，那么怎么把函数变成函数类型的对象呢，使用<strong>:: </strong> 就可以将一个函数变成具有和函数功能一样的对象了，这就是函数引用。也就是说<code>::function</code>这样操作后，和<code>block</code>是一样的类型了。</p>
+<h2 id="2020-04-27"><a href="#2020-04-27" class="headerlink" title="2020/04/27"></a>2020/04/27</h2><h3 id="两个文本的自适应省略布局"><a href="#两个文本的自适应省略布局" class="headerlink" title="两个文本的自适应省略布局"></a>两个文本的自适应省略布局</h3><blockquote>
+<p>UI的一个需求，显示两个文本，文本的宽度都是自适应，但是当两个文本宽度加起来达到最大时，有不同的表现：</p>
+<p>1.如果两个文本都超长，则都显示省略号</p>
+<p>2.如果一个超长，一个很短，那么短的完整显示，长的省略显示</p>
+</blockquote>
+<p>这里我们用于设置文本的控件是一个自定义控件，内部持有一个<code>textView</code>,所以如果只是简单的将控件的宽度设置为<code>wrap_content</code>的话，后面一个的显示会导致前面的文本被挤压。开始尝试了使用<code>LinearLayout</code>和<code>ConstrainLayout</code>，但是两个文本控件的宽度都设置为<code>wrap_content</code>时，父控件在<code>onMeasure</code>其实都是无法根据现有的约束来设置文本控件中的<code>textView</code>是否需要省略的。</p>
+<p>所以我采取了反向思维，父布局使用<code>LinearLayout</code>，将两个文本控件按照比重平分，然后在代码中，获取文本控件的<code>textView</code>判断是否达到了省略，如果没有，重新设置文本控件的属性为<code>warap_content</code>，这样根据已经计算好的结果可以重新设置一次。比较耗费性能的就是需要重新<code>requestLayout</code>一次。xml代码就不贴了，就是线性布局中，两个自定义的文本控件按照比重平分。主要是代码部分的设置： </p>
+<pre><code class="hljs kotlin"><span class="hljs-comment">//重新布局，根据是否省略来重置tagView的属性</span>
+view.postDelayed(&#123;
+  <span class="hljs-keyword">val</span> childCount = view.childCount
+  <span class="hljs-keyword">for</span> (index <span class="hljs-keyword">in</span> <span class="hljs-number">0</span> until childCount) &#123;
+    <span class="hljs-keyword">val</span> tagView = view.getChildAt(index)
+    <span class="hljs-keyword">if</span> (tagView <span class="hljs-keyword">is</span> TagView) &#123;
+      <span class="hljs-comment">// isEllisped 方法就是获取textView的layout，然后调用getEllipsisCount获取省略字数</span>
+      <span class="hljs-keyword">if</span> (!tagView.isEllipsed()) &#123;
+        tagView.layoutParams?.let &#123;
+          (it <span class="hljs-keyword">as</span>? LinearLayout.LayoutParams)?.weight = <span class="hljs-number">0F</span>
+          (it <span class="hljs-keyword">as</span>? LinearLayout.LayoutParams)?.width = ViewGroup.LayoutParams.WRAP_CONTENT
+        &#125;
+      &#125;
+    &#125;
+  &#125;
+
+  <span class="hljs-keyword">if</span> (childCount &gt; <span class="hljs-number">0</span>) &#123;
+    view.commonItemFollowBotCircleLayout.requestLayout()
+  &#125;
+&#125;, <span class="hljs-number">100</span>)</code></pre>
+<h3 id="Travis-CI-安装指定版本的Node-js"><a href="#Travis-CI-安装指定版本的Node-js" class="headerlink" title="Travis CI 安装指定版本的Node.js"></a>Travis CI 安装指定版本的Node.js</h3><p>修改<code>.travis.yaml</code>文件中的配置:</p>
+<pre><code class="hljs yaml"><span class="hljs-attr">language:</span> <span class="hljs-string">node_js</span>
+<span class="hljs-attr">node_js:</span> <span class="hljs-string">v10.16.0</span> <span class="hljs-string">//</span> <span class="hljs-string">要最新的就是</span> <span class="hljs-string">stable</span></code></pre>
+<h2 id="2020-04-30"><a href="#2020-04-30" class="headerlink" title="2020/04/30"></a>2020/04/30</h2><p>###实现输入限制仅为中英文加数字和不同字符的计算</p>
+<p>比较优雅的做法是给<code>editText</code>设置<code>filters</code>，进行过滤，这样能直接限制输入的回调。要限制为中英文的输入，和计算中英文中每个字符所占的个数的不同时，在<code>filters</code>中会比较轻易的实现。首先，对刚刚输入的字符串，进行过滤，这样能保证接下来的处理仅包含需要处理的字符串，这一步的操作通过正则表达式来实现。</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> chinesePattern = Pattern.compile(<span class="hljs-string">"[\u4e00-\u9fa5]+"</span>) <span class="hljs-comment">// 判断中文</span>
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> letterPattern = Pattern.compile(<span class="hljs-string">"[a-zA-Z]+"</span>) <span class="hljs-comment">// 判断英文大小写</span>
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> numberPattern = Pattern.compile(<span class="hljs-string">"[0-9]+"</span>) <span class="hljs-comment">// 判断数字</span>
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> findAll = Pattern.compile(<span class="hljs-string">"[0-9a-zA-Z\u4e00-\u9fa5]+"</span>) <span class="hljs-comment">// 判断上诉所有</span></code></pre>
+<p>通过<code>findAll</code>先进行输入字符串的过滤</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">val</span> filterText = StringBuilder()
+<span class="hljs-keyword">val</span> findAllMatcher = findAll.matcher(source)
+<span class="hljs-keyword">while</span> (findAllMatcher.find()) &#123;
+  filterText.append(findAllMatcher.group())
+&#125;</code></pre>
+<p>###自定义的GsonBuilder进行三方解析</p>
+<p><code>gsonBuilder</code>可以进行自定义的<code>typeAdapter</code>注册，这样能够进行一些可见性受限制的类的序列化，主要使用的是<code>gson</code>中的<code>JsonSerializer</code>和<code>JsonDeserializer</code>这两个接口。通过实现他们，就能将自定义的类型进行 <code>toJson</code>和<code>fromJson</code>的操作了。这里使用一个实例来展示如何使用：</p>
+<pre><code class="hljs kotlin"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TextMessageSerializer</span> : <span class="hljs-type">JsonSerializer</span>&lt;<span class="hljs-type">ReEditMsgCacheBean</span>&gt; </span>&#123;
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">serialize</span><span class="hljs-params">(
+    src: <span class="hljs-type">ReEditMsgCacheBean</span>,
+    typeOfSrc: <span class="hljs-type">Type</span>,
+    context: <span class="hljs-type">JsonSerializationContext</span>
+  )</span></span>: JsonElement &#123;
+    <span class="hljs-keyword">return</span> JsonPrimitive(src.toString())
+  &#125;
+&#125;</code></pre>
+<p><code>ReEditMsgCacheBean</code>是我们自定义的类，里面包含一些三方库的实体，没有默认构造函数实现的时候。这个类就统一将整个对象转为<code>String</code>字符串。</p>
+<p>接下来就是解析了</p>
+<pre><code class="hljs kotlin"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TextMessageDeserializer</span> : <span class="hljs-type">JsonDeserializer</span>&lt;<span class="hljs-type">ReEditMsgCacheBean</span>&gt; </span>&#123;
+  <span class="hljs-meta">@Throws(JsonParseException::class)</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">deserialize</span><span class="hljs-params">(
+    src: <span class="hljs-type">JsonElement</span>, 
+    srcType: <span class="hljs-type">Type</span>,
+    context: <span class="hljs-type">JsonDeserializationContext</span>
+  )</span></span>: ReEditMsgCacheBean &#123;
+    <span class="hljs-keyword">if</span> (src.isJsonObject) &#123;
+      
+      ...
+      
+      <span class="hljs-comment">// 不能使用src.get("recallMsg").asString 会抛出异常</span>
+      <span class="hljs-comment">// 第三方库中的TextMessage类的对象没有暴露默认构造方法，所以需要在这里调用有参的构造方式实现</span>
+      <span class="hljs-keyword">val</span> textMessage = TextMessage(src.<span class="hljs-keyword">get</span>(<span class="hljs-string">"textMessage"</span>).toString().toByteArray())
+      
+      <span class="hljs-keyword">return</span> ReEditMsgCacheBean(textMessage)
+    &#125;
+    <span class="hljs-keyword">return</span> ReEditMsgCacheBean(TextMessage.obtain(<span class="hljs-string">""</span>))
+  &#125;
+&#125;</code></pre>
+<h2 id="2020-05-06"><a href="#2020-05-06" class="headerlink" title="2020/05/06"></a>2020/05/06</h2><h3 id="Mac下设置JDK环境"><a href="#Mac下设置JDK环境" class="headerlink" title="Mac下设置JDK环境"></a>Mac下设置JDK环境</h3><p>首先到<a href="https://www.oracle.com/java/technologies/javase-jdk14-downloads.html" target="_blank" rel="noopener">官网</a>下载对应<strong>Mac</strong>的<code>jdk</code>，下载后解压缩会得到一个文件夹。然后使用命令行工具打开编辑<code>~/.bash_profile</code>文件，如果没有就在<code>~/</code>目录下创建一个<code>touch .bash_profile</code>，输入以下的代码</p>
+<pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"><span class="hljs-comment"># JAVA_HOME的路径为刚刚解压的压缩包路径，到Home文件夹这一层</span></span>
+export JAVA_HOME=/Users/griee/Documents/Workspace/JavaPro/JDK/jdk-14.0.1.jdk/Contents/Home
+export PATH=$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar</code></pre>
+<p>然后执行</p>
+<pre><code class="hljs shell">source ~/.bash_profile
+java --version</code></pre>
+<p>来检查是否配置正确。</p>
+<h2 id="2020-05-07"><a href="#2020-05-07" class="headerlink" title="2020/05/07"></a>2020/05/07</h2><h3 id="背景高亮渐变的动画设置"><a href="#背景高亮渐变的动画设置" class="headerlink" title="背景高亮渐变的动画设置"></a>背景高亮渐变的动画设置</h3><p>很多时候需要背景高亮然后颜色渐变显示，使用<code>ArgbEvaluator()</code>的插值器</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">val</span> evaluator = ArgbEvaluator()
+animator = ValueAnimator.ofFloat(<span class="hljs-number">0f</span>, <span class="hljs-number">1f</span>)
+<span class="hljs-keyword">val</span> startColor = Color.parseColor(<span class="hljs-string">"#FF31D18B"</span>)
+animator?.addUpdateListener &#123;
+  <span class="hljs-keyword">val</span> value: <span class="hljs-built_in">Float</span> = it.animatedValue <span class="hljs-keyword">as</span> <span class="hljs-built_in">Float</span>
+  <span class="hljs-keyword">if</span> (value == <span class="hljs-number">1f</span>) &#123;
+    view?.setBackgroundColor(Color.TRANSPARENT)
+  &#125; <span class="hljs-keyword">else</span> &#123;
+    view?.setBackgroundColor(evaluator.evaluate(value, startColor, Color.TRANSPARENT) <span class="hljs-keyword">as</span> <span class="hljs-built_in">Int</span>)
+  &#125;
+&#125;
+animator?.interpolator = LinearInterpolator()
+animator?.duration = <span class="hljs-number">3000</span>
+animator?.start()</code></pre>
+<h3 id="透明度表格"><a href="#透明度表格" class="headerlink" title="透明度表格"></a>透明度表格</h3><p>透明度    16进制表示<br>100   %   00<br>99   %    03<br>98   %    05<br>97   %    07<br>96   %    0A<br>95   %    0D<br>94   %    0F<br>93   %    12<br>92   %    14<br>91   %    17<br>90   %    1A<br>89   %    1C<br>88   %    1E<br>87   %    21<br>86   %    24<br>85   %    26<br>84   %    29<br>83   %    2B<br>82   %    2E<br>81   %    30<br>80   %    33<br>79   %    36<br>78   %    38<br>77   %    3B<br>76   %    3D<br>75   %    40<br>74   %    42<br>73   %    45<br>72   %    47<br>71   %    4A<br>70   %    4D<br>69   %    4F<br>68   %    52<br>67   %    54<br>66   %    57<br>65   %    59<br>64   %    5C<br>63   %    5E<br>62   %    61<br>61   %    63<br>60   %    66<br>59   %    69<br>58   %    6B<br>57   %    6E<br>56   %    70<br>55   %    73<br>54   %    75<br>53   %    78<br>52   %    7A<br>51   %    7D<br>50   %    80<br>49   %    82<br>48   %    85<br>47   %    87<br>46   %    8A<br>45   %    8C<br>44   %    8F<br>43   %    91<br>42   %    94<br>41   %    96<br>40   %    99<br>39   %    9C<br>38   %    9E<br>37   %    A1<br>36   %    A3<br>35   %    A6<br>34   %    A8<br>33   %    AB<br>32   %    AD<br>31   %    B0<br>30   %    B3<br>29   %    B5<br>28   %    B8<br>27   %    BA<br>26   %    BD<br>25   %    BF<br>24   %    C2<br>23   %    C4<br>22   %    C7<br>21   %    C9<br>20   %    CC<br>19   %    CF<br>18   %    D1<br>17   %    D4<br>16   %    D6<br>15   %    D9<br>14   %    DB<br>13   %    DE<br>12   %    E0<br>11   %    E3<br>10   %    E6<br>9   %    E8<br>8   %    EB<br>7   %    ED<br>6   %    F0<br>5   %    F2<br>4   %    F5<br>3   %    F7<br>2   %    FA<br>1   %    FC<br>0   %    FF</p>
+<p><a href="https://blog.csdn.net/hewuzhao/article/details/78821954" target="_blank" rel="noopener">最全的Android 颜色透明度</a></p>
+<h2 id="2020-05-11"><a href="#2020-05-11" class="headerlink" title="2020/05/11"></a>2020/05/11</h2><h3 id="关于equals-和"><a href="#关于equals-和" class="headerlink" title="关于equals()和=="></a>关于equals()和==</h3><h4 id="Java中"><a href="#Java中" class="headerlink" title="Java中"></a>Java中</h4><p>首先明确，在<strong>Java</strong>中，<code>==</code>比较的是对象的首地址，而<code>equals</code>是`Object的方法，比较的也是首地址，但是很多类对这个方法进行了重写，就可以是比较的内容，比如<strong>String</strong>类。示例如下:</p>
+<pre><code class="hljs java">String str1 = <span class="hljs-keyword">new</span> String(<span class="hljs-string">"a"</span>);
+String str2 = <span class="hljs-keyword">new</span> String(<span class="hljs-string">"a"</span>);
+
+str1 == str2; <span class="hljs-comment">// false, 对象的首地址不一样</span>
+str1.equals(str2); <span class="hljs-comment">// true,对象的内容是一样的</span>
+  
+StringBuffer sb1 = <span class="hljs-keyword">new</span> StringBuffer(<span class="hljs-string">"a"</span>);
+StringBuffer sb2 = <span class="hljs-keyword">new</span> StringBuffer(<span class="hljs-string">"a"</span>);
+sb1 == sb2; <span class="hljs-comment">// false, 对象的首地址不一样</span>
+sb1.equals(sb2); <span class="hljs-comment">// false, 因为StringBuffer类没有重新Object的Equals方法，所以比较的是首地址</span>
+ 
+<span class="hljs-comment">// 特殊情况1</span>
+String str3 = <span class="hljs-string">"a"</span>;
+String str4 = <span class="hljs-string">"a"</span>;
+str3 == str4; <span class="hljs-comment">// true, 因为str3 和str4 是由字符串常量生成的变量，他们指向的首地址是同一个，所以相等</span>
+
+<span class="hljs-comment">// 特殊情况2</span>
+<span class="hljs-comment">// 基本类型只能用 == 比较，而且比较的是值</span>
+<span class="hljs-comment">// 如果是基本类型的包装类型，那么如同String类</span>
+<span class="hljs-keyword">int</span> num1 = <span class="hljs-number">1</span>;
+<span class="hljs-keyword">int</span> num2 = <span class="hljs-number">2</span>;
+<span class="hljs-keyword">int</span> num3 = <span class="hljs-number">1</span>;
+num1 == num2; <span class="hljs-comment">// false</span>
+num1 == num3; <span class="hljs-comment">// true</span>
+num1.equals(num2); <span class="hljs-comment">// error</span></code></pre>
+<p><a href="https://www.cnblogs.com/bluestorm/archive/2012/03/02/2377615.html" target="_blank" rel="noopener">java中equals方法的用法以及==的用法</a></p>
+<h3 id="Kotlin"><a href="#Kotlin" class="headerlink" title="Kotlin"></a>Kotlin</h3><p>在<strong>Kotlin</strong>中，<code>==</code> 为<code>equals()</code>方法，而<code>===</code> 等于<strong>Java</strong>中的<code>==</code>。</p>
+<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p>上述示例中的特殊情况1是因为有字符串常量生成的变量，字符串常量是<code>JVM</code>为了减少频繁创建字符串带来的性能销毁所所做的缓存。</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">val</span> str1 = <span class="hljs-string">"HelloWorld"</span>
+<span class="hljs-keyword">val</span> str2 = <span class="hljs-string">"Hello"</span>
+<span class="hljs-keyword">val</span> str3 = <span class="hljs-string">"World"</span>
+<span class="hljs-keyword">val</span> str4 = str2 + str3
+<span class="hljs-keyword">val</span> str5 = <span class="hljs-string">"Hello"</span> + <span class="hljs-string">"World"</span>
+
+str1 == str4 <span class="hljs-comment">// true</span>
+str1 === str4 <span class="hljs-comment">// false</span>
+str1 === str5 <span class="hljs-comment">// true , JVM 在编译时，会优化 "Hello" + "World"操作，合并为"HelloWorld"</span></code></pre>
+<p><a href="https://www.iteye.com/blog/rednaxelafx-774673" target="_blank" rel="noopener">关于String a = String(“xyz”)创建了多少个对象的讨论</a></p>
+<p><a href="https://blog.csdn.net/q5706503/article/details/84640762" target="_blank" rel="noopener">JDK1.8之后的运行时常量池</a></p>
+<h2 id="2020-06-01"><a href="#2020-06-01" class="headerlink" title="2020/06/01"></a>2020/06/01</h2><h3 id="Android-Studio-4-0-无法运行debug包的报错处理"><a href="#Android-Studio-4-0-无法运行debug包的报错处理" class="headerlink" title="Android Studio 4.0 无法运行debug包的报错处理"></a>Android Studio 4.0 无法运行debug包的报错处理</h3><p>在<code>gradle.properties</code>中添加</p>
+<pre><code class="hljs groovy">android.injected.testOnly=<span class="hljs-literal">false</span></code></pre>
+<h3 id="Android-报错1-1-8生成的字节码无法内联到1-1-6生成的字节码中"><a href="#Android-报错1-1-8生成的字节码无法内联到1-1-6生成的字节码中" class="headerlink" title="Android 报错1.1.8生成的字节码无法内联到1.1.6生成的字节码中"></a>Android 报错1.1.8生成的字节码无法内联到1.1.6生成的字节码中</h3><p>解决方案是在AndroidConfig中添加jvm相关的参数</p>
+<pre><code class="hljs groovy">kotlinOptions &#123;
+    jvmTarget = <span class="hljs-string">"1.8"</span>
+&#125;</code></pre>
+<p>还需要在AndroidStudio中修改项目的编译<strong>JDK</strong>版本为<code>1.1.8</code></p>
+<h2 id="2020-06-27"><a href="#2020-06-27" class="headerlink" title="2020/06/27"></a>2020/06/27</h2><h3 id="Mac上使用MAT分析内存"><a href="#Mac上使用MAT分析内存" class="headerlink" title="Mac上使用MAT分析内存"></a>Mac上使用MAT分析内存</h3><p>首先在官网上下载工具<a href="[https://www.eclipse.org/mat/downloads.php%5d(https:/eclipse.org/mat/](https://www.eclipse.org/mat/downloads.php](https:/eclipse.org/mat/">传送门</a>)。</p>
+<p>该工具官网说最低需要<strong>JDK1.8</strong>的支持，所以需要在mac上安装<strong>JDK1.8</strong>的环境，网上下载好<strong>JDK1.8</strong>安装好就可以了，使用<code>java -version</code>命令来验证是否安装成功。</p>
+<p>使用<strong>MAT</strong>工具需要打开app的包内容，到里面的<code>/MacOs</code>目录下手动开启工具。从<strong>AndroidStudio</strong>的<strong>Profiler</strong>中直接导出的hprof文件是不能直接使用的，需要到Android的<code>/SDK/platform-tools/</code>目录下执行</p>
+<pre><code class="hljs bash">./hprof-conv /Users/griee/Desktop/Log/profs/5.hprof /Users/griee/Desktop/Log/profs/5-new.hprof</code></pre>
+<p>来进行转换，前面是刚刚从<strong>Profiler</strong>中导出的文件地址，后面是需要导出的文件地址</p>
+<h2 id="2020-09-07"><a href="#2020-09-07" class="headerlink" title="2020/09/07"></a>2020/09/07</h2><h3 id="关于Paint中getFontMetrics方法所获取的数据"><a href="#关于Paint中getFontMetrics方法所获取的数据" class="headerlink" title="关于Paint中getFontMetrics方法所获取的数据"></a>关于Paint中getFontMetrics方法所获取的数据</h3><p>这个方法最后调用的是native层中的方法进行测量的， <a href="https://android.googlesource.com/platform/frameworks/base/+/master/core/jni/android/graphics/Paint.cpp" target="_blank" rel="noopener">在线地址</a></p>
+<p>首先是Java层的源码</p>
+<pre><code class="hljs java"><span class="hljs-comment">/**
+ * Return the font's recommended interline spacing, given the Paint's
+ * settings for typeface, textSize, etc. If metrics is not null, return the
+ * fontmetric values in it.
+ *
+ * &lt;p&gt;Note that these are the values for the main typeface, and actual text rendered may need a
+ * larger set of values because fallback fonts may get used in rendering the text.
+ *
+ * <span class="hljs-doctag">@param</span> metrics If this object is not null, its fields are filled with
+ *                the appropriate values given the paint's text attributes.
+ * <span class="hljs-doctag">@return</span> the font's recommended interline spacing.
+ */</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">float</span> <span class="hljs-title">getFontMetrics</span><span class="hljs-params">(FontMetrics metrics)</span> </span>&#123;
+   <span class="hljs-comment">// 直接调用的native </span>
+    <span class="hljs-keyword">return</span> nGetFontMetrics(mNativePaint, metrics);
+&#125;</code></pre>
+<p>以下是native中对应的方法，会先去根据传入的Paint对象来获取文字相关的数据，再把计算的数据设置到java层刚刚传入的<code>metrics</code>对象中。</p>
+<pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-keyword">static</span> jfloat <span class="hljs-title">getFontMetrics</span><span class="hljs-params">(JNIEnv* env, jobject, jlong paintHandle, jobject metricsObj)</span> </span>&#123;
+    SkFontMetrics metrics;
+    <span class="hljs-comment">// 在这里获取具体的数据</span>
+    SkScalar spacing = getMetricsInternal(paintHandle, &amp;metrics);
+   <span class="hljs-comment">// 将测量出来的数据赋值给java</span>
+    <span class="hljs-keyword">if</span> (metricsObj) &#123;
+        SkASSERT(env-&gt;IsInstanceOf(metricsObj, gFontMetrics_class));
+        env-&gt;SetFloatField(metricsObj, gFontMetrics_fieldID.top, SkScalarToFloat(metrics.fTop));
+        env-&gt;SetFloatField(metricsObj, gFontMetrics_fieldID.ascent, SkScalarToFloat(metrics.fAscent));
+        env-&gt;SetFloatField(metricsObj, gFontMetrics_fieldID.descent, SkScalarToFloat(metrics.fDescent));
+        env-&gt;SetFloatField(metricsObj, gFontMetrics_fieldID.bottom, SkScalarToFloat(metrics.fBottom));
+        env-&gt;SetFloatField(metricsObj, gFontMetrics_fieldID.leading, SkScalarToFloat(metrics.fLeading));
+    &#125;
+    <span class="hljs-keyword">return</span> SkScalarToFloat(spacing);
+&#125;</code></pre>
+<p>再看看具体计算的方法：</p>
+<pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-keyword">static</span> SkScalar <span class="hljs-title">getMetricsInternal</span><span class="hljs-params">(jlong paintHandle, SkFontMetrics *metrics)</span> </span>&#123;
+    <span class="hljs-keyword">const</span> <span class="hljs-keyword">int</span> kElegantTop = <span class="hljs-number">2500</span>;
+    <span class="hljs-keyword">const</span> <span class="hljs-keyword">int</span> kElegantBottom = <span class="hljs-number">-1000</span>;
+    <span class="hljs-keyword">const</span> <span class="hljs-keyword">int</span> kElegantAscent = <span class="hljs-number">1900</span>;
+    <span class="hljs-keyword">const</span> <span class="hljs-keyword">int</span> kElegantDescent = <span class="hljs-number">-500</span>;
+    <span class="hljs-keyword">const</span> <span class="hljs-keyword">int</span> kElegantLeading = <span class="hljs-number">0</span>;
+   <span class="hljs-comment">// 根据paintHandle生成Paint对象</span>
+    Paint* paint = <span class="hljs-keyword">reinterpret_cast</span>&lt;Paint*&gt;(paintHandle);
+    <span class="hljs-comment">// 获取到字体</span>
+    SkFont* font = &amp;paint-&gt;getSkFont();
+    <span class="hljs-keyword">const</span> Typeface* typeface = paint-&gt;getAndroidTypeface();
+    typeface = Typeface::resolveDefault(typeface);
+    <span class="hljs-comment">// 设置字体样式</span>
+    minikin::FakedFont baseFont = typeface-&gt;fFontCollection-&gt;baseFontFaked(typeface-&gt;fStyle);
+    <span class="hljs-keyword">float</span> saveSkewX = font-&gt;getSkewX();
+    <span class="hljs-keyword">bool</span> savefakeBold = font-&gt;isEmbolden();
+    MinikinFontSkia::populateSkFont(font, baseFont.font-&gt;typeface().get(), baseFont.fakery);
+    <span class="hljs-comment">// 根据字体获取到矩阵数据</span>
+    SkScalar spacing = font-&gt;getMetrics(metrics);
+    <span class="hljs-comment">// The populateSkPaint call may have changed fake bold / text skew</span>
+    <span class="hljs-comment">// because we want to measure with those effects applied, so now</span>
+    <span class="hljs-comment">// restore the original settings.</span>
+    font-&gt;setSkewX(saveSkewX);
+    font-&gt;setEmbolden(savefakeBold);
+    <span class="hljs-keyword">if</span> (paint-&gt;getFamilyVariant() == minikin::FamilyVariant::ELEGANT) &#123;
+       <span class="hljs-comment">// 根据size 计算ascent等数据，再进行赋值</span>
+        SkScalar size = font-&gt;getSize();
+        metrics-&gt;fTop = -size * kElegantTop / <span class="hljs-number">2048</span>;
+        metrics-&gt;fBottom = -size * kElegantBottom / <span class="hljs-number">2048</span>;
+        metrics-&gt;fAscent = -size * kElegantAscent / <span class="hljs-number">2048</span>;
+        metrics-&gt;fDescent = -size * kElegantDescent / <span class="hljs-number">2048</span>;
+        metrics-&gt;fLeading = size * kElegantLeading / <span class="hljs-number">2048</span>;
+        spacing = metrics-&gt;fDescent - metrics-&gt;fAscent + metrics-&gt;fLeading;
+    &#125;
+    <span class="hljs-keyword">return</span> spacing;
+&#125;</code></pre>
+<h2 id="2020-10-20"><a href="#2020-10-20" class="headerlink" title="2020/10/20"></a>2020/10/20</h2><h3 id="MacOS中，下载的应用打开时，提示无法打开的修复方案"><a href="#MacOS中，下载的应用打开时，提示无法打开的修复方案" class="headerlink" title="MacOS中，下载的应用打开时，提示无法打开的修复方案"></a>MacOS中，下载的应用打开时，提示无法打开的修复方案</h3><p>该情况可能是应用的压缩包在加压缩的时候破坏了应用的权限，所以可以点击应用，右键显示包内容，然后找到MaxOS文件夹，这个时候在命令行中执行命令<code>chmod +x /User/xxxx/xxx/xx.app/Contents/MacOS/xx.app</code>，修改了应用的权限后，就可以打开了</p>
+<h3 id="利用GitHub-jsDelivr-PicGo构建免费的图床"><a href="#利用GitHub-jsDelivr-PicGo构建免费的图床" class="headerlink" title="利用GitHub+jsDelivr+PicGo构建免费的图床"></a>利用GitHub+jsDelivr+PicGo构建免费的图床</h3><p>这里有一篇文章有基本的教程<a href="https://www.itrhx.com/2019/08/01/A27-image-hosting/" target="_blank" rel="noopener">传送门</a>，但是里面有一点细节没有说，那就是如果不需要发布<strong>release版本来控制图片资源</strong>，在<strong>PicGo</strong>中设置自定义Url的时候需要在仓库名后加上分支的名字，如<code>xxxxx/Github用户名/图床仓库名@仓库分支/路径</code>，而且仓库需要是<code>Public</code>状态，这样才能访问到我们放在仓库中的资源，否则会一直报错<code>failed to fetch xxxx</code>，。</p>
+<h2 id="2020-10-31"><a href="#2020-10-31" class="headerlink" title="2020/10/31"></a>2020/10/31</h2><h3 id="关于Kotlin中的排序"><a href="#关于Kotlin中的排序" class="headerlink" title="关于Kotlin中的排序"></a>关于Kotlin中的排序</h3><p><code>sort()</code>方法是升序排序，<code>sortByDescing()</code>是降序排序，如果需要多个条件来排序，可以使用<strong>Compartor</strong>来辅助排序</p>
+<pre><code class="hljs kotlin">list.sortWith(Compartor&#123; o1, o2 -&gt;
+        <span class="hljs-comment">// 这里需要返回一个int值，这个值的意义就是，等于0就是相等，大于0 就是o1 排在o2 前面，小于则相反,o2 排在o1前面</span>
+&#125;)</code></pre>
+<h3 id="Kotlin中二维和三维数组的初始化"><a href="#Kotlin中二维和三维数组的初始化" class="headerlink" title="Kotlin中二维和三维数组的初始化"></a>Kotlin中二维和三维数组的初始化</h3><pre><code class="hljs kotlin"><span class="hljs-keyword">val</span> two = Array&lt;IntArray&gt; &#123; IntArray(<span class="hljs-number">2</span>) &#125;
+<span class="hljs-keyword">val</span> three = Array&lt;Array&lt;IntArrat&gt;&gt; &#123; Array&lt;IntArray&gt; &#123; IntArray(<span class="hljs-number">3</span>) &#125; &#125;</code></pre>
+<p>##2020/12/30</p>
+<h3 id="git-fatal-refusing-to-merge-unrelated-histories-解决方案"><a href="#git-fatal-refusing-to-merge-unrelated-histories-解决方案" class="headerlink" title="git fatal: refusing to merge unrelated histories 解决方案"></a>git fatal: refusing to merge unrelated histories 解决方案</h3><p>在<strong>merge</strong>或者<strong>rebase</strong>中，出现该错误是因为两个分支没有取得联系，解决方案是在命令后面增加<code>--allow-unrelated-histories</code>,如</p>
+<pre><code class="hljs shell">git merge master --allow-unrelated-histories</code></pre>
+<h3 id="git-修改初始化时默认分支名称"><a href="#git-修改初始化时默认分支名称" class="headerlink" title="git 修改初始化时默认分支名称"></a>git 修改初始化时默认分支名称</h3><pre><code class="hljs shell">git config --global init.defaultBranch main</code></pre>
+</div></article><div class="post-view__sidebar"><div class="sidebar"><div class="tocbot"><h2>Toc</h2><div class="toc__content"></div></div><h2>Links</h2><div class="sidebar__link"><ul><li><a href="https://github.com/Grieey">Github</a></li><li><a href="https://juejin.im/user/2858385960867566">掘金</a></li><li><a href="/yangqing433520@163.com">Mail</a></li></ul></div><h2>Archives</h2><div class="sidebar__archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/">2018</a></li></ul></div><h2>Categories</h2><div class="sidebar__categories"><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/">Android</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/">Glide</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/">Kotlin</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/工具/">工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/">设计模式</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/学习记录/">学习记录</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/">博客</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/博客/Hugo/">Hugo</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/hexo/">hexo</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/旅途/">旅途</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a></li></ul></div><h2>Tags</h2><div class="sidebar__tags"><ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Charles/">Charles</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Glide/">Glide</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Handler/">Handler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hugo/">Hugo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kotlin/">Kotlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mac/">Mac</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ReferenceQueue/">ReferenceQueue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Retrofit/">Retrofit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis-CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vcs/">Vcs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/打家劫舍/">打家劫舍</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/抓包/">抓包</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/杂谈/">杂谈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码分析/">源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码学习/">源码学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/碧峰峡/">碧峰峡</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/踏青/">踏青</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/鸡蛋掉落/">鸡蛋掉落</a></li></ul></div></div></div></div><div class="horizontal-line" style="height: 1px"></div><div class="main__bottom"><div class="pre-next"><a class="pre-button" href="/2020/02/18/Glide的缓存策略源码分析/">Glide的缓存策略源码分析</a><a class="next-button" href="/2019/04/06/碧峰峡踏青/">碧峰峡踏青</a></div><div id="comments"></div></div></div></div><div class="footer"><span>©️2019-2021 Designed By&nbsp;<strong><a href="https://github.com/random-yang">RandomYang</a></strong> Powered By&nbsp;</span><strong><a href="https://hexo.io">hexo</a></strong></div><div class="darkmode-mask" id="darkmode-mask"></div><div class="sidebar__button"></div></body></html>

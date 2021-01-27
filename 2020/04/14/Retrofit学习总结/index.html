@@ -1,0 +1,283 @@
+<!DOCTYPE html><html lang="en"><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0"><meta name="description" content="Retrofit学习总结 [ 胡杨日报 ] "><meta name="theme-color" content="#ebc65a"><title>Retrofit学习总结 [ 胡杨日报 ] </title><link rel="shortcut icon" href="/favicon.ico"><link rel="stylesheet" href="/css/index.css"><script src="https://cdn.bootcss.com/highlight.js/9.6.0/highlight.min.js" defer></script><script src="/js/paper.js" defer></script><script src="https://www.googletagmanager.com/gtag/js?id=xx-xxxxxxx-xx" async></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'xx-xxxxxxx-xx');</script><script src="https://www.unpkg.com/valine/dist/Valine.min.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  new Valine({
+    el: '#comments',
+    appId: 'COvXgWafnfEKEiJ1zeEyqhNN-gzGzoHsz',
+    appKey: '4DuhSbU89A92Ny1HFmy0uClb',
+    notify: false,
+    verify: false,
+    avatar: 'mp',
+    placeholder: '说点什么呗~',
+  })
+})</script><link rel="stylesheet" href="/css/tocbot.css"><script src="/js/tocbot.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  tocbot.init({
+    // Where to render the table of contents.
+    tocSelector: '.toc__content',
+    // Where to grab the headings to build the table of contents.
+    contentSelector: '.article__content',
+    // Which headings to grab inside of the contentSelector element.
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    // For headings inside relative or absolute positioned containers within content.
+    hasInnerContainers: true,
+    orderedList: false,
+    collapseDepth: 2,
+  });
+})</script><link rel="preload" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css"><link rel="preload" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap"></head><body><div class="mask-border"></div><div class="head"><div class="head__inner"><h1><a href="/">胡杨日报</a></h1><p>胡杨树下</p></div></div><div class="paper-container"><div class="main"><div class="location-bar"><div class="line-1"><div class="horizontal-line" style="height: 3px"></div></div><div class="line-2"><div class="horizontal-line" style="height: 1px"></div></div><p class="text">Retrofit学习总结</p><div class="switch-button"><input class="container_toggle" type="checkbox" id="switch" name="mode"><label for="switch">Toggle</label></div><div class="line-3"><div class="horizontal-line" style="height: 1px"></div></div></div><div class="main__2-col"><article class="post-view__article"><div class="article__infomation"><div class="posts-item"><h2 class="posts-item__title"><a href>Retrofit学习总结</a></h2><span class="post__date">2020-04-14</span><a href="/tags/Retrofit/"><span class="post__tags">#Retrofit</span></a><a href="/tags/源码学习/"><span class="post__tags">#源码学习</span></a></div></div><div class="article__content"><h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><p><strong>Retrofit2</strong> 是一款开源的网络请求框架，它对Android中的网络请求从请求的构建，请求线程的切换和请求的调度以及对请求结果的解析等一系列的流程进行了统一封装，使得我们只需要将一次网络请求的关注点从请求的具体细节和管理中转移到只需要关注请求的配置，极大的提高了网路请求的操作，而且对接口的管理也变得十分容易，简单易用易管理。</p>
+<p>第二是整个框架的扩展性很强，对于不同的项目，请求的底层发起或者是请求的解析及请求的回调等等实现可能有差异，在Retrofit中都将上诉的每一个过程以配置项的形式配置给Retrofit类，从而可以很轻易的实现替换或者自定义。</p>
+<p>第三是在整个请求的过程中，在Retrofit的内部都进行了大量的验证和检验，这使得我们在是使用的过程中能比较轻易的发现配置的错误或者处理请求失败等情况。</p>
+<h2 id="原理及流程分析"><a href="#原理及流程分析" class="headerlink" title="原理及流程分析"></a>原理及流程分析</h2><p><strong>Retrofit2</strong>的大概原理是利用动态代理来实现的，简单说就是将我们配置好的接口类，在程序运行时通过动态代理生成实际的代理类，然后由代理具体的去生成请求需要的Call对象。这个Call对象会具体的调用进行请求的异步接口<code>enqueue</code>或者是同步接口<code>execute</code>，来触发实际的请求操作。</p>
+<p>下面是<a href="https://www.jianshu.com/p/45cb536be2f4" target="_blank" rel="noopener">stay</a>所绘制的一张流程图</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/625299-29a632638d9f518f.png" alt></p>
+<p>从上图不仅仅可以很清晰的看出一个请求的大概流程，还能知道整个Retrofit的大概结构是怎么样的。接下来就结合上图和具体的源码来看看在Retrofit中上图的细节是如何实现的。</p>
+<h3 id="建立请求的配置"><a href="#建立请求的配置" class="headerlink" title="建立请求的配置"></a>建立请求的配置</h3><pre><code class="hljs kotlin"><span class="hljs-comment">//创建Retrofit对象，并对其进行配置</span>
+<span class="hljs-keyword">val</span> retrofit: Retrofit = Retrofit.Builder()
+      .baseUrl(BASE_URL)
+      .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+      .client(client)
+      .addConverterFactory(GsonConverterFactory.create())
+      .build()</code></pre>
+<p>构建<code>Retrofit</code>使用了构建者模式，这个模式可以很好的解构构建的条件和需要构建的对象，让我们可以根据自己需要来构建不同的请求。如上除了配置<code>baseUrl</code>，还添加了<code>CallAdapterFactory</code>和<code>GsonConverterFactory</code>两个对象，一个用于发起请求一个用于解析请求。</p>
+<h3 id="生成Call对象"><a href="#生成Call对象" class="headerlink" title="生成Call对象"></a>生成Call对象</h3><pre><code class="hljs kotlin"><span class="hljs-keyword">val</span> service: GitHubService = retrofit.create(GitHubService::<span class="hljs-class"><span class="hljs-keyword">class</span>.<span class="hljs-title">java</span>)</span>
+<span class="hljs-keyword">val</span> call = service.listRepo(<span class="hljs-string">"xxx"</span>)
+
+<span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">GitHubService</span> </span>&#123;
+  <span class="hljs-meta">@GET(<span class="hljs-meta-string">"users/&#123;user&#125;/repos"</span>)</span>
+  <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">listRepos</span><span class="hljs-params">(<span class="hljs-meta">@Path(<span class="hljs-meta-string">"user"</span>)</span> user: <span class="hljs-type">String</span>?)</span></span>: Call&lt;List&lt;Repo?&gt;?&gt;?
+&#125;</code></pre>
+<p>这里的<code>GitHubService</code>就是我们自己定义的Api的接口类，里面生命了业务中需要使用的Api。接下里的重点是<code>create</code>这个方法</p>
+<pre><code class="hljs java"><span class="hljs-keyword">public</span> &lt;T&gt; <span class="hljs-function">T <span class="hljs-title">create</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Class&lt;T&gt; service)</span> </span>&#123;
+    <span class="hljs-comment">// 1.验证接口 </span>
+    validateServiceInterface(service);
+    <span class="hljs-comment">// 2.返回动态代理的对象</span>
+    <span class="hljs-keyword">return</span> (T)
+        Proxy.newProxyInstance(
+            service.getClassLoader(),
+            <span class="hljs-keyword">new</span> Class&lt;?&gt;[] &#123;service&#125;,
+            <span class="hljs-keyword">new</span> InvocationHandler() &#123;
+              <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Platform platform = Platform.get();
+              <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Object[] emptyArgs = <span class="hljs-keyword">new</span> Object[<span class="hljs-number">0</span>];
+
+              <span class="hljs-meta">@Override</span>
+              <span class="hljs-keyword">public</span> <span class="hljs-meta">@Nullable</span> <span class="hljs-function">Object <span class="hljs-title">invoke</span><span class="hljs-params">(Object proxy, Method method, @Nullable Object[] args)</span>
+                  <span class="hljs-keyword">throws</span> Throwable </span>&#123;
+                <span class="hljs-comment">// If the method is a method from Object then defer to normal invocation.</span>
+                <span class="hljs-keyword">if</span> (method.getDeclaringClass() == Object.class) &#123;
+                  <span class="hljs-keyword">return</span> method.invoke(<span class="hljs-keyword">this</span>, args);
+                &#125;
+                args = args != <span class="hljs-keyword">null</span> ? args : emptyArgs;
+                <span class="hljs-keyword">return</span> platform.isDefaultMethod(method)
+                    ? platform.invokeDefaultMethod(method, service, proxy, args)
+                    : loadServiceMethod(method).invoke(args);
+              &#125;
+            &#125;);
+  &#125;</code></pre>
+<p>先看第一步，验证接口，代码如下，代码的逻辑主要是两块。</p>
+<p>先是遍历的验证，如果接口是泛型接口就会直接抛出异常。然后第二个是一个提前验证和缓存，如果<code>validateEagerly</code>这个变量我们设置为true，这个时候就会先调用<code>loadServiceMethod</code>这个方法，从上面的代码我们也可以看到，这个方法其实也是动态代理最后调用的方法，那么这里先调用的目的就是为了验证接口是否合法从而提前暴露出问题，但是由于该方法里面是反射来进行的，接口一次性都加载会比较耗费性能，一般都是调试时打开，正式环境会关闭。</p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">validateServiceInterface</span><span class="hljs-params">(Class&lt;?&gt; service)</span> </span>&#123;
+   <span class="hljs-keyword">if</span> (!service.isInterface()) &#123;
+     <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(<span class="hljs-string">"API declarations must be interfaces."</span>);
+   &#125;
+
+   Deque&lt;Class&lt;?&gt;&gt; check = <span class="hljs-keyword">new</span> ArrayDeque&lt;&gt;(<span class="hljs-number">1</span>);
+   check.add(service);
+   <span class="hljs-keyword">while</span> (!check.isEmpty()) &#123;
+     Class&lt;?&gt; candidate = check.removeFirst();
+     <span class="hljs-comment">// 验证是否是泛型接口</span>
+     <span class="hljs-keyword">if</span> (candidate.getTypeParameters().length != <span class="hljs-number">0</span>) &#123;
+       StringBuilder message =
+           <span class="hljs-keyword">new</span> StringBuilder(<span class="hljs-string">"Type parameters are unsupported on "</span>).append(candidate.getName());
+       <span class="hljs-keyword">if</span> (candidate != service) &#123;
+         message.append(<span class="hljs-string">" which is an interface of "</span>).append(service.getName());
+       &#125;
+       <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(message.toString());
+     &#125;
+     Collections.addAll(check, candidate.getInterfaces());
+   &#125;
+
+   <span class="hljs-keyword">if</span> (validateEagerly) &#123;
+     Platform platform = Platform.get();
+     <span class="hljs-keyword">for</span> (Method method : service.getDeclaredMethods()) &#123;
+       <span class="hljs-keyword">if</span> (!platform.isDefaultMethod(method) &amp;&amp; !Modifier.isStatic(method.getModifiers())) &#123;
+         loadServiceMethod(method);
+       &#125;
+     &#125;
+   &#125;
+ &#125;</code></pre>
+<p>接下里就是第二步，第二步调用了<code>Proxy.newProxyInstance</code>方法来生成动态代理类，这个方法会接收三个参数，第一个是一个<code>classLoader</code>，是<strong>JVM</strong>中用于生成代理类的，第二个就是需要代理的接口的数组，第三个是一个<code>InvocationHandler</code>的匿名类，这个中就是我们动态代理类最后实际生成的代理类会执行的代码。例如我们的接口如下声明</p>
+<pre><code class="hljs kotlin"><span class="hljs-keyword">val</span> call = service.listRepo(<span class="hljs-string">"xxx"</span>)</code></pre>
+<p>这里的<code>service</code>是我们声明的接口类，那它的具体实现类就是上面的代理所生成的，大概会如下伪代码</p>
+<pre><code class="hljs kotlin"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">xxPro</span> : <span class="hljs-type">GitHubService &#123;</span></span>
+  <span class="hljs-keyword">val</span> handler: InvocationHandler
+ <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">listRepos</span><span class="hljs-params">(user: <span class="hljs-type">String</span>?)</span></span>: Call? &#123;
+    <span class="hljs-keyword">val</span> method = getMethod(<span class="hljs-string">""</span>listRepos<span class="hljs-string">""</span>) 
+    <span class="hljs-keyword">return</span> handler.invoke(<span class="hljs-keyword">this</span>, method, user )
+  &#125;
+&#125;</code></pre>
+<p>在代理中会持有我们传入的那个<code>InvocationHandler</code>匿名类的对象，然后调用其<code>invoke</code>方法，这个方法正好就是上面<code>create</code>中所实现的逻辑。这一段就实现了将我们配置的接口进行了统一的封装处理，使得我们只需要关注接口的配置即可。回到上面的代码，在<code>invoke</code>内部也有两个处理，一个是判断了调用的方法是否是<code>Object</code>对象的方法，因为所有的对象都是继承自<code>Object</code>对象，所以如果调用的方法是<code>Object</code>的就直接执行，这里还判断了是否是<code>platform.isDefaultMethod(method)</code>，以下是该方法的实现，这个方法就是判断的是否是<strong>Java8</strong>的默认方法(关于啥是默认方法，<a href="https://www.runoob.com/java/java8-default-methods.html" target="_blank" rel="noopener">这里有解释</a>)，如果是也直接执行即可。</p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">boolean</span> <span class="hljs-title">isDefaultMethod</span><span class="hljs-params">(Method method)</span> </span>&#123;
+  <span class="hljs-keyword">return</span> hasJava8Types &amp;&amp; method.isDefault();
+&#125;</code></pre>
+<p>最后就是调用的一开始验证准备调用的那个<code>loadServiceMethod</code> 来获取一个 <code>ServiceMethod</code>对象并调用其<code>invoke</code>方法，我们来看看实现</p>
+<pre><code class="hljs java">ServiceMethod&lt;?&gt; loadServiceMethod(Method method) &#123;
+  ServiceMethod&lt;?&gt; result = serviceMethodCache.get(method);
+  <span class="hljs-keyword">if</span> (result != <span class="hljs-keyword">null</span>) <span class="hljs-keyword">return</span> result;
+
+  <span class="hljs-keyword">synchronized</span> (serviceMethodCache) &#123;
+    result = serviceMethodCache.get(method);
+    <span class="hljs-keyword">if</span> (result == <span class="hljs-keyword">null</span>) &#123;
+      result = ServiceMethod.parseAnnotations(<span class="hljs-keyword">this</span>, method);
+      serviceMethodCache.put(method, result);
+    &#125;
+  &#125;
+  <span class="hljs-keyword">return</span> result;
+&#125;</code></pre>
+<p>这个方法，其实就做了两件事，一是建立<code>ServiceMethod</code>对象，而是建立缓存。所以我们直接看<code>parseAnnotations</code>方法就可以了。</p>
+<pre><code class="hljs java"><span class="hljs-keyword">abstract</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServiceMethod</span>&lt;<span class="hljs-title">T</span>&gt; </span>&#123;
+  <span class="hljs-keyword">static</span> &lt;T&gt; <span class="hljs-function">ServiceMethod&lt;T&gt; <span class="hljs-title">parseAnnotations</span><span class="hljs-params">(Retrofit retrofit, Method method)</span> </span>&#123;
+    RequestFactory requestFactory = RequestFactory.parseAnnotations(retrofit, method);
+	...非核心逻辑...
+    <span class="hljs-keyword">return</span> HttpServiceMethod.parseAnnotations(retrofit, method, requestFactory);
+  &#125;
+
+  <span class="hljs-keyword">abstract</span> <span class="hljs-meta">@Nullable</span> <span class="hljs-function">T <span class="hljs-title">invoke</span><span class="hljs-params">(Object[] args)</span></span>;
+&#125;</code></pre>
+<p>这是个抽象方法，但是它其实只有一个实现类，那就是`HttpServiceMethod ,然后看看具体的实现</p>
+<pre><code class="hljs java"><span class="hljs-keyword">static</span> &lt;ResponseT, ReturnT&gt; <span class="hljs-function">HttpServiceMethod&lt;ResponseT, ReturnT&gt; <span class="hljs-title">parseAnnotations</span><span class="hljs-params">(
+     Retrofit retrofit, Method method, RequestFactory requestFactory)</span> </span>&#123;
+  ...
+   CallAdapter&lt;ResponseT, ReturnT&gt; callAdapter =
+       createCallAdapter(retrofit, method, adapterType, annotations);
+  ...
+   Converter&lt;ResponseBody, ResponseT&gt; responseConverter =
+       createResponseConverter(retrofit, method, responseType);
+
+   okhttp3.Call.Factory callFactory = retrofit.callFactory;
+   <span class="hljs-keyword">if</span> (!isKotlinSuspendFunction) &#123;
+     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> CallAdapted&lt;&gt;(requestFactory, callFactory, responseConverter, callAdapter);
+   &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (continuationWantsResponse) &#123;
+     <span class="hljs-comment">//noinspection unchecked Kotlin compiler guarantees ReturnT to be Object.</span>
+     <span class="hljs-keyword">return</span> (HttpServiceMethod&lt;ResponseT, ReturnT&gt;)
+         <span class="hljs-keyword">new</span> SuspendForResponse&lt;&gt;(
+             requestFactory,
+             callFactory,
+             responseConverter,
+             (CallAdapter&lt;ResponseT, Call&lt;ResponseT&gt;&gt;) callAdapter);
+   &#125; <span class="hljs-keyword">else</span> &#123;
+     <span class="hljs-comment">//noinspection unchecked Kotlin compiler guarantees ReturnT to be Object.</span>
+     <span class="hljs-keyword">return</span> (HttpServiceMethod&lt;ResponseT, ReturnT&gt;)
+         <span class="hljs-keyword">new</span> SuspendForBody&lt;&gt;(
+             requestFactory,
+             callFactory,
+             responseConverter,
+             (CallAdapter&lt;ResponseT, Call&lt;ResponseT&gt;&gt;) callAdapter,
+             continuationBodyNullable);
+   &#125;
+ &#125;</code></pre>
+<p>这个方法精简一下就是上面的样子了，依次创建了<code>CallAdapter、responseConverter、callFactory</code>这几个对象，然后根据条件去创建<code>CallAdapted</code>(<strong>isKotlinSuspendFunction</strong>是指是否是Kotlin中的<code>suspend</code>关键字修饰的方法，目前一般都不是，如果有用到协程可以去看看下面的实现，看看有啥区别)。这里的<code>CallAdapted</code>是<code>HttpServiceMethod</code>的子类。最后我们就是看看它的<code>invoke</code>方法的实现</p>
+<pre><code class="hljs java"><span class="hljs-keyword">final</span> <span class="hljs-meta">@Nullable</span> <span class="hljs-function">ReturnT <span class="hljs-title">invoke</span><span class="hljs-params">(Object[] args)</span> </span>&#123;
+  Call&lt;ResponseT&gt; call = <span class="hljs-keyword">new</span> OkHttpCall&lt;&gt;(requestFactory, args, callFactory, responseConverter);
+  <span class="hljs-keyword">return</span> adapt(call, args);
+&#125;</code></pre>
+<p>这里创建了一个<code>OkhttpCall</code>，然后调用<code>adapt</code>方法。而<code>adapt</code>方法本身是一个抽象方法，它的具体实现是在刚刚创建的那个<code>CallAdapted</code>类中</p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">protected</span> ReturnT <span class="hljs-title">adapt</span><span class="hljs-params">(Call&lt;ResponseT&gt; call, Object[] args)</span> </span>&#123;
+      <span class="hljs-keyword">return</span> callAdapter.adapt(call);
+    &#125;</code></pre>
+<p>看到这里其实也能猜到大概的功能了，调用<code>callAdapter</code>无非就是对<code>call</code>对象做了一层适配的转换，所以最主要的还是那个<code>call</code>对象。</p>
+<p>那么到这里，这一段开头的<code>create</code>方法创建<code>call</code>对象的流程算是完成了。</p>
+<h3 id="请求的发起和调度"><a href="#请求的发起和调度" class="headerlink" title="请求的发起和调度"></a>请求的发起和调度</h3><pre><code class="hljs kotlin">call?.enqueue(<span class="hljs-keyword">object</span> : Callback &#123;
+      <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onFailure</span><span class="hljs-params">(call: <span class="hljs-type">Call</span>, e: <span class="hljs-type">IOException</span>)</span></span> &#123;
+      &#125;
+
+      <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onResponse</span><span class="hljs-params">(call: <span class="hljs-type">Call</span>, response: <span class="hljs-type">Response</span>)</span></span> &#123;
+      &#125;
+
+    &#125;)</code></pre>
+<p>这是一个<code>call</code>进行异步请求的代码，调用了<code>enqueue</code>方法，通过上面的分析我们知道，在<code>retrofit</code>内部实际是生成的一个<code>OkhttpCall</code>，所以接下来就是去分析它了。</p>
+<pre><code class="hljs java"> <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">enqueue</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Callback&lt;T&gt; callback)</span> </span>&#123;
+...
+   okhttp3.Call call;
+...
+
+   <span class="hljs-keyword">synchronized</span> (<span class="hljs-keyword">this</span>) &#123;
+...
+   call.enqueue(
+       <span class="hljs-keyword">new</span> okhttp3.Callback() &#123;
+         <span class="hljs-meta">@Override</span>
+         <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onResponse</span><span class="hljs-params">(okhttp3.Call call, okhttp3.Response rawResponse)</span> </span>&#123;
+           Response&lt;T&gt; response;
+           <span class="hljs-keyword">try</span> &#123;
+             response = parseResponse(rawResponse);
+           &#125; <span class="hljs-keyword">catch</span> (Throwable e) &#123;
+             throwIfFatal(e);
+             callFailure(e);
+             <span class="hljs-keyword">return</span>;
+           &#125;
+
+           <span class="hljs-keyword">try</span> &#123;
+             callback.onResponse(OkHttpCall.<span class="hljs-keyword">this</span>, response);
+           &#125; <span class="hljs-keyword">catch</span> (Throwable t) &#123;
+             throwIfFatal(t);
+             t.printStackTrace(); <span class="hljs-comment">// TODO this is not great</span>
+           &#125;
+         &#125;
+
+         <span class="hljs-meta">@Override</span>
+         <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onFailure</span><span class="hljs-params">(okhttp3.Call call, IOException e)</span> </span>&#123;
+           callFailure(e);
+         &#125;
+
+         <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">callFailure</span><span class="hljs-params">(Throwable e)</span> </span>&#123;
+           <span class="hljs-keyword">try</span> &#123;
+             callback.onFailure(OkHttpCall.<span class="hljs-keyword">this</span>, e);
+           &#125; <span class="hljs-keyword">catch</span> (Throwable t) &#123;
+             throwIfFatal(t);
+             t.printStackTrace(); <span class="hljs-comment">// TODO this is not great</span>
+           &#125;
+         &#125;
+       &#125;);
+ &#125;</code></pre>
+<p>在<code>OkhttpCall</code>的<code>enqueue</code>方法中，调用了<code>Okhttp3</code>的<code>call</code>(注意这里，<strong>OkHttpCall</strong>是<strong>Retrofit</strong>中定义的对象，而<strong>Okhttp3.call</strong>是<strong>OkHttp3</strong>中定义的对象)。这里就是进行实际的请求了，那么线程的切换是在哪儿进行的呢？回想下上面我们最后最终的代码进行一次猜想，那就是最后调用的<code>callAdapter.adapt</code>这个方法，代码我们就没有跟下去了，所以我回头去看了看这个<code>callAdapter</code>的生成，发现了如下代码(在Retrofit中)</p>
+<pre><code class="hljs java">List&lt;CallAdapter.Factory&gt; callAdapterFactories = <span class="hljs-keyword">new</span> ArrayList&lt;&gt;(<span class="hljs-keyword">this</span>.callAdapterFactories);
+callAdapterFactories.addAll(platform.defaultCallAdapterFactories(callbackExecutor));</code></pre>
+<p>也就是<code>callAdapter</code>是从这个<code>defaultCallAdapterFactories</code>中产生的，这里还接收了一个<code>callbackExector</code>的参数，从命名可以看出这个对象应该是一个<code>ExecutorService</code>对象（从代码上也能印证这一点）。而这个<code>Factory</code>中的<code>adapt</code>方法是把<code>OkhttpCall</code>封装为了<code>ExecutorCallbackCall</code>。</p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> Call&lt;Object&gt; <span class="hljs-title">adapt</span><span class="hljs-params">(Call&lt;Object&gt; call)</span> </span>&#123;
+  <span class="hljs-keyword">return</span> executor == <span class="hljs-keyword">null</span> ? call : <span class="hljs-keyword">new</span> ExecutorCallbackCall&lt;&gt;(executor, call);
+&#125;</code></pre>
+<p>这个call的内部接管了<code>enqueue</code>方法的调用，调用了<code>callbackExecutor.execute</code>的方法，从而实现了线程的切换。而这个<code>delegate</code>就是刚刚传入的<code>OkhttpCall</code>对象。</p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">enqueue</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Callback&lt;T&gt; callback)</span> </span>&#123;
+  Objects.requireNonNull(callback, <span class="hljs-string">"callback == null"</span>);
+
+  delegate.enqueue(
+      <span class="hljs-keyword">new</span> Callback&lt;T&gt;() &#123;
+        <span class="hljs-meta">@Override</span>
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onResponse</span><span class="hljs-params">(Call&lt;T&gt; call, <span class="hljs-keyword">final</span> Response&lt;T&gt; response)</span> </span>&#123;
+          callbackExecutor.execute(
+              () -&gt; &#123;
+                <span class="hljs-keyword">if</span> (delegate.isCanceled()) &#123;
+                  <span class="hljs-comment">// Emulate OkHttp's behavior of throwing/delivering an IOException on</span>
+                  <span class="hljs-comment">// cancellation.</span>
+                  callback.onFailure(ExecutorCallbackCall.<span class="hljs-keyword">this</span>, <span class="hljs-keyword">new</span> IOException(<span class="hljs-string">"Canceled"</span>));
+                &#125; <span class="hljs-keyword">else</span> &#123;
+                  callback.onResponse(ExecutorCallbackCall.<span class="hljs-keyword">this</span>, response);
+                &#125;
+              &#125;);
+        &#125;
+
+        <span class="hljs-meta">@Override</span>
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onFailure</span><span class="hljs-params">(Call&lt;T&gt; call, <span class="hljs-keyword">final</span> Throwable t)</span> </span>&#123;
+          callbackExecutor.execute(() -&gt; callback.onFailure(ExecutorCallbackCall.<span class="hljs-keyword">this</span>, t));
+        &#125;
+      &#125;);
+&#125;</code></pre>
+<p>请求是在子线程，通过代码测试，发现最后的<code>Response</code>回调中，是在主线程。所以我们回去印证下我们的猜想，发现这个<code>executor</code>的具体实现如下，它是一个在主线程的<code>handler</code>。</p>
+<pre><code class="hljs java"><span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MainThreadExecutor</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">Executor</span> </span>&#123;
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Handler handler = <span class="hljs-keyword">new</span> Handler(Looper.getMainLooper());
+
+  <span class="hljs-meta">@Override</span>
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">execute</span><span class="hljs-params">(Runnable r)</span> </span>&#123;
+    handler.post(r);
+  &#125;
+&#125;</code></pre>
+</div></article><div class="post-view__sidebar"><div class="sidebar"><div class="tocbot"><h2>Toc</h2><div class="toc__content"></div></div><h2>Links</h2><div class="sidebar__link"><ul><li><a href="https://github.com/Grieey">Github</a></li><li><a href="https://juejin.im/user/2858385960867566">掘金</a></li><li><a href="/yangqing433520@163.com">Mail</a></li></ul></div><h2>Archives</h2><div class="sidebar__archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/">2018</a></li></ul></div><h2>Categories</h2><div class="sidebar__categories"><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/">Android</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/">Glide</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/">Kotlin</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/工具/">工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/">设计模式</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/学习记录/">学习记录</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/">博客</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/博客/Hugo/">Hugo</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/hexo/">hexo</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/旅途/">旅途</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a></li></ul></div><h2>Tags</h2><div class="sidebar__tags"><ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Charles/">Charles</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Glide/">Glide</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Handler/">Handler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hugo/">Hugo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kotlin/">Kotlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mac/">Mac</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ReferenceQueue/">ReferenceQueue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Retrofit/">Retrofit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis-CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vcs/">Vcs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/打家劫舍/">打家劫舍</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/抓包/">抓包</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/杂谈/">杂谈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码分析/">源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码学习/">源码学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/碧峰峡/">碧峰峡</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/踏青/">踏青</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/鸡蛋掉落/">鸡蛋掉落</a></li></ul></div></div></div></div><div class="horizontal-line" style="height: 1px"></div><div class="main__bottom"><div class="pre-next"><a class="pre-button" href="/2021/01/09/结构型设计模式-代理模式/">设计模式：结构型设计模式--代理模式</a><a class="next-button" href="/2020/04/06/Git 深入学习总结/">Git 基础学习总结</a></div><div id="comments"></div></div></div></div><div class="footer"><span>©️2019-2021 Designed By&nbsp;<strong><a href="https://github.com/random-yang">RandomYang</a></strong> Powered By&nbsp;</span><strong><a href="https://hexo.io">hexo</a></strong></div><div class="darkmode-mask" id="darkmode-mask"></div><div class="sidebar__button"></div></body></html>

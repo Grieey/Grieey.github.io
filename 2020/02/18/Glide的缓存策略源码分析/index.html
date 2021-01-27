@@ -1,0 +1,93 @@
+<!DOCTYPE html><html lang="en"><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0"><meta name="description" content="Glide的缓存策略源码分析 [ 胡杨日报 ] "><meta name="theme-color" content="#ebc65a"><title>Glide的缓存策略源码分析 [ 胡杨日报 ] </title><link rel="shortcut icon" href="/favicon.ico"><link rel="stylesheet" href="/css/index.css"><script src="https://cdn.bootcss.com/highlight.js/9.6.0/highlight.min.js" defer></script><script src="/js/paper.js" defer></script><script src="https://www.googletagmanager.com/gtag/js?id=xx-xxxxxxx-xx" async></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'xx-xxxxxxx-xx');</script><script src="https://www.unpkg.com/valine/dist/Valine.min.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  new Valine({
+    el: '#comments',
+    appId: 'COvXgWafnfEKEiJ1zeEyqhNN-gzGzoHsz',
+    appKey: '4DuhSbU89A92Ny1HFmy0uClb',
+    notify: false,
+    verify: false,
+    avatar: 'mp',
+    placeholder: '说点什么呗~',
+  })
+})</script><link rel="stylesheet" href="/css/tocbot.css"><script src="/js/tocbot.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  tocbot.init({
+    // Where to render the table of contents.
+    tocSelector: '.toc__content',
+    // Where to grab the headings to build the table of contents.
+    contentSelector: '.article__content',
+    // Which headings to grab inside of the contentSelector element.
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    // For headings inside relative or absolute positioned containers within content.
+    hasInnerContainers: true,
+    orderedList: false,
+    collapseDepth: 2,
+  });
+})</script><link rel="preload" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css"><link rel="preload" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap"></head><body><div class="mask-border"></div><div class="head"><div class="head__inner"><h1><a href="/">胡杨日报</a></h1><p>胡杨树下</p></div></div><div class="paper-container"><div class="main"><div class="location-bar"><div class="line-1"><div class="horizontal-line" style="height: 3px"></div></div><div class="line-2"><div class="horizontal-line" style="height: 1px"></div></div><p class="text">Glide的缓存策略源码分析</p><div class="switch-button"><input class="container_toggle" type="checkbox" id="switch" name="mode"><label for="switch">Toggle</label></div><div class="line-3"><div class="horizontal-line" style="height: 1px"></div></div></div><div class="main__2-col"><article class="post-view__article"><div class="article__infomation"><div class="posts-item"><h2 class="posts-item__title"><a href>Glide的缓存策略源码分析</a></h2><span class="post__date">2020-02-18</span><a href="/tags/Glide/"><span class="post__tags">#Glide</span></a><a href="/tags/Android/"><span class="post__tags">#Android</span></a><a href="/tags/ReferenceQueue/"><span class="post__tags">#ReferenceQueue</span></a></div></div><div class="article__content"><blockquote>
+<p>Glide在缓存的设计上分为了内存缓存和硬盘缓存两种。对于内存缓存，由于Glide使用的是Lru算法来作为缓存的策略，这种算法存在一个业务上的弊端就是，如果新增缓存时，正在使用的缓存被算法移除了怎么办呢？为了保证Glide加载的图片在使用过程中不会被移除了，Glide采用了弱引用+Lru的组合来保证。</p>
+<p>文中源码版本：4.11.0</p>
+</blockquote>
+<h2 id="整体流程"><a href="#整体流程" class="headerlink" title="整体流程"></a>整体流程</h2><p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_chche_flow3.png" alt="glide_chche_flow3"></p>
+<ol>
+<li>当我们调用<code>Glide.with(context).load(url).into(view)</code>时，<code>Glide</code> 内部会构建一个<code>Request</code>对象去具体执行<code>load</code>的逻辑，而在<code>Request</code>的内部则是由<code>Engine</code>去实际执行的<code>load</code>方法。</li>
+<li><code>load()</code>方法中，首先会从<strong>Memory</strong>中取，这里实际的对象是<code>Glide</code>内部封装资源对象<code>ActiveResource</code>中的一个弱引用对象，如果存在即调用<code>weakReference.get()</code>去获取资源。</li>
+<li>弱引用中没有，则去<code>LruCache</code>中查找：如果存在，则将其从<code>LruCache</code>中移除，然后新建一个<code>ActiveResource</code>。</li>
+<li><code>LruCache</code>中也不存在，就去磁盘缓存中查找，默认的实现是<code>DiskLruCache</code>。</li>
+<li>再没有就只有去<code>Remote</code>获取了，这里的<code>Remote</code>是个泛指。</li>
+</ol>
+<p>接着我们先看看第一步中的<code>load</code>方法：</p>
+<p>从下面的代码可以看到，先会从缓存中获取资源，如果不存在，才会新开线程从硬盘获取或者从其他远端（文件、网络等等）加载新资源。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_engine_load.png" alt="glide_engine_load"></p>
+<h2 id="内存缓存"><a href="#内存缓存" class="headerlink" title="内存缓存"></a>内存缓存</h2><p>内存缓存的设置也有两级，这里就是引言中使用的<strong>弱引用+Lru</strong>的方式：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_engine_load_detail.png" alt="glide_engine_load_detail"></p>
+<p><code>activeResource</code>中的逻辑很简单清晰，内部维护了一个<code>HashMap</code>用键值对的形式保存了<code>key</code>和<code>WeakReference</code>，这里直接去获取，当存在就返回：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_engine_load_weak.png" alt="glide_engine_load_weak"></p>
+<p>如果弱引用中不存在了，就从<code>Lru</code>中去获取，从方法的调用上看也是一层层的获取，当缓存存在时，从<code>Lru</code>中取出来，并重新加入弱引用中。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_engine_load_lru.png" alt="glide_engine_load_lru"></p>
+<p>到这里为止，都是正常的流程。但我们知道，弱引用会在下一次<code>GC</code>时被回收，如果被回收了又没有加入<code>Lru</code>不就炸了么？对弱引用的使用不太了解的同学也许会存在这样的疑问，<code>Reference</code>有一个构造方法可以传入一个<code>ReferenceQueue</code>，这个队列的作用就是用于检测<strong>对象</strong>本身可达性发生变化时，通过Map来反向获取指向<strong>对象</strong>的包装引用（即<code>Reference</code>对象），将其放入到队列，来进行后续的操作，<a href="https://hongjiang.info/java-referencequeue/" target="_blank" rel="noopener">这里有一篇关于引用队列的介绍</a>。</p>
+<p>正如上面的介绍一样，<code>Glide</code>的内部也是通过引用队列来实现<strong>弱引用</strong>对象被回收时，将其放入<code>Lru</code>中。</p>
+<p>流程如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_cache_weak.png" alt="glide_cache_weak"></p>
+<ol>
+<li>当我们第一次加载成功后，会创建弱引用对象来缓存它。</li>
+<li>创建弱引用对象时也会传入弱引用队列。</li>
+<li>同时这个对象资源在初始时会新开一个线程去无限循环的检测弱引用队列。</li>
+<li>弱引用队列的<code>remove()</code>方法是个阻塞方法，当队列中存在元素时才会执行，所以当<code>gc()</code>回收弱引用对象后，队列中就有值了</li>
+<li>这个时候无限循环的检测中就会拿到刚刚回收的弱引用对象。就会将该对象放到<code>lru</code>中去缓存。</li>
+<li>另一边是如果使用的资源被主动释放了，<code>Lru</code>内部是维护了一个引用计数<code>acquired</code>的数字，当这个数子为0时就代表没有引用了，也会缓存到<code>Lru</code>中去。</li>
+</ol>
+<p>看看具体的实现：</p>
+<p>首先<code>ActiveResources</code>的构造方法中，会生成一个子线程执行检测任务，随时检测引用队列的<code>remove()</code>方法（这是一个阻塞方法，队列没有值的时候会一直阻塞），当还没有引用别回收时，这个检测的线程就会因为阻塞而休眠，而一旦出现了被回收的对象，就会被引用队列唤醒，执行<code>remove</code>方法的后续。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_ar_init.png" alt="glide_ar_init"></p>
+<p>在资源首次被添加时，会去生成一个弱引用的对象，然后在上面的检测中检测它的回收</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_ar_active.png" alt="glide_ar_active"></p>
+<p>在<code>cleanupActiveReference</code>中，引用的资源还在时，就会新建一个<code>resource</code>然后通知<code>engine</code>把这个新的存到<code>lru</code>中，这样就完成了一次弱引用到<code>lru</code>的转换了</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_ar_turn2_lru.png" alt="glide_ar_turn2_lru"></p>
+<p>这里还有一个细节就是每一次获取成功后都会调用<code>cached.acquire()</code>这个方法，这个方法内会自增一个计算的变量，用于统计资源的使用，每次<code>release</code>时都会自减，当这个值为0时说明没有使用他的地方了，同样的也会调用<code>listener.onResourceReleased</code>方法来将该变量存到<code>Lru</code>中。</p>
+<h2 id="硬盘缓存"><a href="#硬盘缓存" class="headerlink" title="硬盘缓存"></a>硬盘缓存</h2><p>硬盘缓存的使用是<code>DiskLruCache</code>，<code>Glide</code>也提供了几种缓存的策略如下</p>
+<ul>
+<li><p>DiskCacheStrategy.NONE： 表示不缓存任何内容。</p>
+</li>
+<li><p>DiskCacheStrategy.SOURCE： 表示只缓存原始图片。</p>
+</li>
+<li><p>DiskCacheStrategy.RESULT： 表示只缓存转换过后的图片（默认选项）。</p>
+</li>
+<li><p>DiskCacheStrategy.ALL ： 表示既缓存原始图片，也缓存转换过后的图片。</p>
+</li>
+</ul>
+<p>在最开始的图中，<code>waitForExistingOrStartNewJob</code>这个命名就基本说明了接下来的流程，先从本地的硬盘缓存中查找，如果没有就从远端资源获取。只不过这个地方的源码稍微有点绕。</p>
+<p><code>engine</code>在<code>waitForExistingOrStartNewJob</code>方法中构建了<code>DecodeJob</code>对象，并且开启了新的线程去执行它（这个对象实现了<code>runnable</code>）。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_decode_job_run.png" alt="glide_decode_job_run"></p>
+<p>根据上面不同中的<code>runReason</code>会生成不同的<code>stage</code>，然后生成不同的<code>generator</code>，主要有三种：</p>
+<ul>
+<li>ResourceCacheGenerator：这个类中会去寻找经过处理之后的资源</li>
+<li>DataCacheGenerator:这个类中会去寻找原始的资源</li>
+<li>SourceGenerator:这个类就是去远端获取资源</li>
+</ul>
+<p>在<code>glide</code>可以同时缓存原始的资源和经过转换后的资源，当然这都是根据你设置的缓存策略来实现了。在<code>DecodeJob</code>中会去调用他们的<code>startNext()</code>方法，接下来就分别看看上面两个缓存的实现：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_genertor_start.png" alt="glide_genertor_start"></p>
+<p>这两个里面的实现大体逻辑都差不多，只是对于的<code>key</code>不一样，而这个<code>helper.getDiskCache</code>最后拿到的就是<code>DiskLruCacheWrapper</code>的实例，在他的<code>getDiskCache</code>中去获取磁盘的缓存：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_disk_lru_cache.png" alt="glide_disk_lru_cache"></p>
+<p>到这里，会通过之前设置好的<code>callback</code>一步步调用到<code>engine</code>中，返回这个磁盘缓存的资源。</p>
+</div></article><div class="post-view__sidebar"><div class="sidebar"><div class="tocbot"><h2>Toc</h2><div class="toc__content"></div></div><h2>Links</h2><div class="sidebar__link"><ul><li><a href="https://github.com/Grieey">Github</a></li><li><a href="https://juejin.im/user/2858385960867566">掘金</a></li><li><a href="/yangqing433520@163.com">Mail</a></li></ul></div><h2>Archives</h2><div class="sidebar__archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/">2018</a></li></ul></div><h2>Categories</h2><div class="sidebar__categories"><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/">Android</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/">Glide</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/">Kotlin</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/工具/">工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/">设计模式</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/学习记录/">学习记录</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/">博客</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/博客/Hugo/">Hugo</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/hexo/">hexo</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/旅途/">旅途</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a></li></ul></div><h2>Tags</h2><div class="sidebar__tags"><ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Charles/">Charles</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Glide/">Glide</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Handler/">Handler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hugo/">Hugo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kotlin/">Kotlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mac/">Mac</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ReferenceQueue/">ReferenceQueue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Retrofit/">Retrofit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis-CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vcs/">Vcs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/打家劫舍/">打家劫舍</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/抓包/">抓包</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/杂谈/">杂谈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码分析/">源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码学习/">源码学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/碧峰峡/">碧峰峡</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/踏青/">踏青</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/鸡蛋掉落/">鸡蛋掉落</a></li></ul></div></div></div></div><div class="horizontal-line" style="height: 1px"></div><div class="main__bottom"><div class="pre-next"><a class="pre-button" href="/2020/04/06/动态规划系列的总结/">动态规划</a><a class="next-button" href="/2020/02/14/成长日记/">成长日记</a></div><div id="comments"></div></div></div></div><div class="footer"><span>©️2019-2021 Designed By&nbsp;<strong><a href="https://github.com/random-yang">RandomYang</a></strong> Powered By&nbsp;</span><strong><a href="https://hexo.io">hexo</a></strong></div><div class="darkmode-mask" id="darkmode-mask"></div><div class="sidebar__button"></div></body></html>

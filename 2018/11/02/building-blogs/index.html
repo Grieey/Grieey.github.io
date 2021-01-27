@@ -1,0 +1,122 @@
+<!DOCTYPE html><html lang="en"><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0"><meta name="description" content="Hugo主题使用 [ 胡杨日报 ] "><meta name="theme-color" content="#ebc65a"><title>Hugo主题使用 [ 胡杨日报 ] </title><link rel="shortcut icon" href="/favicon.ico"><link rel="stylesheet" href="/css/index.css"><script src="https://cdn.bootcss.com/highlight.js/9.6.0/highlight.min.js" defer></script><script src="/js/paper.js" defer></script><script src="https://www.googletagmanager.com/gtag/js?id=xx-xxxxxxx-xx" async></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'xx-xxxxxxx-xx');</script><script src="https://www.unpkg.com/valine/dist/Valine.min.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  new Valine({
+    el: '#comments',
+    appId: 'COvXgWafnfEKEiJ1zeEyqhNN-gzGzoHsz',
+    appKey: '4DuhSbU89A92Ny1HFmy0uClb',
+    notify: false,
+    verify: false,
+    avatar: 'mp',
+    placeholder: '说点什么呗~',
+  })
+})</script><link rel="stylesheet" href="/css/tocbot.css"><script src="/js/tocbot.js" defer></script><script>window.addEventListener('DOMContentLoaded', () => {
+  tocbot.init({
+    // Where to render the table of contents.
+    tocSelector: '.toc__content',
+    // Where to grab the headings to build the table of contents.
+    contentSelector: '.article__content',
+    // Which headings to grab inside of the contentSelector element.
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    // For headings inside relative or absolute positioned containers within content.
+    hasInnerContainers: true,
+    orderedList: false,
+    collapseDepth: 2,
+  });
+})</script><link rel="preload" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.6.0/styles/github.min.css"><link rel="preload" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface&amp;display=swap"></head><body><div class="mask-border"></div><div class="head"><div class="head__inner"><h1><a href="/">胡杨日报</a></h1><p>胡杨树下</p></div></div><div class="paper-container"><div class="main"><div class="location-bar"><div class="line-1"><div class="horizontal-line" style="height: 3px"></div></div><div class="line-2"><div class="horizontal-line" style="height: 1px"></div></div><p class="text">Hugo主题使用</p><div class="switch-button"><input class="container_toggle" type="checkbox" id="switch" name="mode"><label for="switch">Toggle</label></div><div class="line-3"><div class="horizontal-line" style="height: 1px"></div></div></div><div class="main__2-col"><article class="post-view__article"><div class="article__infomation"><div class="posts-item"><h2 class="posts-item__title"><a href>Hugo主题使用</a></h2><span class="post__date">2018-11-02</span><a href="/tags/杂谈/"><span class="post__tags">#杂谈</span></a><a href="/tags/Hugo/"><span class="post__tags">#Hugo</span></a><a href="/tags/Travis-CI/"><span class="post__tags">#Travis CI</span></a></div></div><div class="article__content"><h2 id="准备工具"><a href="#准备工具" class="headerlink" title="准备工具"></a>准备工具</h2><ul>
+<li><strong>Hugo</strong></li>
+<li><strong>Github账号</strong></li>
+</ul>
+<h2 id="开始锯板子"><a href="#开始锯板子" class="headerlink" title="开始锯板子"></a>开始锯板子</h2><p><strong>Hugo</strong>的介绍这里不用细讲了，网上一大堆的都说的比较详细了，在<strong>macOS</strong>中可以直接使用<code>brew</code>下载安装</p>
+<pre><code class="hljs bash">brew install hugo
+hugo version <span class="hljs-comment"># 检查安装成功</span>
+hugo new site my_site <span class="hljs-comment"># 初始化一个hugo的目录</span>
+<span class="hljs-built_in">cd</span> my_site
+hugo init</code></pre>
+<p>执行命令后会在对应的目录生成hugo的基本文件和文件夹，该目录的结构如下</p>
+<pre><code>▸ archetypes/
+▸ content/
+▸ layouts/
+▸ static/
+  config.toml
+</code></pre><ul>
+<li><code>config.toml</code>，站点的配置文件，这里面可以定义博客，邮箱以及主题等信息。</li>
+<li><code>content/</code>，博客中的文章对应的.md文件都会生成在这个文件夹下。</li>
+</ul>
+<p>然后使用<code>hugo new about.md</code>就会生成一个about.md在content中，在命令里加路径就会在content下对应的文件夹生成，如<code>hugo new /post/about.md</code>。</p>
+<h1 id="雕纹上色"><a href="#雕纹上色" class="headerlink" title="雕纹上色"></a>雕纹上色</h1><p>其实选择<strong>hugo</strong>的原因之一就是主题比较好看，因此<strong>theme</strong>是很必要的。 在<a href="https://themes.gohugo.io/" target="_blank" rel="noopener">themes.gohugo.io</a>中,选择自己喜欢中意的，一般点进入主题中都会进入到<strong>Github</strong>，里面也有作者写的使用教程，参考着应该没有多大问题。在Terminal中进入到刚刚创建的工程根目录，直接<strong>clone</strong>下来,这里以<code>Even</code>主题为例。</p>
+<pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> https://github.com/olOwOlo/hugo-theme-even themes/even</code></pre>
+<p>然后将<code>themes/even/example</code>中的<code>config.toml</code>文件复制到自己的工程根目录覆盖。再根据<strong>Github</strong>中作者的介绍或者指导修改<code>config.toml</code>的对应属性即可。</p>
+<p>最后键入<code>hugo server -D</code>命令启动hugo中内置的服务器，在浏览器中输入<code>localhost:1313</code>查看网站的效果。</p>
+<h1 id="板上钉钉"><a href="#板上钉钉" class="headerlink" title="板上钉钉"></a>板上钉钉</h1><blockquote>
+<p>前面的步骤都是在本地运行的效果，要别人能够访问你的博客，肯定得部署到网络上，这里选择GitPages，不需要自己对后台服务器进行管理，比较省心。</p>
+</blockquote>
+<p>首先在自己的github中新建一个仓库，仓库的名字为<code>xxx.github.io</code>，其中<code>xxx</code>替换为自己的github用户名。</p>
+<p>然后在<strong>Teminal</strong>中打开本地的工程，执行<code>hugo -d blog</code>生成网站的网页内容。这里开始需要注意一下，一般会将hugo生成的内容提交到仓库的master分支，然后会将网站的源码提交到另一个分支。所以这里我是这样骚操作的。</p>
+<pre><code class="hljs bash"><span class="hljs-built_in">cd</span> blog  <span class="hljs-comment">#进入blog目录</span>
+git init  <span class="hljs-comment">#初始化git</span>
+git add -A
+git commit -m <span class="hljs-string">"first commit"</span>
+git remote add origin git@github.com:RiceBrother/RiceBrother.github.io.git
+git push -u origin master <span class="hljs-comment">#提交到master分支</span>
+<span class="hljs-built_in">cd</span> ../   <span class="hljs-comment">#回到工程根目录</span>
+git init <span class="hljs-comment">#再次初始化git</span>
+git checkout -b <span class="hljs-built_in">source</span> <span class="hljs-comment">#创建并切换到source分支</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">'/public/'</span> &gt;&gt; .gitignore
+sed -r -i <span class="hljs-string">'/^\/blog\/$/&#123;$!d&#125;'</span> .gitignore  <span class="hljs-comment">#添加忽略文件，忽略掉blog文件夹</span>
+git add -A
+git commit -m <span class="hljs-string">"commit sources"</span>
+git remote add origin git@github.com:RiceBrother/RiceBrother.github.io.git
+git push -u origin master <span class="hljs-comment">#提交到source分支</span></code></pre>
+<p>这样操作后在浏览器输入<code>xxx.github.io</code>应该就能看到效果了。</p>
+<h1 id="投入使用"><a href="#投入使用" class="headerlink" title="投入使用"></a>投入使用</h1><p>如果每次新写了一篇文件，都需要手动的使用<code>hugo -d blog</code>然后提交到master分支，再回到根目录提交source分支，这个过程很繁琐，作为懒人的我第一时间是想到能不能使用脚本自动化，于是本着懒人的原则先google了一番，参考了几位仁兄的方案后，选择了使用<strong>Travis CI</strong>。</p>
+<p>第一步呢就是在<strong>Github</strong>个人的<strong>Setting</strong>中找到<strong>Developer setting</strong>，然后生成一个<strong>Personal assess tokens</strong>。然后到<strong>CI</strong>这个网站先注册一番，<a href="https://travis-ci.org/" target="_blank" rel="noopener">传送门在此</a>，这个网站可以直接使用<strong>Github</strong>账号登录，非常方便。</p>
+<p><img src="../../img/sync.png" alt="同步"></p>
+<p>注册成功后同步自己的仓库，将对应的<code>xxx.github.io</code>仓库激活，并点击<strong>Setting</strong>设置。找到下面的<strong>Environment Variables</strong>添加刚刚在自己的<strong>Github</strong>生成的<strong>Token</strong>，<code>**Name**必须为GITHUB_TOKEN这个是网站的规则，不能是其他的值</code>。</p>
+<p><img src="../../img/res.png" alt="仓库"><br><img src="../../img/add_variable.png" alt="增加变量"></p>
+<p>最后再返回到自己的github.io这个仓库，在source分支中添加一个<code>.travis.yml</code>，在里面输入以下脚本,<strong>Travis CI</strong>会自动检测哪个分支添加了这个文件并运行。</p>
+<pre><code class="hljs python"><span class="hljs-comment"># https://docs.travis-ci.com/user/deployment/pages/</span>
+<span class="hljs-comment"># https://docs.travis-ci.com/user/languages/python/</span>
+language: python
+
+python:
+    - <span class="hljs-string">"3.6"</span>
+
+install:
+    - uname -a
+    - wget https://github.com/gohugoio/hugo/releases/download/v0<span class="hljs-number">.42</span><span class="hljs-number">.2</span>/hugo_0<span class="hljs-number">.42</span><span class="hljs-number">.2</span>_Linux<span class="hljs-number">-64</span>bit.deb
+    - sudo dpkg -i hugo*.deb
+    - hugo version
+    - rm -rf blog
+    - ls
+    - pwd
+
+script:
+    - hugo -d blog
+    - echo <span class="hljs-string">'Hugo build done!'</span>
+after_success:
+    - git config --<span class="hljs-keyword">global</span> user.email <span class="hljs-string">"yangqing43352@163.com"</span>
+    - git config --<span class="hljs-keyword">global</span> user.name <span class="hljs-string">"griee"</span>
+    - git clone https://$GITHUB_TOKEN@github.com/RiceBrother/RiceBrother.github.io.git container
+    - rm -rf container/blog
+    - cp -r blog/* container
+    - cd container
+    - ls
+    - git add .
+    - git commit -m <span class="hljs-string">'Travis upate blog'</span>
+    - git push -u origin master</code></pre>
+<p>这个时候切回到<strong>Travis CI</strong>网站查看脚本执行的日志，显示<code>Done. Your build exited with 0.</code>一般没有问题<code>(如果有问题可以查看job log，有可能是git 提交失败)</code>，刷新自己的<code>xxx.github.io</code>看看效果，这样每次只需要修改自己的文章并提交到<strong>source</strong>分支，就会自动触发脚本生成<strong>blog</strong>目录并提交到<strong>master</strong>分支。</p>
+<h1 id="展示自我"><a href="#展示自我" class="headerlink" title="展示自我"></a>展示自我</h1><blockquote>
+<p>正常情况下呢通过上面的步骤应该能正常访问到博客了，但是，你建立一个博客肯定不仅仅是给自己看的吧，所以要让别人在搜索引擎中能搜到自己，就需要做做下面的功夫了。</p>
+</blockquote>
+<p>这里以<strong>Google</strong>搜索为例，在<strong>Google</strong>中输入<code>site:https://ricebrother.github.io/</code>提示查询不到相关内容，则说明你的站点并未被收录，所以别人也搜不到你的文章内容。</p>
+<p>进入<a href="https://www.google.com/webmasters/tools/home?hl=zh-CN" target="_blank" rel="noopener">Google搜索文档地址</a>，登录自己的账号，然后添加自己的网址，会有一个验证，将该html下载下来，上传到master分支就可以了。通过验证可以在控制台查看你的站点的访问量等等。</p>
+<p>最后将<code>https://xxx.github.io/sitemap.xml</code>添加到Google站点地图就可以啦。</p>
+<h1 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h1><ul>
+<li><a href="https://justforuse.github.io/blog/2018/07/travisci-deploy-hugo/" target="_blank" rel="noopener">https://justforuse.github.io/blog/2018/07/travisci-deploy-hugo/</a></li>
+<li><a href="https://axdlog.com/zh/2018/using-hugo-and-travis-ci-to-deploy-blog-to-github-pages-automatically/" target="_blank" rel="noopener">https://axdlog.com/zh/2018/using-hugo-and-travis-ci-to-deploy-blog-to-github-pages-automatically/</a></li>
+<li><a href="https://segmentfault.com/a/1190000012975914" target="_blank" rel="noopener">https://segmentfault.com/a/1190000012975914</a></li>
+<li><a href="https://www.jianshu.com/p/df46bca5889d" target="_blank" rel="noopener">https://www.jianshu.com/p/df46bca5889d</a></li>
+</ul>
+</div></article><div class="post-view__sidebar"><div class="sidebar"><div class="tocbot"><h2>Toc</h2><div class="toc__content"></div></div><h2>Links</h2><div class="sidebar__link"><ul><li><a href="https://github.com/Grieey">Github</a></li><li><a href="https://juejin.im/user/2858385960867566">掘金</a></li><li><a href="/yangqing433520@163.com">Mail</a></li></ul></div><h2>Archives</h2><div class="sidebar__archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/">2018</a></li></ul></div><h2>Categories</h2><div class="sidebar__categories"><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/">Android</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/">Glide</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Glide/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/">Kotlin</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/Kotlin/学习记录/">学习记录</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/工具/">工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/">设计模式</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/设计模式/学习记录/">学习记录</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/">博客</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/博客/Hugo/">Hugo</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/博客/hexo/">hexo</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习记录/">学习记录</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/旅途/">旅途</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a></li></ul></div><h2>Tags</h2><div class="sidebar__tags"><ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Charles/">Charles</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Glide/">Glide</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Handler/">Handler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hugo/">Hugo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kotlin/">Kotlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mac/">Mac</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ReferenceQueue/">ReferenceQueue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Retrofit/">Retrofit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Travis-CI/">Travis-CI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vcs/">Vcs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/打家劫舍/">打家劫舍</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/抓包/">抓包</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/杂谈/">杂谈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码分析/">源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码学习/">源码学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/碧峰峡/">碧峰峡</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/踏青/">踏青</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/鸡蛋掉落/">鸡蛋掉落</a></li></ul></div></div></div></div><div class="horizontal-line" style="height: 1px"></div><div class="main__bottom"><div class="pre-next"><a class="pre-button" href="/2018/11/23/ubuntu_install/">Ubuntu18.04.1的化妆之术</a><a class="next-button">没有更多</a></div><div id="comments"></div></div></div></div><div class="footer"><span>©️2019-2021 Designed By&nbsp;<strong><a href="https://github.com/random-yang">RandomYang</a></strong> Powered By&nbsp;</span><strong><a href="https://hexo.io">hexo</a></strong></div><div class="darkmode-mask" id="darkmode-mask"></div><div class="sidebar__button"></div></body></html>
