@@ -54,7 +54,7 @@ categories :
 
 ![handler_get_looper](https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_get_looper.png)
 
-继续跟代码来看看这个`Looper.myLooper()`干了啥，从上面代码看，就是从`sThreadLocal`中获取`Looper`对象实例。这个`sThreadLocal`的类型为`ThreadLocal<Looper>`对象，他是**JMM**中每个线程的私有内存所存储的东西的具体实现（`ThreadLocalMap`，一种类似***Map**的结构，以`Thread`为**Key**，存储对应的**Value**），[关于ThreadLocal的传送门有更多了解可以去这里看看](https://juejin.cn/post/6919002656186826765)。因此每个`Handler`内的消息队列所维护的都是本线程中的所有消息。
+继续跟代码来看看这个`Looper.myLooper()`干了啥，从上面代码看，就是从`sThreadLocal`中获取`Looper`对象实例。这个`sThreadLocal`的类型为`ThreadLocal<Looper>`对象，他是**JMM**中每个线程的私有内存所存储的东西的具体实现（`ThreadLocalMap`，一种类似**Map**的结构，以`Thread`为**Key**，存储对应的**Value**），[关于ThreadLocal的传送门有更多了解可以去这里看看](https://juejin.cn/post/6919002656186826765)。因此每个`Handler`内的消息队列所维护的都是本线程中的所有消息。
 
 这个`sThreadLocal`的上面还有一句注释，就是说在调用`get()`去获取`Looper`对象时，应该先调用过`prepare()`这个方法，去具体看看：
 
@@ -90,7 +90,9 @@ categories :
 2. 通过`epoll_ctl`添加我们想要监听的事件到`epoll`中；
 3. 通过`epoll_wait`去等待我们监听的事件发生。
 
-在整个初始化过程中，前面两步已经准备好了，在下面的流程中就会用到第三步。`Epoll`机制涉及到就是**Linux**内核相关的一些知识了，可以看看袁辉辉大佬写的[源码解读epoll内核机制](http://gityuan.com/2019/01/06/linux-epoll/)。有能力的小伙伴也可以直接阅读源码去分析它的工作机制[epoll源码](https://github.com/torvalds/linux/blob/master/fs/eventpoll.c
+在整个初始化过程中，前面两步已经准备好了，在下面的流程中就会用到第三步。`Epoll`机制涉及到就是**Linux**内核相关的一些知识了，可以看看袁辉辉大佬写的[源码解读epoll内核机制](http://gityuan.com/2019/01/06/linux-epoll/)。有能力的小伙伴也可以直接阅读源码去分析它的工作机制[epoll源码](https://github.com/torvalds/linux/blob/master/fs/eventpoll.c)
+
+`Epoll`在这里的作用就是**生产者-消费者模型**中的阻塞机制，当生产者没有生产出消息时，消费者（线程）就需要调用`epoll_wait`等待；消费者发出消息后，可以通过写入唤醒事件，在`Epoll`中监听到写入事件后，`epoll_wait`方法就会返回事件给消费者-线程，也就可以继续执行消息的处理逻辑，然后再循环到`epoll_wait`进行等待下一条消息。
 
 至此，整个准备工作就完成了，接着就是运行起来整个机制。调用`Looper.loop()`方法，该方法就是前面介绍的死循环，所以我们的所有事件和消息处理都在这个循环中。
 
@@ -112,8 +114,12 @@ categories :
 
 这一个方法中的逻辑主要是根据消息时间将消息插入到合适的位置，同时根据消息队列的情况看是否需要唤醒线程。
 
-  - 如果当前队列没有消息，那么新消息就是队头，这个时候是否需要唤醒当前线程需要根据`mBlocked`的状态。
-  - 如果消息队列不为空的话，就将消息根据时间插入到指定的位置；另一个就是对于唤醒线程的标志的处理，首先会判断队头是否是**同步屏障**或者当前消息是**队头**的异步消息，后者挺好理解，因为队头消息需要立刻处理，所以需要唤醒线程，而**同步屏障**也具有这种优先级，就可以猜测下同步屏障的作用是用于处理优先级较高的消息。
+对于唤醒的逻辑，我是这样理解的：
+
+- 第一种情况是如果当前队列没有消息，那么新消息就是队头，这个时候是否需要唤醒当前线程需要根据`mBlocked`的状态（这个状态的设置可能是之前的消息队列为空了，所以没有消息处理，就被**Native**阻塞了）；
+- 第二种情况就是看是否满足需要处理异步消息的判断，也就是存在同步屏障并且当前消息是异步消息时，如果当前仍然是阻塞状态，那么就需要立刻唤醒线程来处理这条优先级高的异步消息了。
+
+额外的一个逻辑：这个循环里面有个将`needWake`置为`false`的判断，这个判断中如果`needWake`为`true`了，说明前面的`mBlocked && p.target == null && msg.isAsynchronous()`是`true`，而且执行到这一步了，也说明了现在的队列不为null了，再看第二个条件是`p.isSynchronous()`，综合一下就是之前已经存在需要唤醒线程的异步消息了（也就是这条`p.isAsynchronous()`的消息也经过`mBlocked && p.target == null && msg.isAsynchronous()`的判断，但到当前消息判断时，线程仍然为`Blocked`状态，说明上一条的唤醒还没有成功，处于唤醒的过程中），所以需要重置`needWake`来避免重复唤醒。
 
 [frameworks/base/core/jni/android_os_MessageQueue.cpp]
 
@@ -171,15 +177,23 @@ categories :
 
 在`Looper`的处理中，会调用`msg.target.dispatchMessage`；这个方法中，可以看到有限处理的是消息的`callback`，也就是我们调用`handler.post`时发送的那些`runnable`。接着才是处理`handler`本身的`mCallback`，最后才是处理消息。由此可以看出`handler`在处理的时的优先级，又因为**Android**中很多通信都是使用的`handler`，也许解决某些业务的时候可以从这个点入手。
 
+### 小结一下
+
+
+
 ## 扩展思考
 
 ### 关于Handler中的内存泄漏
 
-内存泄漏是个经常讨论的话题，我们这里仅探讨下关于`Handler`中的内存泄漏问题。无论是以前使用`AsyncTask`还是现在在主线程中使用`Handler`进行通信，网上都有说需要注意`Handler`的内存泄漏问题。我们先想想内存泄漏是个什么概念，啥叫泄漏，说起这个词我通常想到的就是煤气泄漏，当发生泄漏时，第一是出现了安全问题，其次是因为泄漏了，那我能使用的煤气就少了，也就是资源没啦，而且这是不可逆的，不能说把泄漏的空堵了，煤气又能回来。对应到Android 中也是一样，只不过顺序有些反着来，发生内存泄漏，那说明我能用到的内存少了，资源没了，对应着程序运行就不安全了，随时可能因为内存不足而导致系统无法正常运行。Android中的内存资源的重复利用是通过`GC`机制来保证的，当我们不再使用的内存，会通过`GC`来回收，不过这个回收的条件是有一定规则的，就是`GC`需要判断这块内存是否和`GCRoot`相连接，如果连着，说明不能回收。（为什么这么设计具体可以看《深入理解Java虚拟机》这本书，有非常详细的`GC`机制介绍）。而发生内存泄漏的原因也是因为本来应该回收的内存仍然和`GCRoot`连着，能作为`GCRoot`的对象有好多类型，其中一个就是`活跃的线程`。这就和`Handler`的使用对应上了，`Handler`用于线程间通信，回顾下上面的流程，`Handler`创建于`A`线程的`ActivityA`页面，然后`B`线程拿到`handler`实例，发送一个消息，这个时候在`A`线程的`MessageQueue`中就存在一条消息，它的`target`为`ActivityA`中的`handler`对象，我们一般使用`handler`时，都会用匿名内部类实现`Callback`接口来处理消息，而在**Java**中，匿名内部类是会隐式的持有外部类的引用的。
+内存泄漏是个经常讨论的话题，我们这里仅探讨下关于`Handler`中的内存泄漏问题。无论是以前使用`AsyncTask`还是现在在主线程中使用`Handler`进行通信，网上都有说需要注意`Handler`的内存泄漏问题。Android中的内存资源的重复利用是通过`GC`机制来保证的，当我们不再使用的内存，会通过`GC`来回收，不过这个回收的条件是有一定规则的，就是`GC`需要判断这块内存是否和`GCRoot`相连接，如果连着，说明不能回收。（为什么这么设计具体可以看《深入理解Java虚拟机》这本书，有非常详细的`GC`机制介绍）。而发生内存泄漏的原因也是因为本来应该回收的内存仍然和`GCRoot`连着，能作为`GCRoot`的对象有好多类型，其中一个就是`活跃的线程`。这就和`Handler`的使用对应上了，`Handler`用于线程间通信，回顾下上面的流程，`Handler`创建于`A`线程的`ActivityA`页面，然后`B`线程拿到`handler`实例，发送一个消息，这个时候在`A`线程的`MessageQueue`中就存在一条消息，它的`target`为`ActivityA`中的`handler`对象，我们一般使用`handler`时，都会用匿名内部类实现`Callback`接口来处理消息，而在**Java**中，匿名内部类是会隐式的持有外部类的引用的。
 
 将上面的一系列引用串在一起就是，**GCRoot(UiThread)->MessageQueue->Message->handler->Callback->ActivityA**
 
 当`ActivityA`在`onDestory()`之后本来应该会被回收的，但是由于某些情况下，消息没有来得及处理，以至于上面的引用链还存在，这个时候，他就没有办法回收了。
+
+所以有解决方案是，在`ondestory()`时，调用`handler.removeMessages()`去清除队列中的消息，这样上面的引用链就断开了，也就解决了内存泄漏问题。
+
+还有之前的方案是使用静态内部类和弱引用，因为静态内部类不会隐式的持有外部类的引用，这样也可以去避免这个问题，不过从上面引用的理解上来说，这种思路不算是一种治本思路。
 
 ### 同步屏障的使用
 
