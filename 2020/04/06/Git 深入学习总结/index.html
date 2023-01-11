@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="John Doe" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Git 基础学习总结 
+      
+      
+    
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto:400,400italic,600|Roboto+Mono" rel="stylesheet">
+
+  <!-- hexo site css -->
+  
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/common.css">
+<link rel="stylesheet" href="/iconfont/iconfont.css">
+
+
+  
+
+  
+    
+<link rel="stylesheet" href="/css/post.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <script async src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <a href="/">LEEDOM</a>
+</div>
+
+
+      <p class="links">
+  
+    <a title="archives" target="" href="/archives/">
+      <i class="iconfont icon-bookmark"></i>
+    </a>
+  
+    <a title="github" target="_blank" href="https://github.com/leedom92/hexo-theme-leedom">
+      <i class="iconfont icon-github"></i>
+    </a>
+  
+    <a title="email" target="" href="">
+      <i class="iconfont icon-envelope"></i>
+    </a>
+  
+    <a title="facebook" target="" href="">
+      <i class="iconfont icon-facebooksquare"></i>
+    </a>
+  
+    <a title="twitter" target="" href="">
+      <i class="iconfont icon-twitter"></i>
+    </a>
+  
+    <a title="wechat" target="" href="">
+      <i class="iconfont icon-wechat"></i>
+    </a>
+  
+    <a title="weibo" target="" href="">
+      <i class="iconfont icon-weibo"></i>
+    </a>
+  
+    <a title="rss" target="_blank" href="/atom.xml">
+      <i class="iconfont icon-rss"></i>
+    </a>
+  
+</p>
+
+
+      <div class="main">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+
+<div class="post">
+  <h3 class="date">
+    Apr 06, 2020
+  </h3>
+  <h1>
+    Git 基础学习总结
+  </h1>
+  <div class="content markdown-body">
+    <h1 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h1><p>一般来说，开始使用<code>git</code>的场景分为从远程服务器克隆已存在的项目和开始新项目，初始化仓库。前者直接使用<code>git clone XXXXX(远程仓库地址)</code>就可以将远端的仓库完整的拷贝到本地。</p>
+<p><img src="https://i.loli.net/2020/04/15/ufl9qD1b2c56RdZ.png" alt="git 克隆.png"></p>
+<p>不过从头开始初始化一个本地仓库，更容易去理解<code>git </code>的工作流程。命令<code>git init</code>可以将一个文件目录初始化为一个仓库， <code>git</code>会相应的生成一个<code>.git</code>的文件夹，这个文件夹就是 <strong>本地仓库（Local Repository）</strong>，这个文件夹中就会保存该目录中<strong>之后</strong>所有文件的改动记录，而这个目录在<code>git</code>中就被称为<code>工作区(Working Directory)</code>。</p>
+<p><img src="https://i.loli.net/2020/04/15/pePHJtBnAflXv6s.png" alt="git 初始化.png"></p>
+<p>除了<code>工作区</code>以外，<code>git</code>中还有<code>暂存区</code>。(注意：这里我是新建了一个文件夹，进行的初始化操作，如果新建的文件夹是刚刚克隆的<code>git</code>目录中，在已存在的仓库中再次<code>git init</code>一个仓库会不会有什么问题，答案是并不会，<code>git</code>中使用的是目录管理而不是设备管理，一个仓库只会对应的管理其对应的目录，不会相互影响)</p>
+<p><img src="https://i.loli.net/2020/04/08/ou1smnrKayeh3TW.png" alt="工作区.png"></p>
+<p>如上图，是<code>git</code>的一个基本的工作流程：当我们在工作区域中修改了某个文件的文件内容时，<code>git</code>会自动检测到这种改动并进行了标记，然后需要我们手动的将这些改动添加(使用命令  <code>git add</code>)到暂存区中，这样我们所修改的东西就会被<code>git</code>记录下来，而没有添加到暂存区的改动在进行各种<code>git</code>命令时可能会丢失。如果我们确定了暂存区中的内容是这样的修改，就可以将暂存区的改动记录进行提交，那么这次修改的内容就会从暂存区迁移到仓库中，并在仓库中生成一个提交记录–<code>commit</code>。整个仓库中，所有的改动记录就是有一个一个的<code>commit</code>串行所构成的。</p>
+<p>以下就是文件在不同的区域的一个时序图：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sequenceDiagram</span><br><span class="line">participant 工作区</span><br><span class="line">participant 暂存区</span><br><span class="line">participant 仓库</span><br><span class="line">工作区 -&gt;&gt; 暂存区 : git add xxx文件</span><br><span class="line">暂存区 -&gt;&gt; 仓库   : git commit -m &quot;xx&quot;</span><br><span class="line">仓库 --&gt;&gt; 工作区 : checkout </span><br></pre></td></tr></table></figure>
+
+<p>回到我们刚刚克隆的仓库中，使用命令<code>git log</code>可以查看当前仓库的一些日志。</p>
+<p><img src="https://i.loli.net/2020/04/13/NnOvl8WRqQdtJGi.png" alt="gitLog.png"></p>
+<p>分析图中出现的数据，就衍生出来 <code>git</code> 中的几个重要的概念：</p>
+<h4 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h4><p>简单来说，<code>git</code>中的引用就是指向某个<code>commit</code>的快捷方式，我们通过操作引用能够快速的操作到某个具体的<code>commit</code>，可以看到上图中红圈中的内容，记录中显示，远端仓库只有一次<code>commit</code>，该<code>commit</code>的后面跟着一串字符串，这个字符串是根据该<code>commit</code>计算出来的<code>SHA-1</code>值(一种算法计算出来的值，两个 <code>commit</code> 计算出来的值很少能重复)，<code>commit</code>将其作为唯一的标识。大多数时候，我们需要操作具体的某个<code>commit</code>时，可以直接使用该值的前几位来代表这个<code>commit</code>，如</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout dab6cd</span><br></pre></td></tr></table></figure>
+
+<p> 上面这个命令就会签出<code>dab6cd</code>这个<code>commit</code>。</p>
+<h4 id="HEAD"><a href="#HEAD" class="headerlink" title="HEAD"></a>HEAD</h4><p>这个引用比较特殊，它指的是<strong>指向当前<code>commit</code>的引用</strong>，当我们从远端仓库拉取代码时或者<code>checkout</code>新的分支时，<code>HEAD</code>指向会随着我们的操作相应的修改，使得它始终指向的是当前<strong>工作区</strong>中对应的<code>commit</code>。</p>
+<h4 id="master"><a href="#master" class="headerlink" title="master"></a>master</h4><p>这个是<code>git</code>在创建时，默认生成的一个分支。大多数工程都将该分支作为主分支使用，在开发时，建立其他分支来开发工作，最后将完善的功能合并到主分支中。上图中的<code>origin/master, origin/HEAD</code>代表的是远程仓库的<code>master</code>分支最新的<code>commit</code>和远程仓库的<code>HEAD</code>指向的<code>commit</code>都是<code>dab6cd</code>，值得一提的是，无论本地的<code>HEAD</code>如何修改，远程仓库中的<code>HEAD</code>永远指向的是<code>master</code>分支。</p>
+<h4 id="branch"><a href="#branch" class="headerlink" title="branch"></a>branch</h4><p>分支，既然有默认的分支，那也代表我们可以创建其他分支。其实，在整个<code>git</code>仓库中，是由一个个的分支构成，而分支由一个个的<code>commit</code>构成。形象一点说就是<code>git</code>仓库像一颗大树，<code>master</code>分支就是大树成长时的主干，慢慢随着长大，出现了许多的树枝，这些树枝就是我们自己新建的<code>branch</code>，而树枝上的树叶就是一个个<code>commit</code>。</p>
+<p>当<code>HEAD</code>指向某个<code>branch</code>时，其实<strong>间接的</strong>是指向这个<code>branch</code>的某个<code>commit</code>(之所以说是间接的指向，是因为这种情况下的<code>HEAD</code>还是直接指向的<code>branch</code>，而<code>branch</code>指向的是它最新的<code>commit</code>，这样构成了间接的指向。还有直接的指向，就是使用<code>git checkout --detach</code>命令后，<code>HEAD</code>就会由指向<code>branch</code>变成指向<code>commit</code>)。如下所示</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">graph LR</span><br><span class="line">subgraph 执行detach命令后</span><br><span class="line">	G1(HEAD) --&gt; E1((commit3))</span><br><span class="line">	A1((commit1)) --&gt; C1((commit2))</span><br><span class="line">	C1((commit2)) --&gt; E1((commit3))</span><br><span class="line">	F1(branch1) --&gt; E1((commit3))</span><br><span class="line">end</span><br><span class="line">subgraph 默认的状态</span><br><span class="line">	F(branch1) --&gt; E((commit3))</span><br><span class="line">	G(HEAD) --&gt; F(branch1)</span><br><span class="line">	A((commit1)) --&gt; C((commit2))</span><br><span class="line">	C((commit2)) --&gt; E((commit3))</span><br><span class="line">end</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><code>git checkout xxx</code>这个命令翻译为 签出，使用该命令签出某个<code>commit</code>时，工作区的内容会替换为该<code>commit</code>，并同时将 HEAD 引用指向该<code>commit</code>，当签出命令为某个分支时，会签出该分支的最新的那个<code>commit</code></p>
+<p><code>branch</code>的构成是一条从起始<code>commit</code>到该<code>branch</code>最新的<code>commit</code>的一条路径，它所包含的信息就是这条<code>commit</code>链上所有的<code>commit</code>。</p>
+<h1 id="基本流程中的操作"><a href="#基本流程中的操作" class="headerlink" title="基本流程中的操作"></a>基本流程中的操作</h1><h3 id="完整流程"><a href="#完整流程" class="headerlink" title="完整流程"></a>完整流程</h3><p>假设我们已经将文件改动好了，可以使用<code>git status</code>命令来查看当前的一些状态</p>
+<p><img src="https://i.loli.net/2020/04/13/woNW8mTt4dyxu3a.png" alt="修改了未提交.png"></p>
+<p>可以看到<code>git</code>对修改的文件进行了标识，显示为红色的 <code>modified</code>，红色的意思是代表这些改动还没有被添加到暂存区中，也就是处于一种被标记了，但是没有被记录的状态。</p>
+<p>然后执行<code>git add .</code>，将修改添加到暂存区中，再次查看</p>
+<p><img src="https://i.loli.net/2020/04/13/rCF9ODRsqfQvTWa.png" alt="修改后进行了提交.png"></p>
+<p>可以看到刚刚的红色变成了绿色，这表示已经添加到了暂存区中。</p>
+<p>最后使用<code>git commit -m &quot;本次提交的描述&quot;</code>命令可以将暂存区中的改动记录提交到仓库中</p>
+<p><img src="https://i.loli.net/2020/04/13/TmyFNjPniKubzf9.png" alt="本地的状态.png"></p>
+<p>通过上图可以看到，现在仓库中存在两条<code>commit</code>记录，<code>HEAD</code>也指向了刚刚提交的最新的<code>commit</code>,而远端依然指向的是克隆时的<code>commit</code>，因为没有人提交了<code>commit</code>到远端。</p>
+<p>现在，可以将刚刚的改动提交到远端，但是正常情况下，我们其实并不知道远端是否有新的改动，所以一个比较保险的做法，先进行一次拉取操作<code>git pull</code>，这样如果远端有人提交了改动，我们就能先拉取合并。再把最后合并和的提交一起推到远端仓库。</p>
+<p><img src="https://i.loli.net/2020/04/13/RydD6ZjoPhWtBY9.png" alt="推送到远端.png"></p>
+<p>现在再查看下本地的状态，可以看到，远端的<code>HEAD</code>也指向了最新<code>commit</code></p>
+<p><img src="https://i.loli.net/2020/04/13/FIRrU94yxMcXVOP.png" alt="本地推送后的状态.png"></p>
+<p>这算是一次比较顺利的工作流程，从本地修改文件，然后提交记录，再推送到远端进行了合并，以方便其他同事拉取你的修改。但是大多数情况下，并不会这么顺利，会产生比较多的冲突。</p>
+<p>###关于CLONE</p>
+<p>当我们使用<code>git clone</code>的命令时，<code>git </code>首先是将远程仓库的快照下载到本地。然后根据快照中的分支和<code>commit</code>去下载对应的<code>commit</code>。然后<code>git </code>会从第一个起点的<code>commit</code>开始，一个一个的应用<code>commit</code>链上的<code>commit</code>到工作区中，直到最新的那个<code>commit</code>被应用上。</p>
+<h3 id="关于-ADD"><a href="#关于-ADD" class="headerlink" title="关于 ADD"></a>关于 ADD</h3><p>刚刚的流程中使用了<code>add</code>命令，我使用的是<code>git add .</code>后面跟了一个<code>.</code>这个的意思是，<strong>全部暂存</strong>。如果你不想全部暂存，就需要把<code>.</code>替换成需要暂存的<strong>文件名</strong>。</p>
+<p>我们在工作区中，新增的文件，默认是不会被<code>git</code>所追踪的，也就说文件中任何的改动是不被<code>git</code>检测记录的。需要使用<code>git add</code>命令将文件添加，这样<code>git</code>才会开始追踪，所以新增一个文件时，使用<code>add</code>命令的含义其实有两层，一个将这个文件的新增作为工作区中的一种形式的改动，提交到<code>git</code>仓库中，第二层就是让文件被<code>git</code>所追踪。其他时候，当我们做出一些修改的时候，需要添加到暂存区中，也是使用此命令。</p>
+<p>需要注意的一点是，<code>git</code>中所记录的是文件内容的改动，而非文件本身，所以当添加了一次文件的修改后，又修改了相同文件的内容，还需要再添加一次刚刚的修改。如下操作：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">改动了文本的内容</span></span><br><span class="line">vim xxx.txt</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">添加到暂存区</span></span><br><span class="line">git add . </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">再次改动文本的内容</span></span><br><span class="line">vim xxx.txt</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">注意这里还需要添加刚刚改动的内容到暂存区中</span></span><br><span class="line">git add .</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">这样两次改动才会都被仓库记录</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="关于-PULL"><a href="#关于-PULL" class="headerlink" title="关于 PULL"></a>关于 PULL</h3><p><code>git pull</code>操作其实就做了两件事，先将远端的<code>commits</code>拉取到本地，然后进行一次合并操作</p>
+<h3 id="关于-PUSH"><a href="#关于-PUSH" class="headerlink" title="关于 PUSH"></a>关于 PUSH</h3><p>刚刚的操作中，使用<code>git push</code>就将<code>master</code>分支上新的<code>commit</code>推到了远端仓库，与远端仓库的<code>master</code>分支进行了合并。这其实是一种粗略的说法，一笔带过了。</p>
+<p><code>git push </code> 会将默认分支的本地提交记录上传到远程分支上进行合并，如果不指定的话，所更新的分支为<code>git config 中的 push.default的值对应的分支，这个值默认为:current </code>  其中的值<code>git config</code> 命令来进行修改， 进而改变 push 时的行为，详情查看<a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-config#git-config-pushdefault">git config</a>。如果需要提交记录的分支不是默认的分支，需要在命令中添加几个新的参数</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin target_feature</span><br></pre></td></tr></table></figure>
+
+<p>那么这次的 push 会推向远程分支的<code>target_feature</code>分支</p>
+<p>**注意：push 时不会上传 HEAD 的指向，远程分支的 HEAD 永远指向的是 <code>master</code> ** </p>
+<h1 id="分支相关的操作"><a href="#分支相关的操作" class="headerlink" title="分支相关的操作"></a>分支相关的操作</h1><h3 id="分支的创建和删除"><a href="#分支的创建和删除" class="headerlink" title="分支的创建和删除"></a>分支的创建和删除</h3><ol>
+<li>创建 <code>branch</code> 的方式是 <code>git branch 名称</code> 或 <code>git checkout -b 名称</code>（创建后自动切换）；</li>
+<li>切换的方式是 <code>git checkout 名称</code>；</li>
+<li>删除的方式是 <code>git branch -d 名称</code>。</li>
+</ol>
+<h3 id="分支的合并-Merge"><a href="#分支的合并-Merge" class="headerlink" title="分支的合并 Merge"></a>分支的合并 Merge</h3><p>多数情况下，我们需要将不同的分支的代码进行合并，那么就需要使用到<code>git merge</code>命令，该命令具体做的事情是：<strong>从目标 <code>commit</code> 和当前 <code>commit</code> （即 <code>HEAD</code> 所指向的 <code>commit</code>）分叉的位置起，把目标 <code>commit</code> 的路径上的所有 <code>commit</code> 的内容一并应用到当前 <code>commit</code>，然后自动生成一个新的 <code>commit</code>。</strong></p>
+<p>在合并时，最舒服的状态就是，新的分支的改动是领先于合并的分支的，这时候只需要将新分支的<code>commits</code>直接移过来，就完成了一次合并，在<code>git</code>中被叫做<code>fast-forward</code>。不过大多数时候，还是不那么舒服的。</p>
+<h4 id="解决冲突"><a href="#解决冲突" class="headerlink" title="解决冲突"></a>解决冲突</h4><p>首先我们需要切换到<code>branch1</code>分支，对<code>README.md</code>文件进行修改。并按照流程进行了提交。</p>
+<p>然后切换回<code>master</code>分支，同样的对<code>README.md</code>文件进行了修改，也进行了提交。</p>
+<p>那么这个时候，同一文件，在不同的分支上都进行了改动，对于<code>git</code> 而言，可以分为良性情况和恶性情况(<code>git</code>中没有这个定义，只是为了理解)。什么是良性的呢，就是两次改动的地方不一样，比如有5行文本，<code>branch1</code>分支中改下了第4行，而<code>master</code>分支中修改了第3行，这样<code>git</code>就能知道两个分支改的东西不一样，就能自动合并，最后新生成的<code>commit</code>就是第3行和第4行都被修改了。对应来说，恶性的就是两个分支的改动，改了同一处地方，<code>git</code>并不知道哪个分支的改动才是我们想要的，所以最后的决定权交到了我们自己手里，这个时候就需要手动的处理冲突。</p>
+<p>在<code>git</code>中，对于这种冲突，会做一些明显的标识如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt;&gt;&gt;&gt;&gt; HEAD</span><br><span class="line">第4行内容master分支的修改</span><br><span class="line">=========</span><br><span class="line">第4行内容 branch1分支的修改</span><br><span class="line">&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; branch1</span><br></pre></td></tr></table></figure>
+
+<p>这个很容易理解，上面的内容是<code>HEAD</code>所在的<code>master</code>分支的修改，下面的是<code>branch1</code>分支的修改，我们根据具体的需求进行修改，删除<code>git</code>自动生成的<code>&gt;&gt;&gt;&gt;&gt;</code>和<code>======</code>。这算一次新的改动了，所以需要再次进行<code>add .</code>和<code>commit</code>。</p>
+<p><img src="https://i.loli.net/2020/04/13/TANn3Ddi2CqOGHp.png" alt="合并冲突.png"></p>
+<p>可以看到，这个过程中一共生成了3个<code>commit</code>。</p>
+<h4 id="不解决冲突"><a href="#不解决冲突" class="headerlink" title="不解决冲突"></a>不解决冲突</h4><p>上诉的操作代表正常处理了一次冲突，如果不需要处理，想要放弃。可以使用以下命令</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git merge --abort	</span><br></pre></td></tr></table></figure>
+
+<p>之后便回到 <code>merge</code> 前的状态。如图所示，在合并时，产生了冲突<code>both modified: README.md</code>，执行命令后，状态回到了<code>master</code>合并之前。</p>
+<p><img src="https://i.loli.net/2020/04/13/QyJh7kvu5W3EoMp.png" alt="放弃冲突.png"></p>
+<h1 id="进阶操作"><a href="#进阶操作" class="headerlink" title="进阶操作"></a>进阶操作</h1><blockquote>
+<p>注意：进阶操作中的命令，请先在自己的 DEMO 中多次练习熟悉后，再在实际的工程中使用，某些命令一旦出错，请千万不要 Push 到远程分支，哪怕丢弃掉本地所有的修改。</p>
+<p><strong>在操作本地的 commit 时，需要考虑对远端分支的影响，尤其是多人协同的分支</strong></p>
+<p><strong>禁止使用 rebase 命令对任何已经提交到远程分支的 commit 进行操作</strong></p>
+</blockquote>
+<h3 id="仅合并少数几个-commit"><a href="#仅合并少数几个-commit" class="headerlink" title="仅合并少数几个 commit"></a>仅合并少数几个 commit</h3><p>在实际工作开发中，会遵循标准的 Git Work flow，对待不同的功能，会切出不同的分支进行 coding，所以，基于什么基准分支切出来的功能分支进行 coding，这是一个很重要的问题。</p>
+<p>如果切错了基准分支，你会发现可能最终开发完成之后， merge 不回去了。或者需要将某个分支上的 commit 代码，移植到某个分支上面，就需要使用到 cherry-pick 这个 git 命令了。</p>
+<p>这个命令的用法如下，</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git cherry-pick -x &lt;commit_id&gt;</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>-x</code>的参数代表保留原提交者的信息，后面的<code>&lt;commit_id&gt;</code>的写法就是<code>&lt;start-commit-id&gt;…&lt;end-commit-id&gt;</code>这个代表一个从<code>startCommitId</code>到<code>endCommitId</code>的一个左开右闭的区别<code>(startId, endId]</code>，如果需要包含<code>startId</code>可以添加一个符号<code>&lt;start-commit-id&gt;^…&lt;end-commit-id&gt;</code>这样就是<code>[startId,endID]</code>的一个闭区间了。</p>
+<p>提交的记录可以通过<code>git log --pretty=oneline</code>来查看。</p>
+<p><img src="https://i.loli.net/2020/04/16/Ht8R7za3UBDWKCe.png" alt="cheery-pick.png"></p>
+<p>然后查看<code>master</code>分支的<code>commit</code>会发现刚刚合并的已经有了。</p>
+<p>合并过程中，如果出现了冲突，就和普通冲突一样，手动的解决，然后添加提交，再执行<code>git cherry-pick --continue</code>就可以继续了，直到合并完成。</p>
+<p>参考文章：<a target="_blank" rel="noopener" href="https://juejin.im/post/5925a2d9a22b9d0058b0fd9b">Cherry-Pick | 一日一 Git</a></p>
+<h3 id="rebase-与-merge"><a href="#rebase-与-merge" class="headerlink" title="rebase 与 merge"></a>rebase 与 merge</h3><p><code>rebase</code>的直译是改变基点，其实这个指令的功能也差不多是这个意思。那我们看看这个命令的具体使用及应用场景。</p>
+<p>通过上面的命令，可以知道在执行<code>merge</code>操作时，会生成一个新的<code>commit</code>，同时整个历史记录上也会保留合并的痕迹(<code>branch1</code>会与<code>master</code>形成一个回路的形式)，这样对代码的历史并不是线性的，看起来不是很直观。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1--&gt;2--&gt;3--&gt;4--&gt;5--&gt;6   master</span><br><span class="line">		 \				 /</span><br><span class="line">		 	7--&gt;8--&gt;9          branch1</span><br></pre></td></tr></table></figure>
+
+
+
+<p>那么使用<code>rebase</code>命令的效果是什么样的呢。</p>
+<p>首先，我们需要**切换分支到<code>branch1</code>分支上使用<code>rebase</code>命令 **，这一点需要注意，就是在哪个分支执行这个命令。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git checkout branch1</span><br><span class="line">git rebase master</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://i.loli.net/2020/04/14/arA5WG21LdvEQcT.gif" alt="执行 reabase命令.gif"></p>
+<p>上面的命令执行之后，<code>git</code>所做的事如上图所示，切换分支后，<code>HEAD</code>指向移动到了 <code>branch1</code>分支的最新<code>commit</code>上，然后执行<code>git rebase master</code>，这个命令会将从<code>master</code>分支与<code>branch1</code>交叉开始之后的<code>commits</code>的基点都修改到<code>master</code>分支上，并移动<code>branch1</code>和<code>HEAD</code>的指向，但是需要注意的是，这个操作完成之后，在<code>master</code>上的<code>7、8</code>的<code>commit</code>和之前的<code>5、6</code>仅仅是内容相同，本质上依然属于两个不同的<code>commit</code>。这样操作就完了么？并没有，还需要回到<code>master</code>分支，执行一次<code>merge</code>，因为刚刚的操作结果仅仅是将<code>branch1</code>分支的<code>commit</code>接在了<code>master</code>上，而<code>master</code>的指向依然是之前的<code>commit</code>，所以这里的操作相当于执行了一次<code>fast-forward</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git merge branch1</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://i.loli.net/2020/04/14/9OJTHdLobU215As.gif" alt="master 合并 branch1.gif"></p>
+<p>这样，整个过程才算完成了。这样看起来好像比直接<code>merge</code>的操作要复杂很多，那么它的意义在哪儿呢，这个就得看具体的需求了，关于<code>rebase 和 merge</code>更深入的理解可以参考文章<a target="_blank" rel="noopener" href="https://www.cnblogs.com/kidsitcn/p/5339382.html">rebase 和 merge 详解</a>。</p>
+<p>熟悉了理论后，根据上面的知识点进行一次实际的操作来加深理解。</p>
+<p>同样的，现在在<code>master</code>分支和<code>branch1</code>分支上都进行了修改，那么我们现在处于<code>branch1</code>分支中，执行<code>rebase</code>命令。</p>
+<p><img src="https://i.loli.net/2020/04/14/yq4Nb3f9ZeXldmB.png" alt="rebaseContinue.png"></p>
+<p>在<code>branch1</code>中的最新<code>commit</code>是<code>这是 branch1上的第二次提交</code>，在<code>rebase</code>过程中和<code>master</code>最新的<code>commit</code>产生了冲突，这个时候手动的编辑文件，解决冲突。使用<code>add .</code>命令将合并后的改动添加到暂存区。然后，和<code>merge</code>不一样的操作就是，这里需要执行不是<code>git commit</code>而是<code>git rebase --continue</code>，同理，如果需要放弃，也可以使用<code>git rebase --abort</code>，这里细看其实上面的命令描述中都有提示。我们解决了冲突，那就执行继续的命令。</p>
+<p><img src="https://i.loli.net/2020/04/14/XwBfhzbWngVmUMp.png" alt="afterRebasing.png"></p>
+<p>第一步完成后，查看<code>branch1</code>上的提交，可以看到，最新的<code>commit</code>后面是<code>master</code>的<code>commit</code>，所以这里的实际情况和上面的动图有一些不一样在于，这一步之后，<code>branch1</code>上的<code>commits</code>就已经变成了整合了 <code>master</code>上的<code>commit</code>的一个分支，现在的<code>branch1</code>已经是拥有了两个分支完整的<code>commit</code>了。但是，我们需要的是<code>master</code>分支更完整。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 执行前 master 和 branch1的情况</span><br><span class="line">1--&gt;2--&gt;3--&gt;4--&gt;5--&gt;6  master</span><br><span class="line">		 \</span><br><span class="line">		 	7--&gt;8--&gt;9        branch1</span><br><span class="line"># 执行完 rebase 后 mater 和 branch1的情况</span><br><span class="line">1--&gt;2--&gt;3--&gt;4--&gt;5--&gt;6  master</span><br><span class="line">		 \</span><br><span class="line">		 	3--&gt;4--&gt;5--&gt;6--&gt;7--&gt;8--&gt;9        branch1</span><br></pre></td></tr></table></figure>
+
+<p>现在回到<code>master</code>分支，再执行<code>merge</code>命令就可以理解为什么是一次<code>fast-forward</code>了。最后的结果如下:</p>
+<p><img src="https://i.loli.net/2020/04/14/UyIldTLhHZkAjEv.png" alt="result.png"></p>
+<h3 id="修正已提交的-Commit"><a href="#修正已提交的-Commit" class="headerlink" title="修正已提交的 Commit"></a>修正已提交的 Commit</h3><h4 id="修正最新的-commit"><a href="#修正最新的-commit" class="headerlink" title="修正最新的 commit"></a>修正最新的 commit</h4><p>如果是最新提交的<code>commit</code>被发现有问题，<code>git</code>中提供了直接的命令可以修改<code>git commit --amend</code>。</p>
+<p>如何使用呢，假设现在已经有一个最新的提交<code>1</code>，我们发现其中有几个地方写错了，那就进行修改，然后一如既往的<code>add</code>，现在我们需要不是把这个新提交一个<code>commit</code>，而是修改，所以现在就不是使用<code>git commit -m &quot;xxx&quot;</code>而是<code>git commit --amend</code>，</p>
+<p><img src="https://i.loli.net/2020/04/14/sio4OcWBeaZXh3t.png" alt="修正.png"></p>
+<p>这个时候会出现一个信息编辑界面，显示着最新的<code>commit</code>的信息，点击<code>i</code>进入编辑模式，修改提交的<code>message</code>，然后退出保存即可，再调用<code>git log</code>可以看到最新的<code>commit</code>已经被改了。</p>
+<p>这里有一点需要注意的是，最新的<code>commit</code>并不是被直接修改，而是被<strong>替换</strong>掉了，<code>git commit --amend</code>会生成一个新的<code>commit</code> 来替换最新的那个<code>commit</code>，在<code>git</code>中，每一个已经提交的<code>commit</code>都是无法被修改的，我们的操作只是基于一条<code>commit</code>链进行替换、复制和删除等等，仅仅是取消了对<code>commit</code>的引用和链接。</p>
+<h4 id="修改不是最新的-commit"><a href="#修改不是最新的-commit" class="headerlink" title="修改不是最新的 commit"></a>修改不是最新的 commit</h4><p>当需要改正的<code>commit</code>不是最新的那个，上面的方法就不太适用了。这个时候需要用的是<code>rebase -i </code>命令(<code>rebase --interactive</code>交互式<code>rebase</code>的缩写)，这也是<code>rebase</code>命令的另一个比较常见的适用场景。</p>
+<p>现在，我们假设如图的<code>commit</code>有了错误的提交。首先使用以下命令，将<code>HEAD</code>指向移动到当前<code>commit</code>的后面3个<code>commit</code>。</p>
+<p><img src="https://i.loli.net/2020/04/14/GrgfnCIAvOUaTLc.png" alt="假设错误的提交.png"></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rebase -i HEAD~3</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>说明：在 Git 中，有两个「偏移符号」： <code>^</code> 和 <code>~</code>。</p>
+<p><code>^</code> 的用法：在 <code>commit</code> 的后面加一个或多个 <code>^</code> 号，可以把 <code>commit</code> 往回偏移，偏移的数量是 <code>^</code> 的数量。例如：<code>master^</code> 表示 <code>master</code> 指向的 <code>commit</code> 之前的那个 <code>commit</code>； <code>HEAD^^</code> 表示 <code>HEAD</code> 所指向的 <code>commit</code> 往前数两个 <code>commit</code>。</p>
+<p><code>~</code> 的用法：在 <code>commit</code> 的后面加上 <code>~</code> 号和一个数，可以把 <code>commit</code> 往回偏移，偏移的数量是 <code>~</code> 号后面的数。例如：<code>HEAD~5</code> 表示 <code>HEAD</code> 指向的 <code>commit</code>往前数 5 个 <code>commit</code>。</p>
+</blockquote>
+<p>会出现下图界面</p>
+<p><img src="https://i.loli.net/2020/04/14/ZEfXkqARnpYy1Cm.png" alt="rebaseI.png"></p>
+<p>根据提示，进入编辑模式，在我们需要修改的<code>commit</code>前，将<code>pick</code>修改为<code>edit</code>模式。<code>edit</code>模式的意思就是应用当前的<code>commit</code>并修正。</p>
+<p>之后退出保存，这个时候，当前的工作区中就是我们需要修改的这个<code>commit</code>了，和上面修改最新的<code>commit</code>一样，改动当前<code>commit</code>的内容并使用<code>git commit --amend</code>进行修正。完成后，<code>git rebase --continue</code>。</p>
+<p><img src="https://i.loli.net/2020/04/14/vFfcW8e5TSr1ZlE.png" alt="rebase 结果.png"></p>
+<p>从结果上看，我们需要修正的那个<code>commit</code>已经被替换修改了。</p>
+<h4 id="丢弃-commit"><a href="#丢弃-commit" class="headerlink" title="丢弃 commit"></a>丢弃 commit</h4><p> 1.丢弃最新的 commit</p>
+<p>当我们因为各种原因，导致最新的<code>commit</code>不再是我们想要的那个<code>commit</code>的时候，怎么去撤销它呢</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git reset --hard HEAD^</span><br></pre></td></tr></table></figure>
+
+<p>这个命令可以将最新的<code>commit</code>从分支中移除掉，这样最新的<code>commit</code>就是之前的<code>commit</code>的前一条，其中几个参数说明下：</p>
+<p><code>--hard</code>这个参数主要使用的有三个值分别是<code>hard、soft和 mixed</code>，区别在于。使用<code>--soft</code>模式，会修改版本库中的记录(从<code>branch</code>中移除该<code>commit</code>)，但是会保留<code>暂存区</code>和<code>工作区</code>，也就是将本地版本库的头指针全部重置到指定版本，且将这次提交之后的所有变更都移动到暂存区。使用<code>--hard</code>模式，三者都会被重置，一定需要注意。 而不加参数时，默认使用的是<code>--mixed</code>，这种模式下是，保留工作区，清除暂存区。</p>
+<p>这里再讨论下更复杂的一种情况，那就是如果我丢弃的内容中，有一部分是想要的或者我还需要对照着查看。可以分为三种情况：</p>
+<ul>
+<li>已经 <code>commit</code>了，这种其实是最常见的一种情况，因为有<code>SHA-1</code>值，可以使用<code>git reflog</code>来查看我们操作的历史，找到刚刚<code>commit</code>的<code>SHA-1</code>值就可以找到被丢弃的那个<code>commit</code>。(需要注意的一点是，对于没有引用的<code>commit</code>，<code>git</code>会在一定时间内进行自动清理)</li>
+<li>还没有<code>commit</code>，但是 添加到了暂存区中。这个就麻烦一些了，因为没有生成对应的<code>SHA-1</code>值，无法通过第一种情况的方法找到，就需要使用另一个的命令<code>git fsck --lost-found</code>操作，如果返回成功的结果，我们就可以在<code>.git/lost-found/</code>目录中找到刚刚丢弃的文件。</li>
+<li>连暂存区都没有添加到，这种情况下，只能靠<strong>IDE</strong>的本地历史记录来寻找了。</li>
+</ul>
+<p>参考文章：<a target="_blank" rel="noopener" href="https://juejin.im/post/5af0438f5188251b8015967e">Git reset 后的数据恢复操作</a></p>
+<p>其实，对于<code>reset</code>命令来说，它的本质是<strong>移动 HEAD 以及它所指向的 branch</strong>，撤销对其只是在本质上附带开发的一种功能而已。但是这一点上好像和<code>checkout</code>命令有点相似，区别是<code>checkout</code>没有改变所指向的<code>branch</code>，是的，这确实是他们最大的区别，使用<code>checkout</code>命令签出某个<code>branch</code>（前面也说过，对于工作区来说这其实也是签出某个<code>commit</code>，但是在指向中，是有区别的，一个是指向了<code>branch</code>，一个是指向了<code>commit</code>）或者<code>commit</code>时，它所改变的仅仅是<code>HEAD</code>的指向。所以这里，还有一种命令</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout --detach</span><br></pre></td></tr></table></figure>
+
+<p>这行命令的效果就是，仅仅让<code>HEAD</code>脱离了指向<code>branch</code>，而直接指向了<code>commit</code>。</p>
+<ol start="2">
+<li><p>丢弃不是最新的 commit</p>
+<p>这个需求有两种命令可以实现：</p>
+<ul>
+<li><p>这个从理论上来说，本质上和修改不是最新的 <code>commit</code>是一样的。使用<code>git rebase -i </code>的命令，查看需要修改的几个<code>commit</code>，和修改不一样的在于，修改时我们是修改<code>pick</code>为<code>edit</code>。这里现在有两种做法，一个是将需要丢弃的 <code>commit</code>那行直接删除，这样在<code>rebase</code>命令执行过程中就会过滤掉被删除那行的<code>commit</code>，还有一种更标准的做法就是将<code>pick</code>修改为<code>drop</code>。最后再执行<code>git rebase --continue</code>即可。关于<code>drop</code>和删除一行的讨论，在<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/35846154/git-rebase-interactive-drop-vs-deleting-the-commit-line">科学传送门</a>这里有一些讨论可以参考。</p>
+</li>
+<li><p>使用<code>git rebase --onto</code>命令</p>
+<p>在使用<code>git rebase</code>命令时，<code>git</code>会自动的选取起点，这个起点选取的方法就是当前的<code>commit</code>和目标的<code>commit</code>在历史记录上的交叉点作为起点（上面使用<code>rebase</code>命令的时候，都是如此）。而给<code>rebase</code>命令添加了<code>--onto</code>参数后，就可以指定起点。假如现在有如下的提交记录。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a--&gt;b--&gt;c--&gt;d    master</span><br><span class="line">     \</span><br><span class="line">     	e--&gt;f--&gt;g  branch1</span><br></pre></td></tr></table></figure>
+
+<p>需求上，在合并<code>branch1</code>时，只需要合并<code>f, g</code>两个<code>commit</code>，就可以这样使用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rebase --onto d e branch1</span><br></pre></td></tr></table></figure>
+
+<p>注意，<code>rebase</code>命令在执行时，会排除起点的<code>commit</code>，也就是<code>e</code>这个<code>commit</code>。最后的结果就想下面这样，<code>f1，g1</code>是内容和<code>f,g</code>相同的<code>commit</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a--&gt;b--&gt;c--&gt;d--&gt;f1--&gt;g1    master</span><br><span class="line">     \</span><br><span class="line">     	e--&gt;f--&gt;g  branch1</span><br></pre></td></tr></table></figure>
+
+<p>那么，同理，也可以使用<code>--onto</code>来执行撤销的操作。同样是这样的提交记录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a--&gt;b--&gt;c--&gt;d    master</span><br><span class="line">     \</span><br><span class="line">     	e--&gt;f--&gt;g  branch1</span><br></pre></td></tr></table></figure>
+
+<p>现在需要撤<code>f</code>所对应的<code>commit</code>就可以这样写</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rebase --onto e f branch1</span><br></pre></td></tr></table></figure>
+
+<p>这个翻译下就是，将起点设置为<code>f</code>，然后<code>branch1</code>作为终点，这一条路径上的<code>commit</code>节点都应用到<code>e</code>之后，这样出来的结果就会没有 <code>f</code>。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="修改已经-Push-的-commit"><a href="#修改已经-Push-的-commit" class="headerlink" title="修改已经 Push 的 commit"></a>修改已经 Push 的 commit</h4><ul>
+<li><p>如果<code>push</code>的分支是自己的分支，那么可以暴力一些，先使用上面的方法修改掉本地的<code>commits</code>，然后再<code>push</code>，需要注意的是，这个时候直接 <code>push</code>是会出错的，需要使用强制的参数</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin branch1 -f</span><br></pre></td></tr></table></figure>
+
+<p><code>-f</code> 这个代表<code>force</code>执行的操作(强制性)，这种操作<strong>尽量少用</strong>，如果没有搞清楚就强制去覆盖远端的<code>commit</code>在多人协同的时候，很容易对同事的<code>commit</code>造成混乱。</p>
+</li>
+<li><p>如果<code>push</code>的内容已经合并到了其他的分支，<code>git revert HEAD^</code>这个命令可以创建一个新的<code>commit</code>，它的内容和倒数第二个 <code>commit</code> 是相反的，从而和倒数第二个 <code>commit</code> 相互抵消，达到撤销的效果。在 <code>revert</code> 完成之后，把新的 <code>commit</code> 再 <code>push</code> 上去，这个 <code>commit</code> 的内容就被撤销了。它和前面所介绍的撤销方式相比，最主要的区别是，这次改动只是被「反转」了，并没有在历史中消失掉，你的历史中会存在两条 <code>commit</code> ：一个原始 <code>commit</code> ，一个对它的反转 <code>commit</code>。</p>
+</li>
+</ul>
+<h3 id="恢复已删除的分支"><a href="#恢复已删除的分支" class="headerlink" title="恢复已删除的分支"></a>恢复已删除的分支</h3><p>有时候，不管有意无意，都可能误删了分支，<strong>一定要及时找回</strong>。操作步骤如下：</p>
+<p>1.使用<code>git reflog</code>命令查看<code>HEAD</code>移动的相关记录，这个记录最新的在最上面，找到与<code>branch1</code>相关的记录，如图，可以看到最后一次从<code>branch1</code>移动到<code>master</code>的记录，那么这条记录之前的<code>commit</code>肯定是<code>branch1</code>上的一条<code>commit</code>。</p>
+<p><img src="https://i.loli.net/2020/04/14/RIwtSy9oTJVeQhG.png" alt="reflog .png"></p>
+<p>2.签出这个<code>commit</code>，并在该<code>commit</code>上建立之前误删的分支即可。</p>
+<p><img src="https://i.loli.net/2020/04/14/3S5ApdLr6UEzfRB.png" alt="恢复操作.png"></p>
+<p>依然需要注意的一点：<code>git </code>会定期回收无引用的<code>commit</code>，所以这个操作需要及时。</p>
+<h3 id="临时暂存"><a href="#临时暂存" class="headerlink" title="临时暂存"></a>临时暂存</h3><p>有时候，在不同分支工作时，需要偶尔切到其他分支看一行代码，或者调试个 bug 啥的，我们都是提交一个临时的<code>commit</code>再去切，这样算是一个保险的做法。还有更优雅一点的做法就是<code>git stash</code>命令，这个命令可以将目前工作区的改动都临时保存在一个独立的地方，等你搞好了其他的工作，再回来时，使用<code>git stash pop</code>就可以恢复了。</p>
+<p>如果临时暂存时，存在未被追踪的文件，需要加上<code>-u </code>的参数，如下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git stash -u</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意：没有被 track 的文件（即从来没有被 add 过的文件不会被 stash 起来，因为 Git 会忽略它们。如果想把这些文件也一起 stash，可以加上 <code>-u</code> 参数，它是 <code>--include-untracked</code> 的简写。</p>
+</blockquote>
+<h3 id="Tag的使用"><a href="#Tag的使用" class="headerlink" title="Tag的使用"></a>Tag的使用</h3><p><code>tag</code>就是标签，当我们在一个分支上构建了不同版本的应用时，可以通过<code>tag</code>来进行标记。这是一种基础的用法，</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git tag -a v1.0.0 -m &#x27;xxx build version&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>其实，<code>git</code> 的<code>tag</code>还可以用于自动化的构建和测试当中，本地打好了<code>tag</code>后，推送到远端仓库，在远端仓库中部署<code>CI</code>等自动化的脚本，可以检测到相应的<code>tag</code>来进行一系列的自动化操作。但是这个更多的是自动化构建方面的知识，有兴趣可以了解了解。</p>
+<p>相关文章：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5d197e4fe51d45775b419c27">基于 GitLab CI&#x2F;CD 的前端自动化构建、发布实践</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.flysnow.org/2017/03/12/android-gradle-auto-version.html">Android Gradle实用技巧(二) | 自动生成版本信息</a></li>
+<li><a target="_blank" rel="noopener" href="http://kescoode.com/travis-ci-android-github-release/">用TRAVIS CI给ANDROID项目部署GITHUB RELEASE</a></li>
+</ul>
+  </div>
+  
+    
+      <a id="older" class="blog-nav" href="/2020/04/06/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E7%B3%BB%E5%88%97%E7%9A%84%E6%80%BB%E7%BB%93/">OLDER&nbsp;&gt;</a>
+      
+        
+          <a id="newer" class="blog-nav" href="/2020/04/14/Retrofit%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">&lt;&nbsp;NEWER</a>
+          
+            
+</div>
+        <div class="footer">
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Copyright © Leedom 2021</a>
+        
+    </div>
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Theme by Leedom | Powered by Hexo</a>
+        
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="back-to-top hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+      
+  <div class="search-icon" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-box">
+        <div class="search-title">
+          <!-- <span class="search-icon-input">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </span> -->
+          
+            <input type="text" class="search-input" id="search-input" placeholder="$ grep...">
+          
+          <span class="search-close-icon" id="search-close-icon">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-close"></i>
+            </a>
+          </span>
+        </div>
+        <div class="search-result" id="search-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    // inputArea.onclick = function() {
+    //   getSearchFile()
+    //   this.onclick = null
+    // }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        inputArea.focus()
+        getSearchFile()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'><span></ul>";
+      // $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'><h2>" + orig_data_title + "</h2></a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<h3 class=\"search-result-abstract\">" + match_content + "...</h3>"
+                }
+                str += "<hr></li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/leedom92/hexo-theme-leedom#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+    </div>
+  </body>
+</html>

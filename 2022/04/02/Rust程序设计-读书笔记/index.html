@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="John Doe" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Rust程序设计 
+      
+      
+    
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto:400,400italic,600|Roboto+Mono" rel="stylesheet">
+
+  <!-- hexo site css -->
+  
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/common.css">
+<link rel="stylesheet" href="/iconfont/iconfont.css">
+
+
+  
+
+  
+    
+<link rel="stylesheet" href="/css/post.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <script async src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <a href="/">LEEDOM</a>
+</div>
+
+
+      <p class="links">
+  
+    <a title="archives" target="" href="/archives/">
+      <i class="iconfont icon-bookmark"></i>
+    </a>
+  
+    <a title="github" target="_blank" href="https://github.com/leedom92/hexo-theme-leedom">
+      <i class="iconfont icon-github"></i>
+    </a>
+  
+    <a title="email" target="" href="">
+      <i class="iconfont icon-envelope"></i>
+    </a>
+  
+    <a title="facebook" target="" href="">
+      <i class="iconfont icon-facebooksquare"></i>
+    </a>
+  
+    <a title="twitter" target="" href="">
+      <i class="iconfont icon-twitter"></i>
+    </a>
+  
+    <a title="wechat" target="" href="">
+      <i class="iconfont icon-wechat"></i>
+    </a>
+  
+    <a title="weibo" target="" href="">
+      <i class="iconfont icon-weibo"></i>
+    </a>
+  
+    <a title="rss" target="_blank" href="/atom.xml">
+      <i class="iconfont icon-rss"></i>
+    </a>
+  
+</p>
+
+
+      <div class="main">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+
+<div class="post">
+  <h3 class="date">
+    Apr 02, 2022
+  </h3>
+  <h1>
+    Rust程序设计
+  </h1>
+  <div class="content markdown-body">
+    <ul>
+<li><code>into()</code>方法可以快速的将当前类型转换为目标参数类型；</li>
+</ul>
+<h2 id="基本类型"><a href="#基本类型" class="headerlink" title="基本类型"></a>基本类型</h2><ul>
+<li><strong>as</strong>操作符可以将<code>bool</code>转为整数类型，但是反过来转换不可以；</li>
+<li><code>bool</code>在内存中使用了一个字节作为其值；</li>
+<li><strong>as</strong>操作符可以将<code>char</code>转为整数类型，<strong>但是目的类型如果小于了32位，高位会被截断；</strong>反过来转换仅支持<code>u8</code>转为<code>char</code>;</li>
+<li>Rust中的指针类型有三种：引用、Box(指向堆)、不安全指针(原始指针)；</li>
+<li>胖指针(fat pointer):指除了包含指向引用地址的值，还有一些额外的信息，如向量（还包含了大小）、trait（还包含了其实现类的地址）；</li>
+</ul>
+<h2 id="所有权"><a href="#所有权" class="headerlink" title="所有权"></a>所有权</h2><ul>
+<li><p>对于向量的遍历，一般是使用引用来访问其数据的值，这样不会<strong>转移</strong>向量中元素的所有权；如下代码示例：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">v</span> = <span class="built_in">vec!</span>[<span class="string">&quot;1&quot;</span>.<span class="title function_ invoke__">to_string</span>(), <span class="string">&quot;2&quot;</span>.<span class="title function_ invoke__">to_string</span>()];</span><br><span class="line"><span class="keyword">for</span> <span class="title class_">mut</span> s <span class="keyword">in</span> v &#123; <span class="comment">// 这里的for会将v中的元素的所有权转移到s中</span></span><br><span class="line">    s.<span class="title function_ invoke__">push</span>(<span class="string">&#x27;!&#x27;</span>);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, s);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;v&#x27;s length &#123;&#125;&quot;</span>, v.<span class="title function_ invoke__">len</span>()); <span class="comment">// 报错</span></span><br></pre></td></tr></table></figure>
+
+<p>上诉的代码执行会报错</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">20</span>  |     <span class="keyword">for</span> <span class="title class_">mut</span> s <span class="keyword">in</span> v &#123;</span><br><span class="line">    |                  -</span><br><span class="line">    |                  |</span><br><span class="line">    |                  `v` moved due to this implicit call to `.<span class="title function_ invoke__">into_iter</span>()`</span><br><span class="line">    |                  help: consider borrowing to avoid moving into the <span class="keyword">for</span> <span class="title class_">loop</span>: `&amp;v`</span><br><span class="line">...</span><br><span class="line"><span class="number">24</span>  |     <span class="built_in">println!</span>(<span class="string">&quot;v&#x27;s length &#123;&#125;&quot;</span>, v.<span class="title function_ invoke__">len</span>());</span><br><span class="line">    |                               ^^^^^^^ value borrowed here after <span class="keyword">move</span></span><br></pre></td></tr></table></figure>
+
+<p>编译器提示的很清晰了，因为for循环中将v里的元素的所有权都进行了转移到了s中，因此v在for循环代码块之后变成了<strong>初始化的状态</strong>，这对Rust来说是不允许使用的，因此报错了；将代码修改如下</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">v</span> = <span class="built_in">vec!</span>[<span class="string">&quot;1&quot;</span>.<span class="title function_ invoke__">to_string</span>(), <span class="string">&quot;2&quot;</span>.<span class="title function_ invoke__">to_string</span>()];</span><br><span class="line"><span class="keyword">for</span> <span class="title class_">mut</span> s <span class="keyword">in</span> &amp;<span class="keyword">mut</span> v &#123;</span><br><span class="line">    <span class="comment">// *s.push(&#x27;!&#x27;); </span></span><br><span class="line">    s.<span class="title function_ invoke__">push</span>(<span class="string">&#x27;!&#x27;</span>);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, *s);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;v&#x27;s length &#123;&#125;; &#123;:?&#125;&quot;</span>, v.<span class="title function_ invoke__">len</span>(), v);</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意注释的代码的写法是错误的，因为.操作符本身就隐式带有解引用，所以不需要再额外的写*去解引用</strong></p>
+</li>
+<li><p><code>Option</code>提供的*take()*方法，会将值置换为<strong>None</strong>并赋值给左值；</p>
+</li>
+<li><p>机器整数、浮点型、char和bool类型都是<strong>Copy</strong>类型，会直接复制值而不会转移；<strong>默认情况下，struct和enum都不是Copy类型</strong>，但是，如果一个结构体中，<strong>仅当</strong>所有类型都是<strong>Copy</strong>类型，是可以通过添加属性来将该结构体标注为<strong>Copy</strong>类型（如果结构体中存在非<strong>Copy</strong>类型，即使加了属性也无效），如:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[derive(Copy, Clone)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Label</span> &#123; number: <span class="type">i32</span> &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>函数返回的值的生命周期，如果返回的是<code>&amp;str</code>需要注明为<code>&amp;&#39;static str&#39;</code>，但是返回<code>String</code>的话不需要。因为<code>String</code>是一个新的对象，该对象的生命周期直接返回了。</p>
+</li>
+</ul>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><blockquote>
+<p>能力不足，怨不得书</p>
+<p>​							——Mark Miller</p>
+<p>引用的篇章，都是对这个概念做出大量的解释，所以只有在练习中才能巩固对其的理解；</p>
+</blockquote>
+<ul>
+<li><p>生命周期的意义在于约束赋值或传参时，对结构体或者函数返回值的生命周期的控制；</p>
+</li>
+<li><p>在存在**&amp;self<strong>方法(非函数)中，Rust默认生命周期是</strong>&amp;self**的生命周期；如下</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">impl</span> <span class="title class_">StringTable</span> &#123;</span><br><span class="line">	<span class="keyword">fn</span> <span class="title function_">find_by_prefix</span>(&amp;<span class="keyword">self</span>, prefix: &amp;<span class="type">str</span>) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;&amp;<span class="type">String</span>&gt; &#123;</span><br><span class="line">		...</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该方法的完整版本应该是这样的<code>fn find_by_prefix&lt;&#39;a, &#39;b&gt;(&amp;&#39;a self, prefix: &amp;&#39;b str)-&gt; Option&lt;&amp;&#39;a String&gt;</code>；</p>
+</li>
+</ul>
+<h2 id="表达式"><a href="#表达式" class="headerlink" title="表达式"></a>表达式</h2><ul>
+<li><p>循环可以通过生命周期标签来控制多层跳转，有点类似Kotlin 里的forEach@ 这种标签写法；</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">‘search:</span><br><span class="line"><span class="keyword">for</span> <span class="variable">room</span> <span class="keyword">in</span> apartment &#123;</span><br><span class="line">	<span class="keyword">for</span> <span class="variable">spot</span> <span class="keyword">in</span> room.hiding_spots &#123;</span><br><span class="line">		<span class="keyword">if</span> spot.<span class="title function_ invoke__">containsKey</span>(keys) &#123;</span><br><span class="line">			<span class="keyword">break</span> <span class="symbol">&#x27;search</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>关于泛型的方法调用注意：通常用于函数调用或者方法调用的语法不能用于泛型，如<code>Vec&lt;i32&gt;::with_capacity(1000);</code>这种是错误的，正确写法是<code>Vec::&lt;i32&gt;::with_capacity(1000);</code>，当前，还可以让编译器自己推断，从而省略泛型的写法<code>Vec::with_capacity(3000);</code>；</p>
+</li>
+<li><p>Rust中的转换一般是显示的，除了<strong>解引用强制转换</strong>，有三种情况</p>
+<ul>
+<li>&amp;String 类型的值会被自动转换为&amp;str;</li>
+<li>&amp;Vec<i32>类型的值会被自动转换为&amp;[i32];</li>
+<li>&amp;Box<Chessboard>类型的值会自动转换为&amp;Chessboard;</li>
+</ul>
+</li>
+</ul>
+<h2 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h2><ul>
+<li><p>处理特定业务类型的错误代码示例：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">loop</span> &#123;</span><br><span class="line">	<span class="keyword">match</span> <span class="title function_ invoke__">compile_project</span>() &#123;</span><br><span class="line">		<span class="title function_ invoke__">Ok</span>(()) =&gt; <span class="keyword">return</span> <span class="title function_ invoke__">Ok</span>(()),</span><br><span class="line">		<span class="title function_ invoke__">Err</span>(err) =&gt; &#123;</span><br><span class="line">			<span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Some</span>(msg) == err.downcast_ref::&lt;MissSemicolonError&gt;() &#123;</span><br><span class="line">				<span class="comment">// xxxx</span></span><br><span class="line">				...</span><br><span class="line">				<span class="keyword">continue</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="包和模块"><a href="#包和模块" class="headerlink" title="包和模块"></a>包和模块</h2><ul>
+<li>没有声明<strong>pub</strong>的都是模块私有的；</li>
+</ul>
+<h2 id="结构体"><a href="#结构体" class="headerlink" title="结构体"></a>结构体</h2><ul>
+<li>结构体中所有的变量都必须声明为<strong>pub</strong>，才能使用结构体表达式构建；否则只能使用对外暴露的API方法进行构建（如<code>Vec::new();</code>）；</li>
+<li>结构体类型：命名字段结构体(<code>struct Person &#123; name: String &#125;</code>)、类元组结构体(<code>struct Bounds(usize, usize);</code>)和类基元结构体(<code>struct OneType;</code>)；</li>
+<li>impl的方法实现中，如果第一个入参是<code>self</code>，而不是引用，则会在调用方法后转移所有权；</li>
+</ul>
+<h2 id="枚举与模式"><a href="#枚举与模式" class="headerlink" title="枚举与模式"></a>枚举与模式</h2><ul>
+<li><p>枚举的类型和结构体一样有三种；并且一个枚举定义中可以同时包含这三种类型的<strong>变体</strong>；</p>
+</li>
+<li><p>模式匹配中，会将结构体中的所有权转移到匹配的变量上，这样原结构体就会变成未初始化状态，因此需要使用<code>ref</code>关键字来获取其引用，示例如下：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">match</span> account &#123;</span><br><span class="line">	Account &#123; <span class="keyword">ref</span> name, <span class="keyword">ref</span> language, ..&#125; =&gt; &#123;</span><br><span class="line">		ui.<span class="title function_ invoke__">greet</span>(name, language);</span><br><span class="line">		ui.<span class="title function_ invoke__">show_setting</span>(&amp;account);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为在模式匹配中使用<strong>ref</strong>关键字，所以<strong>name和language</strong>两个变量仅复制了account中这两个变量的值，而非转移了其所有权，所以在后面的代码仍然可以使用**&amp;account**；</p>
+</li>
+<li><p>匹配某个范围的值使用的是**…**；</p>
+</li>
+<li><p>在模式匹配中添加<strong>if</strong>条件时，不能将变量的值进行转移，如<code>Some(point) if self.distance_to(point) &lt; 10</code> 这个表达式中，后面的条件实际上转移了<code>point</code>的所有权，就会导致后面的分支判断无法使用<code>point</code>了，因此需要修改为借用，即<code>Some(ref point) if self.distance_to(point) &lt; 10</code>；可修改的为<code>ref mut</code>；</p>
+</li>
+<li><p><code>x @ pattern</code>匹配给定的<strong>pattern</strong>，但是成功之后，不是基于匹配值的元素来创建变量，而是把匹配值整个转移或者复制到一个变量x中；</p>
+</li>
+<li><p>两个概念的解释：<strong>可驳模式(refutable pattern)和不可驳模式(irrefutable pattern)<strong>，类似Kotlin中的</strong>解构</strong>就是不可驳模式，其双向的值是确定清晰可转换的，如<code>let (x, y) = point;// point = (3, 4)</code>，而<em>match</em>就是一种可驳模式，因为对于一个需要match的值来说，其结果可能是<code>Ok(x)</code>也可能是<code>Err(err)</code>，他双向的匹配是一个大于的范围；</p>
+</li>
+</ul>
+<h2 id="特型-Trait"><a href="#特型-Trait" class="headerlink" title="特型(Trait)"></a>特型(Trait)</h2><ul>
+<li><p>特型目标，指的是使用<code>trait</code>声明的变量，其只能接受引用，不能直接接受变量，原因是本质上，<code>trait</code>是一个引用，它指向的是实现该<code>trait</code>的具体实现类；</p>
+</li>
+<li><p>特型目标支持普通引用自动转换，即一个引用是某个<code>trait</code>的实现，在方法或者函数调用时，传入其引用可以自动转换为该<code>trait</code>类型；</p>
+</li>
+<li><p>特型的<code>impl</code>实现方法中只能包含特型的实现，如果需要其他的实现，需要定义其他的<code>impl</code>块；</p>
+</li>
+<li><p><strong>扩展特型</strong>：指的是当前的特型仅为一个已有的类型添加新的方法；</p>
+</li>
+<li><p>关联类型，声明迭代器的item的类型限制的写法如下：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">dump</span>&lt;I&gt;(iter: I) </span><br><span class="line">	<span class="keyword">where</span> I : <span class="built_in">Iterator</span>, I::Item:<span class="built_in">Debug</span></span><br><span class="line">&#123;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 或者</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">dum</span>&lt;I&gt;(iter: I)</span><br><span class="line">	<span class="keyword">where</span> I : <span class="built_in">Iterator</span>&lt;Item=<span class="type">String</span>&gt;</span><br><span class="line">&#123;</span><br><span class="line">  	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>Default</strong>特型是有默认值的类型；</p>
+</li>
+<li><p><code>Add&lt;Output=i32&gt;</code>这句的理解是，<code>Add</code>是<code>+</code>操作符的<strong>trait</strong>定义，定义了两种数值类型的加法，其定义源码如下</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">trait</span> <span class="title class_">Add</span>&lt;Rhs = <span class="keyword">Self</span>&gt; &#123;</span><br><span class="line">    <span class="comment">/// The resulting type after applying the `+` operator.</span></span><br><span class="line">    <span class="meta">#[stable(feature = <span class="string">&quot;rust1&quot;</span>, since = <span class="string">&quot;1.0.0&quot;</span>)]</span></span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Output</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Performs the `+` operation.</span></span><br><span class="line">    <span class="comment">///</span></span><br><span class="line">    <span class="comment">/// # Example</span></span><br><span class="line">    <span class="comment">///</span></span><br><span class="line">    <span class="comment">/// ```</span></span><br><span class="line">    <span class="comment">/// assert_eq!(12 + 1, 13);</span></span><br><span class="line">    <span class="comment">/// ```</span></span><br><span class="line">    <span class="meta">#[must_use]</span></span><br><span class="line">    <span class="meta">#[stable(feature = <span class="string">&quot;rust1&quot;</span>, since = <span class="string">&quot;1.0.0&quot;</span>)]</span></span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">add</span>(<span class="keyword">self</span>, rhs: Rhs) <span class="punctuation">-&gt;</span> <span class="keyword">Self</span>::Output;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到是<strong>trait</strong>中定义的type类型，这个在rust中被称为<strong>关联类型</strong>，如迭代器的trait中定义的关联类型就是<strong>item</strong>，那这个的使用场景可以这么理解，如<code>v[i]+s[i];</code>假设这个是某个循环或者函数中的片段，v和s分别是两个数值类型的切片，且在当前的片段中，无法推断出<strong>v[i]和s[i]的值的具体类型</strong>（在泛型方法中，这个就很常见了），这样执行<code>+</code>就会有问题，比如<strong>v[i]<strong>是一个</strong>i32</strong>而<strong>s[i]<strong>是一个</strong>f32</strong>，这样他们肯定无法执行<code>+</code>，所以这里会有问题，解决的方法就是对其值类型进行type限制，查看一个完整实例：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">dot</span>&lt;N&gt;(v1: &amp;[N], v2: &amp;[N]) <span class="punctuation">-&gt;</span> N</span><br><span class="line">    <span class="keyword">where</span> N: Add&lt;Output=N&gt; + Mul&lt;Output=N&gt; + <span class="built_in">Default</span> + <span class="built_in">Copy</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">total</span> = N::<span class="title function_ invoke__">default</span>();</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..v1.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        total = total + v1[i] * v2[i];</span><br><span class="line">    &#125;</span><br><span class="line">    total</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个例子中，泛型<strong>N</strong>如果仅仅是实现了<strong>Add</strong>特型的类型，就会存在很多类型，如<strong>i32和f32</strong>,都实现了，这样就没法保证<code>v1[i]</code>和<code>v2[i]</code>的值是同一种类型，因此需要限定他们的<strong>Output</strong>的类型都是同一种；</p>
+</li>
+</ul>
+<h2 id="实用特型"><a href="#实用特型" class="headerlink" title="实用特型"></a>实用特型</h2><table>
+<thead>
+<tr>
+<th>特型</th>
+<th>简介</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Drop</strong></td>
+<td>相当于*C++*中的解构函数，会在清除的时候<strong>被动</strong>调用</td>
+</tr>
+<tr>
+<td><strong>Sized</strong></td>
+<td>固定大小的<em>Trait</em>，大多数类型是固定大小的（不太理解这个）</td>
+</tr>
+<tr>
+<td><strong>Clone</strong></td>
+<td>复制一个独立的副本，简单实现只需要添加<code>#[derive(Clone)]</code>即可</td>
+</tr>
+<tr>
+<td><strong>Copy</strong></td>
+<td>基于编译器的语义，可以实现实体类型的复制(对象的复制需要定义的字段都能复制才行)，逐位拷贝</td>
+</tr>
+<tr>
+<td><strong>Deref与DerefMut</strong></td>
+<td>实现这两个<em>Trait</em>可以自定义引用*和解引用.操作符上的自定义行为</td>
+</tr>
+<tr>
+<td><strong>Default</strong></td>
+<td>具备了默认值的<em>Trait</em>，如数值类型默认值是0，字符串默认值是空的</td>
+</tr>
+<tr>
+<td><strong>AsRef与AsMut</strong></td>
+<td>引用和可修改引用</td>
+</tr>
+<tr>
+<td><strong>Borrow与BorrowMut</strong></td>
+<td>借用和可修改借用</td>
+</tr>
+<tr>
+<td><strong>From与Into</strong></td>
+<td>类型转换特型</td>
+</tr>
+<tr>
+<td><strong>ToOwned</strong></td>
+<td>给定一个引用，产生其引用目标的所有型副本</td>
+</tr>
+</tbody></table>
+<ul>
+<li><code>drop()</code>会在值被清除的时候，被隐式调用，该方法无法被显式调用；</li>
+<li><code>drop()</code>在面对需要使用<code>unsafe</code>资源进行释放时，是很有用的；</li>
+<li>实现了<em>Drop</em>，则不能实现<em>Copy</em>；</li>
+<li><em>Copy</em>和<em>Clone</em>一般一起使用<code>#[derive(Clone, Copy)]</code>;</li>
+<li><a target="_blank" rel="noopener" href="https://rustcc.cn/article?id=c3fc25cf-dab6-4b51-8547-1ff4aacbfc32">Copy和Clone的区别</a>;</li>
+<li>实现<em>Copy</em>需要考虑清楚，<strong>隐式复制的代价很大的</strong>；</li>
+<li>自定义解引用在应对泛型时，需要注意解引用后的类型和解引用前的类型是否有泛型上的差别，否则需要强转，具体解释看<em>Rust程序设计239页</em>解释；</li>
+<li><em>str</em>和*[T]*类型都是非固定大小的，而<code>&amp;str</code>这种引用是固定大小的；</li>
+<li>Rust中闭包的性能是没有开销的，编译器会显示内联优化，减少函数和方法调用；</li>
+<li>对于任意类型的<em>T</em>和<em>U</em>，如果<code>T: AsRef&lt;U&gt;</code>，则<code>&amp;T: AsRef&lt;U&gt;</code>也成立；</li>
+<li><em>Borrow</em>的限制：只有当<code>&amp;T</code>与它所借用的值具有相同的散列和比较特性时，一个类型才可以实现*Borrow<T>*；</li>
+<li><em>Clone</em>一个*&amp;T<em>必须返回一个类型</em>T*的值；</li>
+</ul>
+<h2 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h2><ul>
+<li><p><code>fn(&amp;City)-&gt;bool</code>是闭包的一种类型，仅接受函数；</p>
+</li>
+<li><p><code>Fn(&amp;City)-&gt;bool</code>是闭包的一种特型， 包括函数和闭包；</p>
+</li>
+<li><p>对<code>Fn</code>和<code>FnOnce</code>的理解：</p>
+<ul>
+<li><p>如果一个闭包中，只有普通的代码，没有传值进行所有权的转移，则其应该是<code>Fn</code>特型的闭包；</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">my_str3</span> = <span class="string">&quot;hello3&quot;</span>.<span class="title function_ invoke__">to_string</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">block3</span> = || &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">b</span> = <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">if</span> a + b == my_str3.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;equal&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;not equal&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="title function_ invoke__">call_twice</span>(block3);</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>如果一个闭包中，存在了所有权的转移，那么这个闭包仅能调用一次，其是<code>FnOnce</code>特型的闭包，如果对其调用多次，会报错，因为不符合所有权系统的规则（试想一个函数入参是所有权转移，然后会存在返回值，这个返回值的所有权和这个入参一致，如果调用了两次，就会把一个值的所有权赋值给两个变量，这是不符合所有权系统的规则的）；</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">my_str</span> = <span class="string">&quot;hello&quot;</span>.<span class="title function_ invoke__">to_string</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">block</span> = || <span class="title function_ invoke__">drop</span>(my_str); <span class="comment">// this block&#x27;s trait is FnOnce,beacuse drop receive a var, not a ref</span></span><br><span class="line"><span class="title function_ invoke__">block</span>();</span><br><span class="line"><span class="title function_ invoke__">block</span>(); <span class="comment">// error</span></span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>如果一个闭包中，仅存在借用，那么这个闭包还是<code>Fn</code>特型的闭包；</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">my_str2</span> = <span class="string">&quot;hello2&quot;</span>.<span class="title function_ invoke__">to_string</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">block2</span> = || <span class="built_in">println!</span>(<span class="string">&quot;this is &#123;&#125;&quot;</span>, &amp;my_str2); <span class="comment">// this block&#x27;s trait is Fn,println receive a ref;</span></span><br><span class="line"><span class="title function_ invoke__">call_twice</span>(block2);</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>如果一个闭包中，即存在所有权转移，又存在借用，那这个还是<code>FnOnce</code>特型的闭包；</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">my_str4</span> = <span class="string">&quot;hello2&quot;</span>.<span class="title function_ invoke__">to_string</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">block_fn</span> = || &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;this is &#123;&#125; 2&quot;</span>, &amp;my_str4);</span><br><span class="line">    <span class="title function_ invoke__">drop</span>(my_str4);</span><br><span class="line">&#125;;</span><br><span class="line"><span class="title function_ invoke__">call_twice</span>(block_fn); <span class="comment">// error</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>总结下来就是，<code>FnOnce</code>闭包是闭包设计中实现所有权的一个方式。需要注意的一点是，<strong>在调用<code>FnOnce</code>的闭包时，闭包本身也会被使用掉</strong>，这个设计和所有权是如出一辙的。</p>
+</li>
+</ul>
+<h2 id="迭代器"><a href="#迭代器" class="headerlink" title="迭代器"></a>迭代器</h2><ul>
+<li><p><strong>可迭代类型</strong>指的是实现了<code>IntoIterator</code>trait的类型，可以通过<code>into_iter()</code>方法取得其迭代器；</p>
+</li>
+<li><p>使用<code>into_iter()</code>方法时，需要加上借用，因为这个方法是返回的所有权，而<code>iter()和iter_mut()</code>方法返回的迭代器不需要加上借用；</p>
+</li>
+<li><p>值传递的集合，在迭代时，消费者会取得其所有权，在迭代器迭代完成后，集合就会清空；</p>
+</li>
+<li><p><em>vec</em>使用<code>join()</code>方法可以在每个<strong>item</strong>直接添加一个元素；</p>
+</li>
+<li><p>对于消费的理解，<code>[&quot;earth&quot;, &quot;water&quot;, &quot;air&quot;, &quot;fire&quot;].iter().map(|elt| println!(&quot;&#123;&#125;&quot;, elt));</code>这句代执行后实际不会打印任何值，因为这句代码里没有产生消费，当在最后加上<code>.next()</code>方法时，会打印第一个值，因为仅消费了一个，这一点和<em>Kotlin</em>是有很大区别的，在<em>Kotlin</em>中调用<code>map()</code>方法就意味着已经开始产生消费了，这里可以这样修改：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">s</span> = [<span class="string">&quot;earth&quot;</span>, <span class="string">&quot;water&quot;</span>, <span class="string">&quot;air&quot;</span>, <span class="string">&quot;fire&quot;</span>].<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">map</span>(|elt| &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;map:&#123;&#125;&quot;</span>, elt);</span><br><span class="line">    elt</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">for</span> <span class="variable">item</span> <span class="keyword">in</span> s &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;for:&#123;&#125;&quot;</span>, item)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里使用<code>for.. in </code>，实际上是连续调用了<code>next()</code>方法来产生迭代值，不过这里可以猜猜打印的结果是什么。</p>
+<p>答案是**map:earth\nfor:earth\nmap:water\nfor:water….**，是的，最终调用<code>next()</code>时，会将<code>map()</code>的操作一起执行出来；</p>
+</li>
+<li><p><code>scan()</code>方法，类似<code>map()</code>，区别是其传递给闭包的是可修改的值，并在接受到<em>None</em>值时，会提前终止迭代；</p>
+</li>
+<li><p><code>take()和take_while()</code>使用方法上和<em>Kotlin</em>没有区别，都是获取指定数目和指定条件的数据；</p>
+</li>
+<li><p><code>skip()和skip_while()</code>使用方法同<em>Kotlin</em>；</p>
+</li>
+<li><p><code>peekable()</code>，可预测的迭代器，当我们需要对迭代的下一项进行判断才决定消费时，非常有用；需要练习这个；</p>
+</li>
+<li><p><code>fuse()</code>可以在第一次返回<em>None</em>后一直返回<em>None</em>；实例如下：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Flaky</span>(<span class="type">bool</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="title class_">Iterator</span> <span class="keyword">for</span> <span class="title class_">Flaky</span> &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Item</span> = &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span>;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">next</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;<span class="keyword">Self</span>::Item&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">self</span>.<span class="number">0</span> &#123;</span><br><span class="line">            <span class="keyword">self</span>.<span class="number">0</span> = <span class="literal">false</span>;</span><br><span class="line">            <span class="title function_ invoke__">Some</span>(<span class="string">&quot;Totoal&quot;</span>)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">self</span>.<span class="number">0</span> = <span class="literal">true</span>;</span><br><span class="line">            <span class="literal">None</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[test]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">test_fuse</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">flaky</span> = <span class="title function_ invoke__">Flaky</span>(<span class="literal">true</span>);</span><br><span class="line">    <span class="built_in">assert_eq!</span>(flaky.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(<span class="string">&quot;Totoal&quot;</span>));</span><br><span class="line">    <span class="built_in">assert_eq!</span>(flaky.<span class="title function_ invoke__">next</span>(), <span class="literal">None</span>);</span><br><span class="line">    <span class="built_in">assert_eq!</span>(flaky.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(<span class="string">&quot;Totoal&quot;</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">not_flaky</span> = <span class="title function_ invoke__">Flaky</span>(<span class="literal">true</span>).<span class="title function_ invoke__">fuse</span>();</span><br><span class="line">    <span class="built_in">assert_eq!</span>(not_flaky.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(<span class="string">&quot;Totoal&quot;</span>));</span><br><span class="line">    <span class="built_in">assert_eq!</span>(not_flaky.<span class="title function_ invoke__">next</span>(), <span class="literal">None</span>);</span><br><span class="line">    <span class="built_in">assert_eq!</span>(not_flaky.<span class="title function_ invoke__">next</span>(), <span class="literal">None</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>by_ref()</code>借用迭代器的可修改引用，因为迭代后还可以继续使用原迭代器，这个方法不会取得原迭代器的所有权；但是迭代后该消费的迭代还是会消费掉，也就是说调用了这个方法，你迭代后，还可以继续迭代，因为所有权还在，其他的迭代方法获取所有权，迭代后原迭代器就不能使用了；</p>
+</li>
+<li><p><code>cycle()</code>，返回一个无休止重复的底层迭代器；</p>
+</li>
+</ul>
+<h2 id="集合"><a href="#集合" class="headerlink" title="集合"></a>集合</h2><h3 id="标准集合"><a href="#标准集合" class="headerlink" title="标准集合"></a>标准集合</h3><table>
+<thead>
+<tr>
+<th>集合</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Vec<T></td>
+<td>可增数组</td>
+</tr>
+<tr>
+<td>VecDeque<T></td>
+<td>双端队列</td>
+</tr>
+<tr>
+<td>LinkedList<T></td>
+<td>双向链表</td>
+</tr>
+<tr>
+<td>BinaryHeap<T></td>
+<td>最大堆</td>
+</tr>
+<tr>
+<td>HashMap&lt;K,V&gt; where K : Eq + Hash</td>
+<td>键-值散列表</td>
+</tr>
+<tr>
+<td>BTreeMap&lt;K,V&gt;</td>
+<td>有序键-值表</td>
+</tr>
+<tr>
+<td>HashSet<T> where T: Eq + Hash</td>
+<td>散列表</td>
+</tr>
+<tr>
+<td>BTreeSet<T> where T:Ord</td>
+<td>有序集</td>
+</tr>
+</tbody></table>
+<ul>
+<li><code>join()</code>方法需要传入一个<em>Separator</em>类型的参数，其作用是将元素加入分割器后返回，而<code>&amp;T</code>是实现了<em>Separator</em>的类型，因此<code>[[1, 2], [3, 4]].join(&amp;100)</code>的结果是<code>[1, 2, 100, 3, 4]</code>;注意<strong>机器类型</strong>无法使用<code>join()</code>；未实现对应的<em>trait</em>；</li>
+<li><code>join()</code>和<code>contact()</code>是用于处理数组的数组；</li>
+</ul>
+<h2 id="并发"><a href="#并发" class="headerlink" title="并发"></a>并发</h2><ul>
+<li>在<em>Rust</em>中，<strong>move</strong>关键字会将当前的变量转移到子线程中，这种转移的开销很小；</li>
+<li>在<em>Rust</em>中，子线程的<code>panic</code>会被主线程当做一个错误进行处理，而不是一个<code>panic</code>;不过这个错误需要我们显示的使用<strong>Result::Err</strong>来进行处理；</li>
+</ul>
+  </div>
+  
+    
+      <a id="older" class="blog-nav" href="/2022/03/02/%E7%BD%91%E7%BB%9C%E7%9F%A5%E8%AF%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-HTTPS/">OLDER&nbsp;&gt;</a>
+      
+        
+          <a id="newer" class="blog-nav" href="/2022/05/15/Unity%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">&lt;&nbsp;NEWER</a>
+          
+            
+</div>
+        <div class="footer">
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Copyright © Leedom 2021</a>
+        
+    </div>
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Theme by Leedom | Powered by Hexo</a>
+        
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="back-to-top hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+      
+  <div class="search-icon" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-box">
+        <div class="search-title">
+          <!-- <span class="search-icon-input">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </span> -->
+          
+            <input type="text" class="search-input" id="search-input" placeholder="$ grep...">
+          
+          <span class="search-close-icon" id="search-close-icon">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-close"></i>
+            </a>
+          </span>
+        </div>
+        <div class="search-result" id="search-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    // inputArea.onclick = function() {
+    //   getSearchFile()
+    //   this.onclick = null
+    // }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        inputArea.focus()
+        getSearchFile()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'><span></ul>";
+      // $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'><h2>" + orig_data_title + "</h2></a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<h3 class=\"search-result-abstract\">" + match_content + "...</h3>"
+                }
+                str += "<hr></li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/leedom92/hexo-theme-leedom#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+    </div>
+  </body>
+</html>

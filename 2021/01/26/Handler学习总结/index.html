@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="John Doe" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Handler学习总结 
+      
+      
+    
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto:400,400italic,600|Roboto+Mono" rel="stylesheet">
+
+  <!-- hexo site css -->
+  
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/common.css">
+<link rel="stylesheet" href="/iconfont/iconfont.css">
+
+
+  
+
+  
+    
+<link rel="stylesheet" href="/css/post.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <script async src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <a href="/">LEEDOM</a>
+</div>
+
+
+      <p class="links">
+  
+    <a title="archives" target="" href="/archives/">
+      <i class="iconfont icon-bookmark"></i>
+    </a>
+  
+    <a title="github" target="_blank" href="https://github.com/leedom92/hexo-theme-leedom">
+      <i class="iconfont icon-github"></i>
+    </a>
+  
+    <a title="email" target="" href="">
+      <i class="iconfont icon-envelope"></i>
+    </a>
+  
+    <a title="facebook" target="" href="">
+      <i class="iconfont icon-facebooksquare"></i>
+    </a>
+  
+    <a title="twitter" target="" href="">
+      <i class="iconfont icon-twitter"></i>
+    </a>
+  
+    <a title="wechat" target="" href="">
+      <i class="iconfont icon-wechat"></i>
+    </a>
+  
+    <a title="weibo" target="" href="">
+      <i class="iconfont icon-weibo"></i>
+    </a>
+  
+    <a title="rss" target="_blank" href="/atom.xml">
+      <i class="iconfont icon-rss"></i>
+    </a>
+  
+</p>
+
+
+      <div class="main">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+
+<div class="post">
+  <h3 class="date">
+    Jan 26, 2021
+  </h3>
+  <h1>
+    Handler学习总结
+  </h1>
+  <div class="content markdown-body">
+    <p>那么回想一下我们最开始学习<strong>Java</strong>时，就是编写一段有输入输出的GUI程序：写完后运行起来-&gt;我们输入数据-&gt;程序处理输入数据-&gt;输出结果-&gt;程序结束。这是最简单的一个程序，他在处理完成我们的任务后，是会结束的！而且刚开始学习的时候，老师也会告诉我们，写循环的时候需要注意循环的条件，不要写死循环，这样程序就会卡死在那儿。那个时候其实不太理解这种卡死真正是什么，感觉像刚接触电脑时那种点哪儿都没有反应，现在回想起来，那种卡死是假象，并不是生活中的某个东西卡住了不动了。而且程序一直在运行，运行着你的循环中的代码。所以，当你的循环的代码能够不停的处理不一样的事件，那样不就能一直处理新的需求了。如果没有循环，单线程上的代码执行完，程序就结束了。</p>
+<p>所以说循环是让程序能一直运行的一个基础，但是对于单线程来说，循环里的东西是固定的，那这样只是在不断的处理同一个东西而已，并没有什么意义。所以肯定需要多个线程来产生不同的东西，然后交互信息，这样才能源源不断的处理新的东西，我们把这个信息封装一下就可以称为消息了，而多个线程交互这个信息其实就是线程间通信了，这个通信的基础就是多个线程都能访问到同一资源（这个资源就是通信的媒介）。</p>
+<p>这样一想，这个工作模型就是<strong>生成者-消费者模型</strong>呀。以工厂为例子，生产者就是生产零件的，消费者就是组装零件的。我们可以把应用看着一个消费者，<code>Looper</code>的死循环就是传送带。这样，生产者可以是系统，产生新的刷新信号，也可以是用户，触摸屏幕产生新的事件，他们在不同的传输带工作（线程），当他们完成他们的零件生产后，就将零件（事件）包起来（封装到消息）中，通过工人（<code>Handler</code>）将消息放到传送带上。这样就完成了两个传送带的通信了对不对，生产的传送带将某一批号的零件生产成功的信息通过包装放到另一个传送带上，那么另一个传送带处理该包装时，就知道了该批号零件生产成功的信息，接着按照包装上的说明书去组装他们（处理消息）。</p>
+<p>接着我们就从源码的角度来看看<strong>Android</strong>中整个机制是如何具体运行的。</p>
+<h2 id="整体流程"><a href="#整体流程" class="headerlink" title="整体流程"></a>整体流程</h2><p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_flow3.png" alt="handler_flow3"></p>
+<p>图中涉及到的一些对象：</p>
+<ul>
+<li><strong>Handler：</strong>本质上是作为一个工具类，暴露API给外部调用，其内部的消息管理都是交给了<strong>Looper</strong>去具体执行。作为开发者只需要关注使用<code>handler</code>对象去发送消息和处理消息。</li>
+<li><strong>Looper(蓝色框中的)：</strong>具体做消息的分发处理的<code>工具人</code>，作为<strong>Java</strong>层中的话事人去，连接着消息的发送者和处理者<strong>Handler</strong>、消息队列的维护者<strong>MessageQueue</strong>及线程的信息。一个线程中只有一个<code>Looper</code>对象存在。</li>
+<li><strong>MessageQueue：</strong>维护消息的队列，同时还负责与<strong>Native</strong>层进行通信。</li>
+<li><strong>Message：</strong>消息的抽象类，内部存储着具体的消息内容，消息的类型（同步或者异步），消息的时间和Callback、handler对象等等。</li>
+<li><strong>NativeMessageQueue：Native</strong>层中的消息管理者的角色，承担了类似<strong>Java</strong>层中的handler部分职责，<strong>Java</strong>层可以通过<strong>Jni</strong>调用到该对象中的方法。在<strong>Native</strong>层中也存在<strong>Looper(绿色框中的)<strong>和handler对象，用于处理</strong>Native</strong>层的消息。</li>
+<li><strong>MessageHandler：Native</strong>层中的消息处理者。</li>
+<li><strong>epoll：</strong>linux中的IO多路复用机制，性能优于select机制和poll机制。</li>
+</ul>
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>这里我先不按照流程来看代码，从开发者使用的角度来分析源码，首先接触的是<code>handler</code>的初始化：</p>
+<p>[frameworks&#x2F;base&#x2F;core&#x2F;java&#x2F;android&#x2F;os&#x2F;Handler.java]</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_init.png" alt="handler_init"></p>
+<p>在<code>Handler</code>的构造方法中，调用了<code>Looper.myLooper()</code>方法获取<code>Looper</code>对象赋值给<code>Handler</code>，从这里可以看出，在线程中使用<code>Handler</code>需要先初始化好<code>Looper</code>对象，因为<code>Handler</code>本身就是为了线程通信而服务的，如果线程相关的信息都没有准备好，这服务也就没有意义了。</p>
+<p>[frameworks&#x2F;base&#x2F;core&#x2F;java&#x2F;android&#x2F;os&#x2F;Looper.java]</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_get_looper.png" alt="handler_get_looper"></p>
+<p>继续跟代码来看看这个<code>Looper.myLooper()</code>干了啥，从上面代码看，就是从<code>sThreadLocal</code>中获取<code>Looper</code>对象实例。这个<code>sThreadLocal</code>的类型为<code>ThreadLocal&lt;Looper&gt;</code>对象，他是<strong>JMM</strong>中每个线程的私有内存所存储的东西的具体实现（<code>ThreadLocalMap</code>，一种类似<strong>Map</strong>的结构，以<code>Thread</code>为<strong>Key</strong>，存储对应的<strong>Value</strong>），<a target="_blank" rel="noopener" href="https://juejin.cn/post/6919002656186826765">关于ThreadLocal的传送门有更多了解可以去这里看看</a>。因此每个<code>Handler</code>内的消息队列所维护的都是本线程中的所有消息。</p>
+<p>这个<code>sThreadLocal</code>的上面还有一句注释，就是说在调用<code>get()</code>去获取<code>Looper</code>对象时，应该先调用过<code>prepare()</code>这个方法，去具体看看：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_looper_init.png" alt="handler_looper_init"></p>
+<p>在这个方法里，主要做了三件事：</p>
+<ul>
+<li>调用<code>Looper</code>的构造方法生成一个实例。</li>
+<li>在<code>Looper</code>的构造方法中，新建了<code>messageQueue</code>对象，并绑定了线程。</li>
+<li>将实例设置到<code>threadLocal</code>中。</li>
+</ul>
+<p>这样，对<code>Looper</code>来说它的初始化工作算完成了。上面的代码还有一个细节就是<code>sThreadLocal.get() != null</code>的判断，也说明了对于一个<code>Looper</code>来说，只能调用一次<code>prepare()</code>方法。</p>
+<p>接着是<code>MessageQueue</code>的初始化，主要是通过<strong>Jni</strong>调用了一个<strong>Native</strong>方法。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_message_quque_init.png" alt="handler_message_quque_init"></p>
+<p>在<strong>Native</strong>中调用到的是<code>android_os_MessageQueue.cpp</code>中的方法</p>
+<p>[frameworks&#x2F;base&#x2F;core&#x2F;jni&#x2F;android_os_MessageQueue.cpp]</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_message_quque_native_init.png" alt="handler_message_quque_native_init"></p>
+<p><code>NativeMessageQueue</code>的构造方法主要是设置<code>NativeLooper</code>对象（为了和<strong>Java</strong>层的<code>Looper</code>做一下区分，这里加一个Native的前缀）。感觉这里的<code>NativeMessageQueue</code>有点像<code>Handler</code>的意思。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_looper_native_init.png" alt="handler_looper_native_init"></p>
+<p>在<code>NativeLooper</code>的初始化中主要是做了<code>Epoll</code>初始化相关的操作。创建了<code>Epoll</code>的实例，并注册了唤醒事件和其他事件到<code>Epoll</code>中。这里涉及到的是<code>epoll_create</code>和<code>epoll_ctl</code>两个函数，前者会创建一个空闲的<code>fd</code>并将他们关联在一起；后者可以注册一些事件进行监听。</p>
+<p>这里简单说一下，对于<code>epoll</code>的使用基本上分为三步：</p>
+<ol>
+<li>通过<code>epoll_create</code>创建并关联空闲<code>fd</code>；</li>
+<li>通过<code>epoll_ctl</code>添加我们想要监听的事件到<code>epoll</code>中；</li>
+<li>通过<code>epoll_wait</code>去等待我们监听的事件发生。</li>
+</ol>
+<p>在整个初始化过程中，前面两步已经准备好了，在下面的流程中就会用到第三步。<code>Epoll</code>机制涉及到就是<strong>Linux</strong>内核相关的一些知识了，可以看看袁辉辉大佬写的<a target="_blank" rel="noopener" href="http://gityuan.com/2019/01/06/linux-epoll/">源码解读epoll内核机制</a>。有能力的小伙伴也可以直接阅读源码去分析它的工作机制<a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/master/fs/eventpoll.c">epoll源码</a></p>
+<p><code>Epoll</code>在这里的作用就是<strong>生产者-消费者模型</strong>中的阻塞机制，当生产者没有生产出消息时，消费者（线程）就需要调用<code>epoll_wait</code>等待；消费者发出消息后，可以通过写入唤醒事件，在<code>Epoll</code>中监听到写入事件后，<code>epoll_wait</code>方法就会返回事件给消费者-线程，也就可以继续执行消息的处理逻辑，然后再循环到<code>epoll_wait</code>等待下一条消息。</p>
+<p>至此，整个准备工作就完成了，接着就是运行起来整个机制。调用<code>Looper.loop()</code>方法，该方法就是前面介绍的死循环，所以我们的所有事件和消息处理都在这个循环中。</p>
+<h3 id="发送消息"><a href="#发送消息" class="headerlink" title="发送消息"></a>发送消息</h3><p>当我们在线程中拿到<code>Handler</code>的实例时，可以调用一系列方法去发送消息，不管是发送我们自己<code>obtain()</code>的消息还是<code>runnable</code>，到<code>Handler</code>内部都会封装为一个<code>Message</code>进行传递，<code>runnable</code>会设置到<code>message</code>的<code>callback</code>中。</p>
+<p>而在<code>Handler</code>内部，一系列方法，最后都是调用的<code>sendMessageAtTime</code>，而<code>sendMessageAtTime</code>方法调用了<code>enqueueMessage</code>。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_enqueue_message.png" alt="handler_enqueue_message"></p>
+<p>这一步中，将<code>message</code>的几个关键信息进行了设置，最重要的就是<code>target = this</code>，将当前的<code>handler</code>对象设置为了消息的<code>target</code>，这个作用是以便后面取出消息的时候，知道找谁去处理他。虽然一个线程中<code>Looper</code>只有一个实例，但是我们可以创建多个<code>Hanlder</code>的实例来进行消息的发送和处理，所以这个的目的是将发送方和处理方通过消息关联。</p>
+<p>继续跟代码到<code>MessageQueue。enqueueMessage()</code></p>
+<p>[frameworks&#x2F;base&#x2F;core&#x2F;java&#x2F;android&#x2F;os&#x2F;MessageQueue.java]</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_queue_en_message.png" alt="handler_queue_en_message"></p>
+<p>这一个方法中的逻辑主要是根据消息时间将消息插入到合适的位置，同时根据消息队列的情况看是否需要唤醒线程。</p>
+<p>对于唤醒的逻辑，我是这样理解的：</p>
+<ul>
+<li>第一种情况是如果当前队列没有消息，那么新消息就是队头，这个时候是否需要唤醒当前线程需要根据<code>mBlocked</code>的状态（这个状态的设置可能是之前的消息队列为空了，所以没有消息处理，就被<strong>Native</strong>阻塞了）；</li>
+<li>第二种情况就是看是否满足需要处理异步消息的判断，也就是存在同步屏障并且当前消息是异步消息时，如果当前仍然是阻塞状态，那么就需要立刻唤醒线程来处理这条优先级高的异步消息了。</li>
+</ul>
+<p>额外的一个逻辑：这个循环里面有个将<code>needWake</code>置为<code>false</code>的判断，这个判断中如果<code>needWake</code>为<code>true</code>了，说明前面的<code>mBlocked &amp;&amp; p.target == null &amp;&amp; msg.isAsynchronous()</code>是<code>true</code>，而且执行到这一步了，也说明了现在的队列不为null了，再看第二个条件是<code>p.isSynchronous()</code>，综合一下就是之前已经存在需要唤醒线程的异步消息了（也就是这条<code>p.isAsynchronous()</code>的消息也经过<code>mBlocked &amp;&amp; p.target == null &amp;&amp; msg.isAsynchronous()</code>的判断，但到当前消息判断时，线程仍然为<code>Blocked</code>状态，说明上一条的唤醒还没有成功，处于唤醒的过程中），所以需要重置<code>needWake</code>来避免重复唤醒。</p>
+<p>[frameworks&#x2F;base&#x2F;core&#x2F;jni&#x2F;android_os_MessageQueue.cpp]</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_queue_wake.png" alt="handler_queue_wake"></p>
+<p>最后看看唤醒线程的代码，这里会通过<code>mWakeEventFd</code>写入一个8字节的数据，这个时候<strong>epoll_wait</strong>会收到写入事件，然后返回值给<code>nativie</code>中<code>Looper</code>循环，就可以继续遍历消息了，这个逻辑在接下来的分发消息中就会涉及到了。<code>TEMP_FAILURE_RETRY</code>是一个重复尝试，直到成功的方法。</p>
+<h3 id="分发消息"><a href="#分发消息" class="headerlink" title="分发消息"></a>分发消息</h3><p>分发处理消息主要是<code>Looper.loop()</code>方法里的逻辑</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_looper_loop.png" alt="handler_looper_loop"></p>
+<p><code>Loop()</code>方法的逻辑比较简单，调用<code>queue.next()</code>去获取下一条消息，然后调用<code>msg.target.dispatchMessage(msg)</code>去处理它。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_queue_next.png" alt="handler_queue_next"></p>
+<p><code>next()</code>方法中的逻辑比较长，大致可以分为三个部分：调用到<strong>Native</strong>层、处理同步异步消息和执行<code>idle</code>任务。上面的代码是一个总览，可以从头到尾的看一下整个流程。下面就分别说说三个部分的具体逻辑。</p>
+<p>首先看调用到<strong>Native</strong>的处理。<code>nativePollOnce()</code>方法，传入了<code>mPtr</code>和<code>nextPollTimeoutMillis</code>这两个值，前一个是<code>nativeMessageQueue</code>的地址，在<code>messageQueue</code>构造函数中从<strong>Native</strong>返回过来的，这里传回去方便操作<strong>Native</strong>对象，后面一个<code>nextPollTimeoutMillis</code>就是<strong>Java</strong>层需要的延时唤醒时间了，这个值有值说明<strong>Java</strong>层的消息需要延迟处理。该方法在<code>native</code>中直接调用到了<code>nativeMessageQueue</code>的<code>pollOnce</code>，进一步调用了<code>mLooper</code>的<code>pollOnce</code>。我们就直接来看<code>mLooper</code>的源码。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_native_looper_pollOnce.png" alt="handler_native_looper_pollOnce"></p>
+<p>这个方法里也是一个死循环去处理消息，前面遍历<code>response</code>是处理当前接收到的非唤醒时间的请求，这个可以在<code>polllInner</code>方法的逻辑中看到，当<code>epoll_wait</code>接收到的不是唤醒事件，而是其他事件时，会先将事件处理并添加到<code>mResponse</code>数组中去，这个时候，当新的循环遍历到来就可以去处理它们了。</p>
+<p>接着是进入到<code>pollInner</code>中：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_native_looper_inner.png" alt="handler_native_looper_inner"></p>
+<p>这个方法的逻辑也可以分为三个部分：</p>
+<ul>
+<li>调用<code>epoll_wait</code>方法阻塞等待事件的发生，这里可能发生多种事件，如果是唤醒事件，则对应前面新消息的处理或者延迟消息的处理，这个时候会清空管道内的消息，同时执行下面两个部分的事件处理。</li>
+<li>遍历<code>mMessageEnvelope</code>中的消息，调用<code>messageHandler</code>来处理消息。</li>
+<li>执行<code>mResponse</code>中带<code>callback</code>的事件。</li>
+</ul>
+<p>如果后面两种逻辑没有进行事件的处理，那么这个时候<code>pollOnce</code>的死循环就会继续进行到<code>pollInner</code>中，再次执行<code>epoll_wait</code>去等待唤醒事件。</p>
+<p>如果后面两种逻辑进行了事件的处理，这个时候<strong>Native</strong>的死循环就会结束，对<strong>Java</strong>层来说这一次的阻塞就结束了，<strong>Java</strong>层的循环逻辑就会继续走。</p>
+<p>回到<strong>Java</strong>这边，当<strong>Native</strong>的阻塞结束后，就开始处理<strong>Java</strong>中的消息了。主要是同步和异步消息的处理：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handle_queue_find_msg.png" alt="handle_queue_find_msg"></p>
+<p>当存在同步屏障时<code>target == null</code>就会仅处理异步消息，否则就按照顺序去处理同步消息。这里会处理消息的时间，要是大于了当前时间，计算出<code>timeout</code>时间，在下一次遍历时会通过<code>nativePollOnce</code>出给<strong>Native</strong>去阻塞，在时间到了后唤醒自己来处理这条消息。</p>
+<p>当然，要是这个时候仍然没有消息可以处理，那我们也可以不让<strong>CPU</strong>闲着，这个时候会进行<code>idle</code>的任务处理</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_queue_handle_idle.png" alt="handler_queue_handle_idle"></p>
+<p><code>idle</code>的逻辑就比较简单了，从<code>mIdleHandlers</code>中最多取出4个任务来执行，执行一次后本次<code>next()</code>方法的循环就不会再执行<code>idle</code>的任务了，需要等到下一次<code>Loop()</code>方法调用<code>next()</code>的时候才会有可能再去执行<code>idle</code>。这么看其实执行<code>idle</code>的优先级是最低的，因此我们可以把一些不重要的工作放在<code>idle</code>中执行，而且不能影响到正常消息的处理。</p>
+<h3 id="处理消息"><a href="#处理消息" class="headerlink" title="处理消息"></a>处理消息</h3><p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_dispatch_msg.png" alt="handler_dispatch_msg"></p>
+<p>在<code>Looper</code>的处理中，会调用<code>msg.target.dispatchMessage</code>；这个方法中，可以看到有限处理的是消息的<code>callback</code>，也就是我们调用<code>handler.post</code>时发送的那些<code>runnable</code>。接着才是处理<code>handler</code>本身的<code>mCallback</code>，最后才是处理消息。由此可以看出<code>handler</code>在处理的时的优先级，又因为<strong>Android</strong>中很多通信都是使用的<code>handler</code>，也许解决某些业务的时候可以从这个点入手。</p>
+<h3 id="小结一下"><a href="#小结一下" class="headerlink" title="小结一下"></a>小结一下</h3><h2 id="扩展思考"><a href="#扩展思考" class="headerlink" title="扩展思考"></a>扩展思考</h2><h3 id="关于Handler中的内存泄漏"><a href="#关于Handler中的内存泄漏" class="headerlink" title="关于Handler中的内存泄漏"></a>关于Handler中的内存泄漏</h3><p>内存泄漏是个经常讨论的话题，我们这里仅探讨下关于<code>Handler</code>中的内存泄漏问题。无论是以前使用<code>AsyncTask</code>还是现在在主线程中使用<code>Handler</code>进行通信，网上都有说需要注意<code>Handler</code>的内存泄漏问题。Android中的内存资源的重复利用是通过<code>GC</code>机制来保证的，当我们不再使用的内存，会通过<code>GC</code>来回收，不过这个回收的条件是有一定规则的，就是<code>GC</code>需要判断这块内存是否和<code>GCRoot</code>相连接，如果连着，说明不能回收。（为什么这么设计具体可以看《深入理解Java虚拟机》这本书，有非常详细的<code>GC</code>机制介绍）。而发生内存泄漏的原因也是因为本来应该回收的内存仍然和<code>GCRoot</code>连着，能作为<code>GCRoot</code>的对象有好多类型，其中一个就是<code>活跃的线程</code>。这就和<code>Handler</code>的使用对应上了，<code>Handler</code>用于线程间通信，回顾下上面的流程，<code>Handler</code>创建于<code>A</code>线程的<code>ActivityA</code>页面，然后<code>B</code>线程拿到<code>handler</code>实例，发送一个消息，这个时候在<code>A</code>线程的<code>MessageQueue</code>中就存在一条消息，它的<code>target</code>为<code>ActivityA</code>中的<code>handler</code>对象，我们一般使用<code>handler</code>时，都会用匿名内部类实现<code>Callback</code>接口来处理消息，而在<strong>Java</strong>中，匿名内部类是会隐式的持有外部类的引用的。</p>
+<p>将上面的一系列引用串在一起就是，<strong>GCRoot(UiThread)-&gt;MessageQueue-&gt;Message-&gt;handler-&gt;Callback-&gt;ActivityA</strong></p>
+<p>当<code>ActivityA</code>在<code>onDestory()</code>之后本来应该会被回收的，但是由于某些情况下，消息没有来得及处理，以至于上面的引用链还存在，这个时候，他就没有办法回收了。</p>
+<p>所以有解决方案是，在<code>ondestory()</code>时，调用<code>handler.removeMessages()</code>去清除队列中的消息，这样上面的引用链就断开了，也就解决了内存泄漏问题。</p>
+<p>还有之前的方案是使用静态内部类和弱引用，因为静态内部类不会隐式的持有外部类的引用，这样也可以去避免这个问题，不过从上面引用的理解上来说，这种思路不算是一种治本思路。</p>
+<h3 id="同步屏障的使用"><a href="#同步屏障的使用" class="headerlink" title="同步屏障的使用"></a>同步屏障的使用</h3><p>同步屏障可以保证一些优先级比较高的消息被优先处理。</p>
+<p>其实现逻辑主要是将<em>target</em>设置为null，在队列中如果存在这样条件的消息，就代表了存在同步屏障，此时会优先处理异步消息，直到同步屏障移除。</p>
+<p>它目前有一个应用的地方是在<code>ViewRootImpl</code>中，当<code>Sync</code>信号到来时，会触发<code>ViewRootImpl</code>中的<code>scheduleTraversals()</code>方法，代码如下</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_sync_do.png" alt="handler_sync_do"></p>
+<p>上面是<code>mChoreographer.postCallback</code>方法发布了<code>mTraversalRunnable</code>，这个方法内部层层调用后其实也是将消息插入到主线程的<code>MessageQueue</code>中：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/handler_msg_do_schedule.png" alt="handler_msg_do_schedule"></p>
+<p>最后在主线程执行绘制，这样能保证绘制相关的消息被优先处理。</p>
+  </div>
+  
+    
+      <a id="older" class="blog-nav" href="/2021/01/09/%E7%BB%93%E6%9E%84%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/">OLDER&nbsp;&gt;</a>
+      
+        
+          <a id="newer" class="blog-nav" href="/2022/03/01/%E7%BD%91%E7%BB%9C%E7%9F%A5%E8%AF%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">&lt;&nbsp;NEWER</a>
+          
+            
+</div>
+        <div class="footer">
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Copyright © Leedom 2021</a>
+        
+    </div>
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Theme by Leedom | Powered by Hexo</a>
+        
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="back-to-top hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+      
+  <div class="search-icon" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-box">
+        <div class="search-title">
+          <!-- <span class="search-icon-input">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </span> -->
+          
+            <input type="text" class="search-input" id="search-input" placeholder="$ grep...">
+          
+          <span class="search-close-icon" id="search-close-icon">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-close"></i>
+            </a>
+          </span>
+        </div>
+        <div class="search-result" id="search-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    // inputArea.onclick = function() {
+    //   getSearchFile()
+    //   this.onclick = null
+    // }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        inputArea.focus()
+        getSearchFile()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'><span></ul>";
+      // $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'><h2>" + orig_data_title + "</h2></a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<h3 class=\"search-result-abstract\">" + match_content + "...</h3>"
+                }
+                str += "<hr></li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/leedom92/hexo-theme-leedom#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+    </div>
+  </body>
+</html>

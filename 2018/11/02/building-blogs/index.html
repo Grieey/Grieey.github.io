@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="John Doe" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Hugo主题使用 
+      
+      
+    
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto:400,400italic,600|Roboto+Mono" rel="stylesheet">
+
+  <!-- hexo site css -->
+  
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/common.css">
+<link rel="stylesheet" href="/iconfont/iconfont.css">
+
+
+  
+
+  
+    
+<link rel="stylesheet" href="/css/post.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <script async src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <a href="/">LEEDOM</a>
+</div>
+
+
+      <p class="links">
+  
+    <a title="archives" target="" href="/archives/">
+      <i class="iconfont icon-bookmark"></i>
+    </a>
+  
+    <a title="github" target="_blank" href="https://github.com/leedom92/hexo-theme-leedom">
+      <i class="iconfont icon-github"></i>
+    </a>
+  
+    <a title="email" target="" href="">
+      <i class="iconfont icon-envelope"></i>
+    </a>
+  
+    <a title="facebook" target="" href="">
+      <i class="iconfont icon-facebooksquare"></i>
+    </a>
+  
+    <a title="twitter" target="" href="">
+      <i class="iconfont icon-twitter"></i>
+    </a>
+  
+    <a title="wechat" target="" href="">
+      <i class="iconfont icon-wechat"></i>
+    </a>
+  
+    <a title="weibo" target="" href="">
+      <i class="iconfont icon-weibo"></i>
+    </a>
+  
+    <a title="rss" target="_blank" href="/atom.xml">
+      <i class="iconfont icon-rss"></i>
+    </a>
+  
+</p>
+
+
+      <div class="main">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+
+<div class="post">
+  <h3 class="date">
+    Nov 02, 2018
+  </h3>
+  <h1>
+    Hugo主题使用
+  </h1>
+  <div class="content markdown-body">
+    <h1 id="雕纹上色"><a href="#雕纹上色" class="headerlink" title="雕纹上色"></a>雕纹上色</h1><p>其实选择<strong>hugo</strong>的原因之一就是主题比较好看，因此<strong>theme</strong>是很必要的。 在<a target="_blank" rel="noopener" href="https://themes.gohugo.io/">themes.gohugo.io</a>中,选择自己喜欢中意的，一般点进入主题中都会进入到<strong>Github</strong>，里面也有作者写的使用教程，参考着应该没有多大问题。在Terminal中进入到刚刚创建的工程根目录，直接<strong>clone</strong>下来,这里以<code>Even</code>主题为例。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/olOwOlo/hugo-theme-even themes/even</span><br></pre></td></tr></table></figure>
+
+<p>然后将<code>themes/even/example</code>中的<code>config.toml</code>文件复制到自己的工程根目录覆盖。再根据<strong>Github</strong>中作者的介绍或者指导修改<code>config.toml</code>的对应属性即可。</p>
+<p>最后键入<code>hugo server -D</code>命令启动hugo中内置的服务器，在浏览器中输入<code>localhost:1313</code>查看网站的效果。</p>
+<h1 id="板上钉钉"><a href="#板上钉钉" class="headerlink" title="板上钉钉"></a>板上钉钉</h1><blockquote>
+<p>前面的步骤都是在本地运行的效果，要别人能够访问你的博客，肯定得部署到网络上，这里选择GitPages，不需要自己对后台服务器进行管理，比较省心。</p>
+</blockquote>
+<p>首先在自己的github中新建一个仓库，仓库的名字为<code>xxx.github.io</code>，其中<code>xxx</code>替换为自己的github用户名。</p>
+<p>然后在<strong>Teminal</strong>中打开本地的工程，执行<code>hugo -d blog</code>生成网站的网页内容。这里开始需要注意一下，一般会将hugo生成的内容提交到仓库的master分支，然后会将网站的源码提交到另一个分支。所以这里我是这样骚操作的。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> blog  <span class="comment">#进入blog目录</span></span><br><span class="line">git init  <span class="comment">#初始化git</span></span><br><span class="line">git add -A</span><br><span class="line">git commit -m <span class="string">&quot;first commit&quot;</span></span><br><span class="line">git remote add origin git@github.com:RiceBrother/RiceBrother.github.io.git</span><br><span class="line">git push -u origin master <span class="comment">#提交到master分支</span></span><br><span class="line"><span class="built_in">cd</span> ../   <span class="comment">#回到工程根目录</span></span><br><span class="line">git init <span class="comment">#再次初始化git</span></span><br><span class="line">git checkout -b <span class="built_in">source</span> <span class="comment">#创建并切换到source分支</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;/public/&#x27;</span> &gt;&gt; .gitignore</span><br><span class="line">sed -r -i <span class="string">&#x27;/^\/blog\/$/&#123;$!d&#125;&#x27;</span> .gitignore  <span class="comment">#添加忽略文件，忽略掉blog文件夹</span></span><br><span class="line">git add -A</span><br><span class="line">git commit -m <span class="string">&quot;commit sources&quot;</span></span><br><span class="line">git remote add origin git@github.com:RiceBrother/RiceBrother.github.io.git</span><br><span class="line">git push -u origin master <span class="comment">#提交到source分支   </span></span><br></pre></td></tr></table></figure>
+
+<p>这样操作后在浏览器输入<code>xxx.github.io</code>应该就能看到效果了。</p>
+<h1 id="投入使用"><a href="#投入使用" class="headerlink" title="投入使用"></a>投入使用</h1><p>如果每次新写了一篇文件，都需要手动的使用<code>hugo -d blog</code>然后提交到master分支，再回到根目录提交source分支，这个过程很繁琐，作为懒人的我第一时间是想到能不能使用脚本自动化，于是本着懒人的原则先google了一番，参考了几位仁兄的方案后，选择了使用<strong>Travis CI</strong>。</p>
+<p>第一步呢就是在<strong>Github</strong>个人的<strong>Setting</strong>中找到<strong>Developer setting</strong>，然后生成一个<strong>Personal assess tokens</strong>。然后到<strong>CI</strong>这个网站先注册一番，<a target="_blank" rel="noopener" href="https://travis-ci.org/">传送门在此</a>，这个网站可以直接使用<strong>Github</strong>账号登录，非常方便。</p>
+<p><img src="/../../img/sync.png" alt="同步"></p>
+<p>注册成功后同步自己的仓库，将对应的<code>xxx.github.io</code>仓库激活，并点击<strong>Setting</strong>设置。找到下面的<strong>Environment Variables</strong>添加刚刚在自己的<strong>Github</strong>生成的<strong>Token</strong>，<code>**Name**必须为GITHUB_TOKEN这个是网站的规则，不能是其他的值</code>。</p>
+<p><img src="/../../img/res.png" alt="仓库"><br><img src="/../../img/add_variable.png" alt="增加变量"></p>
+<p>最后再返回到自己的github.io这个仓库，在source分支中添加一个<code>.travis.yml</code>，在里面输入以下脚本,<strong>Travis CI</strong>会自动检测哪个分支添加了这个文件并运行。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># https://docs.travis-ci.com/user/deployment/pages/</span></span><br><span class="line"><span class="comment"># https://docs.travis-ci.com/user/languages/python/</span></span><br><span class="line">language: python</span><br><span class="line"></span><br><span class="line">python:</span><br><span class="line">    - <span class="string">&quot;3.6&quot;</span></span><br><span class="line"></span><br><span class="line">install:</span><br><span class="line">    - uname -a</span><br><span class="line">    - wget https://github.com/gohugoio/hugo/releases/download/v0<span class="number">.42</span><span class="number">.2</span>/hugo_0<span class="number">.42</span><span class="number">.2</span>_Linux-64bit.deb</span><br><span class="line">    - sudo dpkg -i hugo*.deb</span><br><span class="line">    - hugo version</span><br><span class="line">    - rm -rf blog</span><br><span class="line">    - ls</span><br><span class="line">    - pwd</span><br><span class="line"></span><br><span class="line">script:</span><br><span class="line">    - hugo -d blog</span><br><span class="line">    - echo <span class="string">&#x27;Hugo build done!&#x27;</span></span><br><span class="line">after_success:</span><br><span class="line">    - git config --<span class="keyword">global</span> user.email <span class="string">&quot;yangqing43352@163.com&quot;</span></span><br><span class="line">    - git config --<span class="keyword">global</span> user.name <span class="string">&quot;griee&quot;</span></span><br><span class="line">    - git clone https://$GITHUB_TOKEN@github.com/RiceBrother/RiceBrother.github.io.git container</span><br><span class="line">    - rm -rf container/blog</span><br><span class="line">    - cp -r blog/* container</span><br><span class="line">    - cd container</span><br><span class="line">    - ls</span><br><span class="line">    - git add .</span><br><span class="line">    - git commit -m <span class="string">&#x27;Travis upate blog&#x27;</span></span><br><span class="line">    - git push -u origin master</span><br></pre></td></tr></table></figure>
+
+<p>这个时候切回到<strong>Travis CI</strong>网站查看脚本执行的日志，显示<code>Done. Your build exited with 0.</code>一般没有问题<code>(如果有问题可以查看job log，有可能是git 提交失败)</code>，刷新自己的<code>xxx.github.io</code>看看效果，这样每次只需要修改自己的文章并提交到<strong>source</strong>分支，就会自动触发脚本生成<strong>blog</strong>目录并提交到<strong>master</strong>分支。</p>
+<h1 id="展示自我"><a href="#展示自我" class="headerlink" title="展示自我"></a>展示自我</h1><blockquote>
+<p>正常情况下呢通过上面的步骤应该能正常访问到博客了，但是，你建立一个博客肯定不仅仅是给自己看的吧，所以要让别人在搜索引擎中能搜到自己，就需要做做下面的功夫了。</p>
+</blockquote>
+<p>这里以<strong>Google</strong>搜索为例，在<strong>Google</strong>中输入<code>site:https://ricebrother.github.io/</code>提示查询不到相关内容，则说明你的站点并未被收录，所以别人也搜不到你的文章内容。</p>
+<p>进入<a target="_blank" rel="noopener" href="https://www.google.com/webmasters/tools/home?hl=zh-CN">Google搜索文档地址</a>，登录自己的账号，然后添加自己的网址，会有一个验证，将该html下载下来，上传到master分支就可以了。通过验证可以在控制台查看你的站点的访问量等等。</p>
+<p>最后将<code>https://xxx.github.io/sitemap.xml</code>添加到Google站点地图就可以啦。</p>
+<h1 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://justforuse.github.io/blog/2018/07/travisci-deploy-hugo/">https://justforuse.github.io/blog/2018/07/travisci-deploy-hugo/</a></li>
+<li><a target="_blank" rel="noopener" href="https://axdlog.com/zh/2018/using-hugo-and-travis-ci-to-deploy-blog-to-github-pages-automatically/">https://axdlog.com/zh/2018/using-hugo-and-travis-ci-to-deploy-blog-to-github-pages-automatically/</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000012975914">https://segmentfault.com/a/1190000012975914</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/df46bca5889d">https://www.jianshu.com/p/df46bca5889d</a></li>
+</ul>
+  </div>
+  
+    
+        
+          <a id="newer" class="blog-nav" href="/2018/11/23/ubuntu_install/">&lt;&nbsp;NEWER</a>
+          
+            
+</div>
+        <div class="footer">
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Copyright © Leedom 2021</a>
+        
+    </div>
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Theme by Leedom | Powered by Hexo</a>
+        
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="back-to-top hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+      
+  <div class="search-icon" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-box">
+        <div class="search-title">
+          <!-- <span class="search-icon-input">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </span> -->
+          
+            <input type="text" class="search-input" id="search-input" placeholder="$ grep...">
+          
+          <span class="search-close-icon" id="search-close-icon">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-close"></i>
+            </a>
+          </span>
+        </div>
+        <div class="search-result" id="search-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    // inputArea.onclick = function() {
+    //   getSearchFile()
+    //   this.onclick = null
+    // }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        inputArea.focus()
+        getSearchFile()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'><span></ul>";
+      // $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'><h2>" + orig_data_title + "</h2></a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<h3 class=\"search-result-abstract\">" + match_content + "...</h3>"
+                }
+                str += "<hr></li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/leedom92/hexo-theme-leedom#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+    </div>
+  </body>
+</html>

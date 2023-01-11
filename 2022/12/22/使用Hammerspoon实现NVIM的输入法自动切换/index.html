@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="John Doe" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      使用Hammerspoon实现NVIM的输入法自动切换 
+      
+      
+    
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto:400,400italic,600|Roboto+Mono" rel="stylesheet">
+
+  <!-- hexo site css -->
+  
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/common.css">
+<link rel="stylesheet" href="/iconfont/iconfont.css">
+
+
+  
+
+  
+    
+<link rel="stylesheet" href="/css/post.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <script async src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <a href="/">LEEDOM</a>
+</div>
+
+
+      <p class="links">
+  
+    <a title="archives" target="" href="/archives/">
+      <i class="iconfont icon-bookmark"></i>
+    </a>
+  
+    <a title="github" target="_blank" href="https://github.com/leedom92/hexo-theme-leedom">
+      <i class="iconfont icon-github"></i>
+    </a>
+  
+    <a title="email" target="" href="">
+      <i class="iconfont icon-envelope"></i>
+    </a>
+  
+    <a title="facebook" target="" href="">
+      <i class="iconfont icon-facebooksquare"></i>
+    </a>
+  
+    <a title="twitter" target="" href="">
+      <i class="iconfont icon-twitter"></i>
+    </a>
+  
+    <a title="wechat" target="" href="">
+      <i class="iconfont icon-wechat"></i>
+    </a>
+  
+    <a title="weibo" target="" href="">
+      <i class="iconfont icon-weibo"></i>
+    </a>
+  
+    <a title="rss" target="_blank" href="/atom.xml">
+      <i class="iconfont icon-rss"></i>
+    </a>
+  
+</p>
+
+
+      <div class="main">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+
+<div class="post">
+  <h3 class="date">
+    Dec 22, 2022
+  </h3>
+  <h1>
+    使用Hammerspoon实现NVIM的输入法自动切换
+  </h1>
+  <div class="content markdown-body">
+    <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>之前花了一段时间搭建好了<strong>Neovim</strong>的配置，并使用<strong>Neovide</strong>作为GUI进行使用，大部分情况下使用起来是非常舒服的，但是中文的切换是一件让人有点不爽的事情，很多时候，想第一时间按下代码，却发现使用的是中文输入，这个时候还需要手动的切换输入法为英文输入状态。虽然是一个小小的操作，但是在很多时候确实极致体验上的一块巨大的绊脚石。</p>
+<p>于是上Google搜了一番是否有一些现成的方案，相信肯定不是我一个人有这种不优雅的体验。先说说具体的诉求，我想在除了插入模式之外的模式，保持英文输入状态，仅在插入模式下，可以手动切换中英文。按照这个思路搜了一圈，果然在很早之前就有人提供了一系列的解决方案，主要是两个层级，一是从输入法级别去解决，二是从<strong>VIM</strong>本身去解决。</p>
+<ul>
+<li>输入法上解决的思路就是，切换输入法。我目前使用的是搜狗输入法，其内置的高级功能最多支持打开某个App时，将输入法状态切换为英文输入，无法响应VIM本身的模式切换。所以搜狗输入法本身来说是无法满足这个需求，社区提供的方案是使用<a target="_blank" rel="noopener" href="https://rime.im/">RIME</a>开源输入法，对应Mac平台的实现是<strong>鼠须管</strong>，于是我第一时间就按照配置弄出来了一个版本试试，用了几个星期后，发现这个输入法想要得心应手，还需要比较多的配置和折腾，但就我目前这个需求来说，它没有很好的满足，至少在使用期间感觉不太好用。</li>
+<li>从<strong>VIM</strong>本身解决的思路就是使用<em>Plugin</em>，也确实有很多大佬写了一些<em>Plugin</em>去解决这个，不过我没有具体的尝试，先去<em>Github</em>上看了下对应仓库及<code>issue</code>，发现很多都没有怎么维护了，而且从<code>issue</code>的情况来看，似乎没有很完美的解决这个诉求（如<code>Ctrl-c</code>切换模式、输入法切换慢、切换到其他App后再回来输入法的状态不对之类的）。所以这个方案直接就放弃了。</li>
+</ul>
+<p>正好前几天因为要解决电脑上双屏工作时，App应用切换屏幕的需求，在这个需求中了解到了一款极具效率化的工具<a target="_blank" rel="noopener" href="https://www.hammerspoon.org/">Hammerspoon</a>,这个工具使用<em>Lua</em>进行脚本编写，提供与<strong>MacOS</strong>交互的相关<em>API</em>。所以顿时脑子里就生成了一个想法，如果可以监听到我使用的App及相关按键，并可以控制输入法的切换，那这一套流程正好就能解决我的需求。</p>
+<p>几个核心的点：监听键盘输入事件，监听App焦点（当前是哪个App处于获取焦点的状态–<code>活跃</code>）,具备切换输入法的能力。顺着这个思路去搜索了下<a target="_blank" rel="noopener" href="https://www.hammerspoon.org/docs/index.html">Hammerspoon的API文档</a>和一些使用的教程，发现虽然之前没有人实现过我这个需求，但是几个核心的点都是有使用的场景，也就是说整个操作的上，是可行的。</p>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>说下我的相关环境：</p>
+<ul>
+<li>系统: macOS Monterey 12.5</li>
+<li>Neovim: 0.8.1</li>
+<li>Hammerspoon: Version 0.9.97 (6267)</li>
+<li>LuaJIT: 2.1.0-beta3</li>
+<li>Neovide: 0.10.3</li>
+<li>输入法: 搜狗输入法</li>
+</ul>
+<p>Hammerspoon直接从官网下载安装，然后点击顶部的图标后，点击<code>Open Config</code>即可打开对应的配置目录，其在磁盘的位置是<code>~/.hammerspoon</code>。</p>
+<h2 id="开发"><a href="#开发" class="headerlink" title="开发"></a>开发</h2><p>我的的配置结构如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">hammerspoon/</span><br><span class="line">├── init.lua</span><br><span class="line">└── modules</span><br><span class="line">    ├── hotkey.lua</span><br><span class="line">    ├── launcher.lua</span><br><span class="line">    ├── neovim.lua</span><br><span class="line">    └── windows.lua</span><br></pre></td></tr></table></figure>
+
+<p>在<code>init.lua</code>中声明相关的<em>Module</em>,主要的逻辑都写在了<code>neovim.lua</code>文件中。</p>
+<h3 id="App的监听"><a href="#App的监听" class="headerlink" title="App的监听"></a>App的监听</h3><p>因为不想对其他的App的使用产生影响，所以需要监听到使用<strong>Neovide</strong>时，才开启相关的逻辑，这个功能是通过<code>hs.window</code>订阅窗口聚焦事件来实现的:</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">window.filter.default:subscribe(window.filter.windowFocused, <span class="function"><span class="keyword">function</span><span class="params">(_, appName)</span></span></span><br><span class="line">		<span class="keyword">if</span> appName == <span class="string">&quot;neovide&quot;</span> <span class="keyword">then</span></span><br><span class="line">      ...实现切换逻辑...</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      <span class="comment">-- 将输入法切换回搜狗</span></span><br><span class="line">      change2Sougou()</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">  <span class="keyword">end</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这样就能实现仅当使用<strong>Neovide</strong>时，才开始我们相关的逻辑。</p>
+<h3 id="输入法的切换"><a href="#输入法的切换" class="headerlink" title="输入法的切换"></a>输入法的切换</h3><p>我们最终的目的是通过一系列的逻辑实现自动切换输入法，所以这一步很重要（要是这个实现不了，前面的逻辑都是白搭了）。<strong>Hammerspoon</strong>中也提供了<em>API</em>让我们可以很轻松的实现输入法的切换:<code>hs.keycodes.currentSourceID(&quot;com.sougou.inputmethod.sogou.pinyin&quot;)</code>,如果使用的不是搜狗，这里Google就可以搜索到查看当前系统上所装应用的ID，对应的替换这里就可以了。这样能直接切换到对应的输入法，对我而言，主要是英文和搜狗的切换，Mac自带的英文输入就可以满足，其ID是<code>com.apple.keylayout.ABC</code>。</p>
+<p>这里可能有一个疑问，搜狗本身就具备中英文的输入，为啥不直接切换搜狗的中文状态呢，其实要这样做，也不是不可以，不过我自己感觉，上诉的方案基本满足了我的使用；另一个原因是，<strong>Hammerspoon</strong>所交互的都是系统的<em>API</em>,是没法直接和App本身打交道的（无法去获取App的状态），所以如果需要知道搜狗输入法目前的输入状态是英文还是中文，就需要开机就开启一个事件监听，来监听<em>CapsLock</em>和<em>Shift</em>键的点击状态，以此来存储输入法的状态，这种方案我感觉不是很舒服，同时社区有人基于这个方案做的显示输入法的状态，是有一定的Bug的，就是这个监听可能会死掉，我自己也不喜欢后台有一个这样的服务一直运行着。</p>
+<p>那么把这个方案的代码落实一下就如下了：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> sougouId = <span class="string">&quot;com.sougou.inputmethod.sogou.pinyin&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">change2sougou</span><span class="params">()</span></span></span><br><span class="line">  <span class="keyword">if</span> keycodes.currentSourceID() ~= sougouId <span class="keyword">then</span></span><br><span class="line">    keycodes.cureentSourceID(sougouId)</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>Tip:这里有一点需要注意，因为我除了聊天之外，其余App大部分输入都需要的是英文状态，所以我把搜狗输入法的默认状态设置为英文,这样输入体验是很丝滑衔接的。</p>
+<h3 id="键盘事件的监听"><a href="#键盘事件的监听" class="headerlink" title="键盘事件的监听"></a>键盘事件的监听</h3><p>键盘事件需要监听的内容有两种，一是普通的输入，即<code>a,b,c,1,2,3</code>这些键，二是修饰键(ModifyKey)，即<em>Control、Command、Shift、Option</em>这些键，这在<strong>Hammerspoon</strong>中是两种不同的事件监听，分别对应的是<code>hs.eventtap.event.types.keyDown</code>和<code>hs.eventtap.event.types.flagsChanged</code>,这两种监听的伪代码如下：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">eventtap.new(&#123;eventtap.event.types.keyDown&#125;, <span class="function"><span class="keyword">function</span><span class="params">(e)</span></span></span><br><span class="line">    <span class="keyword">local</span> <span class="built_in">type</span> = e:getType()</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span> == eventtap.event.types.keyDown <span class="keyword">then</span></span><br><span class="line">      <span class="keyword">local</span> pressedKey = keycodes.map[e:getKeyCode()]</span><br><span class="line">      ...实现和NVIM相关的逻辑...</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span>)</span><br><span class="line"></span><br><span class="line">eventtap.new(&#123;eventtap.event.types.flagsChanged&#125;, <span class="function"><span class="keyword">function</span><span class="params">(e)</span></span></span><br><span class="line">    <span class="keyword">local</span> mods = e:getFlags()</span><br><span class="line">    <span class="keyword">if</span> mods[<span class="string">&quot;ctrl&quot;</span>] <span class="keyword">then</span></span><br><span class="line">      ...按下了ctrl键的逻辑...</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span>)</span><br></pre></td></tr></table></figure>
+
+<p>到这里，整个功能的大概结构就完成了。接下来就是针对<strong>VIM</strong>中的模式切换写具体的逻辑了</p>
+<h3 id="实现自适应的输入法切换"><a href="#实现自适应的输入法切换" class="headerlink" title="实现自适应的输入法切换"></a>实现自适应的输入法切换</h3><p>在<strong>VIM</strong>中，进入插入模式的方式，主要有以下几种</p>
+<ul>
+<li>普通模式下通过<code>i</code>键进入插入模式；</li>
+<li>普通模式下通过<code>a、A、I、o、O</code>等进入插入模式;</li>
+<li>普通模式下通过<code>r、R</code>进行单字符和多字符替换(这种情况仍然是普通模式，但是可能需要替换的字符为中文)；</li>
+<li>可视模式下通过<code>c</code>键进入插入模式，这里的可视模式包括了块可视(<code>Ctrl-v</code>进入<em>Block Visual Mode</em>)和行可视(<code>Shift-v</code>进入<em>Line Visual Mode</em>);</li>
+</ul>
+<p>这样看，所涉及的模式主要是三个<code>NOR、VIS、INS</code>,做好定义</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">NOR = <span class="string">&quot;Normal Mode&quot;</span></span><br><span class="line">VIS = <span class="string">&quot;Visual Mode&quot;</span></span><br><span class="line">INS = <span class="string">&quot;Insert Mode&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>这四种方式，前三个可以归为一类，所以可以定义一个数组<code>insertKeys = &#123;&quot;i&quot;, &quot;I&quot;, &quot;a&quot;, &quot;A&quot;, &quot;o&quot;, &quot;O&quot;, &quot;r&quot;, &quot;R&quot;&#125;</code>；</p>
+<p>整个逻辑的分支有三个：</p>
+<ol>
+<li>切换到普通模式，这个时候需要将输入法设置为英文；</li>
+<li>普通模式下切换到插入模式，将输入法设置为搜狗；</li>
+<li>可视模式下切换到插入模式，将输入法设置为搜狗；</li>
+<li><em>这一点是针对我自己的，我配置了快捷键实现在插入模式下保存并返回普通模式，所以有插入模式下通过快捷键切换到普通模式，将输入法设置为英文</em>；</li>
+</ol>
+<p>结合前面监听修饰键，需要将修饰键暂存起来，用于判断是点击了那些组合键，所以用一个变量<code>lastModify</code>来保存比普通键先按下的修饰键。</p>
+<p>再在普通键的监听中根据上面的思路写逻辑，代码如下：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> pressKey == ECS <span class="keyword">then</span></span><br><span class="line">  <span class="comment">-- 按下了esc键，返回普通模式，切换到abc</span></span><br><span class="line">	curMode = NOR</span><br><span class="line">	change2Abc()</span><br><span class="line"><span class="keyword">elseif</span> curMode == NOR <span class="keyword">then</span></span><br><span class="line">  <span class="comment">-- 在普通模式下，键入insertKeys的键都会进入插入模式，将输入法切换到搜狗</span></span><br><span class="line">	<span class="keyword">if</span> contains(insertKeys, pressKey) <span class="keyword">then</span></span><br><span class="line">		curMode = INS</span><br><span class="line">		change2Sougou()</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">    <span class="comment">-- 判断几种可视模式，如果满足，代表切换到了可视模式中，后面的键入会走可视模式的分支</span></span><br><span class="line">		<span class="keyword">local</span> lineVis = lastModify == S <span class="keyword">and</span> pressKey == <span class="string">&quot;v&quot;</span></span><br><span class="line">		<span class="keyword">local</span> blockVis = lastModify == C <span class="keyword">and</span> pressKey == <span class="string">&quot;v&quot;</span></span><br><span class="line">		<span class="keyword">local</span> standardVis = pressKey == <span class="string">&quot;v&quot;</span></span><br><span class="line">		<span class="keyword">if</span> standardVis <span class="keyword">or</span> lineVis <span class="keyword">or</span> blockVis <span class="keyword">then</span></span><br><span class="line">			curMode = VIS</span><br><span class="line">      <span class="comment">-- 每一次判断了修饰键，都需要重置</span></span><br><span class="line">			lastModify = <span class="string">&quot;&quot;</span></span><br><span class="line">		<span class="keyword">end</span></span><br><span class="line">    <span class="comment">-- 因为还是非插入模式，此时还是需要切换到abc</span></span><br><span class="line">		change2Abc()</span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="keyword">elseif</span> curMode == INS <span class="keyword">then</span></span><br><span class="line">  <span class="comment">-- 自定义按键command+s保存并返回普通模式</span></span><br><span class="line">	<span class="keyword">if</span> pressKey == <span class="string">&quot;s&quot;</span> <span class="keyword">and</span> lastModify == M <span class="keyword">then</span></span><br><span class="line">		curMode = NOR</span><br><span class="line">		change2Abc()</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		lastModify = <span class="string">&quot;&quot;</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="keyword">elseif</span> curMode == VIS <span class="keyword">then</span></span><br><span class="line">  <span class="comment">-- 可视模式下，进入插入模式</span></span><br><span class="line">	<span class="keyword">if</span> pressKey == <span class="string">&quot;c&quot;</span> <span class="keyword">then</span></span><br><span class="line">		curMode = INS</span><br><span class="line">		change2Sougou()</span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>到这里，整个功能基本算完成了。最后再收一下尾巴，想想前面<em>Plugin</em>遇到的问题，如果我中途切换到其他App，切换了输入法，那回到<strong>Neovide</strong>中，状态不就不对了么，比如我处于普通模式，应该是<code>abc</code>，切换到其他App修改为搜狗中文输入后，在<strong>Neovide</strong>还是至少需要按一下<code>Shift</code>来切换。所以回到最开始监听App切换那儿，做一个状态的判断：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> curMode ~= INS <span class="keyword">then</span></span><br><span class="line">	change2Abc()</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>非输入模式下，就切换<code>abc</code>。这样当你再回到<strong>Neovide</strong>时，就可以丝滑的进行操作，而不用担心当前输入法的状态了。</p>
+
+  </div>
+  
+    
+      <a id="older" class="blog-nav" href="/2022/10/12/27%E5%B2%81%E7%9A%84%E5%9B%9E%E9%A1%BE/">OLDER&nbsp;&gt;</a>
+      
+        
+            
+</div>
+        <div class="footer">
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Copyright © Leedom 2021</a>
+        
+    </div>
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Theme by Leedom | Powered by Hexo</a>
+        
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="back-to-top hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+      
+  <div class="search-icon" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-box">
+        <div class="search-title">
+          <!-- <span class="search-icon-input">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </span> -->
+          
+            <input type="text" class="search-input" id="search-input" placeholder="$ grep...">
+          
+          <span class="search-close-icon" id="search-close-icon">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-close"></i>
+            </a>
+          </span>
+        </div>
+        <div class="search-result" id="search-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    // inputArea.onclick = function() {
+    //   getSearchFile()
+    //   this.onclick = null
+    // }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        inputArea.focus()
+        getSearchFile()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'><span></ul>";
+      // $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'><h2>" + orig_data_title + "</h2></a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<h3 class=\"search-result-abstract\">" + match_content + "...</h3>"
+                }
+                str += "<hr></li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/leedom92/hexo-theme-leedom#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+    </div>
+  </body>
+</html>

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="John Doe" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      自定义LayoutManager实现无限轮播 
+      
+      
+    
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto:400,400italic,600|Roboto+Mono" rel="stylesheet">
+
+  <!-- hexo site css -->
+  
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/common.css">
+<link rel="stylesheet" href="/iconfont/iconfont.css">
+
+
+  
+
+  
+    
+<link rel="stylesheet" href="/css/post.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <script async src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <a href="/">LEEDOM</a>
+</div>
+
+
+      <p class="links">
+  
+    <a title="archives" target="" href="/archives/">
+      <i class="iconfont icon-bookmark"></i>
+    </a>
+  
+    <a title="github" target="_blank" href="https://github.com/leedom92/hexo-theme-leedom">
+      <i class="iconfont icon-github"></i>
+    </a>
+  
+    <a title="email" target="" href="">
+      <i class="iconfont icon-envelope"></i>
+    </a>
+  
+    <a title="facebook" target="" href="">
+      <i class="iconfont icon-facebooksquare"></i>
+    </a>
+  
+    <a title="twitter" target="" href="">
+      <i class="iconfont icon-twitter"></i>
+    </a>
+  
+    <a title="wechat" target="" href="">
+      <i class="iconfont icon-wechat"></i>
+    </a>
+  
+    <a title="weibo" target="" href="">
+      <i class="iconfont icon-weibo"></i>
+    </a>
+  
+    <a title="rss" target="_blank" href="/atom.xml">
+      <i class="iconfont icon-rss"></i>
+    </a>
+  
+</p>
+
+
+      <div class="main">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+
+<div class="post">
+  <h3 class="date">
+    May 17, 2022
+  </h3>
+  <h1>
+    自定义LayoutManager实现无限轮播
+  </h1>
+  <div class="content markdown-body">
+    <h2 id="方案演进"><a href="#方案演进" class="headerlink" title="方案演进"></a>方案演进</h2><p>本着最快开发以实现的原则，第一版的实现方案是以<strong>ViewPager2</strong>来实现的，这个版本的大致逻辑如下：</p>
+<ul>
+<li>实现无限列表：通过<em>Adapter</em>的<strong>ItemCount+2</strong>，在原有数据的count上加了两个，相当于在首尾新增了两个转换用的position，当滑动到最后一个position时，在<em>RecyclerView</em>的<code>onSelect()</code>方法里，通过<code>setCurrentItem</code>来跳到数据源的第一个item，也就是对应的<code>position = 1</code>。当滑动到第一个position时，也通过<code>setCurrentItem</code>来跳到数据源的最后一个item，也就是对应的<code>position = data.lastIndex</code>；</li>
+<li>两边变小通过添加<em>ViewPager</em>的<em>Transform</em>来实现，直接给item设置<em>Scale</em>属性就行了；</li>
+</ul>
+<p>这个方案在设计的时候感觉没有什么问题，将就也能使用，但是最后实现发现还是有一些瑕疵，主要有以下问题：</p>
+<ol>
+<li><p>无限列表的效果上，因为<em>ViewPager2</em>是基于<em>RecyclerView</em>来实现的，所以他提前Load的是下一个position的item，我们的item跳转逻辑是在业务层实现的，没有干预到这个，就会有当滑动到数据源的边界(<strong>0或者data.lastIndex</strong>)时，左边的或者右边的Item会整个加载一下，因为LayoutManager实际上没有生成边界值之后的item，这个加载一下没有办法从业务层解决；</p>
+</li>
+<li><p>UI<strong>小姐姐</strong>要求的item之间的间距显示效果是相对一定的，而我在最后实现的版本里，是效果不一定的，会根据不同的设备有差异，这是因为item要求高度自适应，所以item是按照比例来决定高度的，整个<em>ViewPager</em>也是由item的高度来决定的，因为没有干预到<code>onMeasure</code>的过程，这个时候没有办法再去计算间距，所以间距是一开始就设置死了的；而写死就会导致在不同设备的显示效果有差异；</p>
+</li>
+<li><p>UI<strong>小姐姐</strong>要求整个列表在垂直上处于整体偏上的位置，翻译成<strong>Android</strong>的话就是约束布局的<code>verticalBais = 0.3</code>，这个方案目前也没有办法实现；</p>
+</li>
+<li><p>UI<strong>小姐姐</strong>要求可以<em>Fling</em>滑动；</p>
+</li>
+<li><p>无线列表的实现是业务层做的，搞了很多骚操作的逻辑，后来业务里多了好几个无限列表的场景，复用起来很困难；</p>
+</li>
+</ol>
+<p>所以在第二版的方案里选择了自定义<em>LayoutManager</em>，以解决上诉问题。</p>
+<h2 id="整体思路"><a href="#整体思路" class="headerlink" title="整体思路"></a>整体思路</h2><p>针对上诉的问题，对应的解决方案思路：</p>
+<ol>
+<li>在<em>LayoutManager</em>中实现无限列表可以说比<em>ViewPager2</em>的实现更加简介一些，因为直接干预的是<code>onLayout</code>的过程，这个逻辑里在布局时，可以直接获取逻辑上的position，比如居中的是数据源上的最后的一个item，那么右边的item就应该是数据源的第一个item，在<code>layout</code>时，可以通过计算直接去获取<code>position = 0</code>的View进行布局，这样实际在那儿的也是对应的<code>position = 0</code>的视图；</li>
+<li>同样的因为干预了<code>layout</code>的过程，所以间距的适配也比较容易，在自定义的<em>LayoutManager</em>中的<code>onMeasure</code>方法里可以进行测量，从而决定自己的高度，这样更加符合<strong>Android</strong>布局测量的过程，第3点也对应解决了；</li>
+<li>自定义<em>LayoutManager</em>本来就是<em>Fling</em>的；</li>
+<li>自定义<em>LayoutManager</em>从实现上屏蔽了很多业务逻辑，对于使用者来说和普通使用<em>LayoutManager</em> 是一样的，暴露的方法和行为都是一致的；</li>
+</ol>
+<p>不过使用自定义也需要解决一些新的问题，如<em>ViewPager2</em>处理的滑动翻页和居中；之前考虑的使用<em>SnapHelper</em>来实现居中滑动，测试使用<em>LinearLayoutManager</em>是很完美的，但是自定义的<em>LayoutManager</em>就没有那么完美了，因为滑动的处理是根据物理模型推算的滑动距离，所以会有滑过或者没有滑动到正好居中，带来的问题就是滑动的<em>Fling</em>结束后，会被<em>SnapHelper</em>的<code>snapToExistingView()</code>方法再滑动到最中间的位置，这样会有一个顿挫感；</p>
+<p>本来想尝试自定义<em>SnapHelper</em>来实现，但是尝试之后发现不行，因为<em>SnapHelper</em>的滑动实现是基于<strong>Position</strong>的，通过<strong>Position</strong>找到对应的<em>View</em>，再计算出距离，而我们实现无限列表的逻辑，是无法基于<strong>Position</strong>来计算距离的，因为你不知道需要找的那个<strong>Position</strong>是循环了多少次后的位置，而<em>SnapHelper</em>只会寻找真实的<strong>Position</strong>；</p>
+<p>所以直接使用系统的<em>SnapHelper</em>是没法实现对应的效果，这里通过阅读了<em>SnapHelper</em>的源码，发现可以通过自己计算来实现对应的效果。具体的逻辑就是，自己继承<em>RecyclerView.OnFlingListener</em>来处理<code>onFling</code>方法，<code>onFling</code>方法中会传入在<em>RecyclerView</em>处理好的速度，我们拿到这个速度后，根据自己设置的<em>Scroller</em>来计算会滑动的距离，然后直接调用<em>RecyclerView</em>的<code>smoothScrollBy()</code>方法，这个方法最终会调用到<em>LayoutManager</em>的<code>scrollHoriznortalBy</code>，也就进入到我们自己的逻辑范围里了，那么这一整套逻辑我们的控制权就都掌握了。</p>
+<h2 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h2><h3 id="实现测量"><a href="#实现测量" class="headerlink" title="实现测量"></a>实现测量</h3><p>测量的逻辑比较简单，如前面所说，让子<em>View</em>自己去测量，再将<em>RecyclerView</em>的高度设置为子<em>View</em>的高度就行了，因为子<em>View</em>是根据比例去计算的，我这里就根据需要显示的Item个数计算每一个Item的宽度，再调用<em>View</em>的测量让它自行完成高度的测量，伪代码如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onMeasure</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">   recycler: <span class="type">RecyclerView</span>.<span class="type">Recycler</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">   state: <span class="type">RecyclerView</span>.<span class="type">State</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">   widthSpec: <span class="type">Int</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">   heightSpec: <span class="type">Int</span></span></span></span><br><span class="line"><span class="params"><span class="function"> )</span></span> &#123;</span><br><span class="line">   <span class="keyword">if</span> (state.itemCount == <span class="number">0</span>) &#123;</span><br><span class="line">     <span class="keyword">super</span>.onMeasure(recycler, state, widthSpec, heightSpec)</span><br><span class="line">     <span class="keyword">return</span></span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">if</span> (state.isPreLayout) <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">   <span class="keyword">val</span> wSize = View.MeasureSpec.getSize(widthSpec)</span><br><span class="line">   <span class="keyword">val</span> wMode = View.MeasureSpec.getMode(widthSpec)</span><br><span class="line">   <span class="keyword">val</span> hMode = View.MeasureSpec.getMode(heightSpec)</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 计算中间显示的view的宽度</span></span><br><span class="line">   itemWidth = (wSize - (fixSpace() * (showCardCount - <span class="number">1</span>))) / (showCardCount - <span class="number">1</span>)</span><br><span class="line">   detachAndScrapView(recycler.getViewForPosition(<span class="number">0</span>).apply &#123;</span><br><span class="line">     <span class="keyword">this</span><span class="symbol">@ArtLayoutManager</span>.addView(<span class="keyword">this</span>)</span><br><span class="line">     measure(View.MeasureSpec.makeMeasureSpec(itemWidth, wMode), heightSpec)</span><br><span class="line">     itemHeight = getDecoratedMeasuredHeight(<span class="keyword">this</span>)</span><br><span class="line">   &#125;, recycler)</span><br><span class="line">...</span><br><span class="line">   setMeasuredDimension(widthSpec, View.MeasureSpec.makeMeasureSpec(itemHeight, hMode))</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>需要记得测量完成后，将这个<em>View</em>进行回收；</p>
+<h3 id="实现布局"><a href="#实现布局" class="headerlink" title="实现布局"></a>实现布局</h3><p>自定义<em>LayoutManager</em>实现<code>onLayoutChildren</code>的方法，布局主要是三个步骤，首先是回收掉现有的<code>Views</code>，将他们<code>detach</code>掉，这个操作会通过<em>Recycler</em>来实现，具体的逻辑我们交过<em>RecyclerView</em>去做，只需要知道需要先回收他们；</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onLayoutChildren</span><span class="params">(recycler: <span class="type">RecyclerView</span>.<span class="type">Recycler</span>, state: <span class="type">RecyclerView</span>.<span class="type">State</span>)</span></span> &#123;</span><br><span class="line">  detachAndScrapAttachedViews(recycler)</span><br><span class="line">  <span class="keyword">if</span> (state.isPreLayout || state.itemCount == <span class="number">0</span>) <span class="keyword">return</span></span><br><span class="line">  layoutChildrenWithIndex(recycler)</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后通过<em>Position</em>再从<em>Recycler</em>中去获取对应的<em>View</em>，这个<em>View</em>的来源可能是<em>RecyclerView</em>的几级缓存，也可能是调用<em>Adapter</em>的<code>createBinder</code>等方法创建的，这里不需要关心他的来源，只需要将这个<em>View</em>添加，测量并布局即可，我们需要计算它应该怎么布局，代码如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">layoutChildrenWithIndex</span><span class="params">(recycler: <span class="type">RecyclerView</span>.<span class="type">Recycler</span>)</span></span> &#123;</span><br><span class="line">...</span><br><span class="line">   <span class="keyword">var</span> leftOffset = <span class="number">0</span></span><br><span class="line">   <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0.</span>.showCardCount) &#123;</span><br><span class="line">     <span class="keyword">val</span> position = fixPosition(anchorPosition + i)</span><br><span class="line">     attachCacheOrCreate(position) &#123;</span><br><span class="line">       <span class="keyword">val</span> view = recycler.getViewForPosition(position)</span><br><span class="line">       addView(view)</span><br><span class="line">       measureChild(view, width - itemWidth, <span class="number">0</span>)</span><br><span class="line">       layoutDecorated(</span><br><span class="line">         view,</span><br><span class="line">         anchorOffset + leftOffset,</span><br><span class="line">         <span class="number">0</span>,</span><br><span class="line">         anchorOffset + leftOffset + itemWidth,</span><br><span class="line">         itemHeight</span><br><span class="line">       )</span><br><span class="line">     &#125;</span><br><span class="line">     leftOffset += (itemWidth + fixSpace())</span><br><span class="line">   &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>核心的逻辑就是根据需要显示的数量，使用锚点position（左边第一个position被我定义为）加显示偏移数获取到对应<em>position</em>的<em>View</em>，</p>
+<p>然后就是计算需要<code>layout</code>的位置，这里有两个变量来控制<code>anchorOffset</code>和<code>leftOffset</code>，<code>anchorOffset</code>代表初始化时，第一个position的View的初始位置，在没有滑动的情况下，其值为<code>anchorOffset = -itemWidth / 2</code>，这个时候的布局模型如下，很容易能理解这个值的由来，然后分别是左滑和右滑会对应不同的初始化，在后面滑动的时候会解锁；<code>leftOffset</code>比较简单，就是累加的已经布局的数值。</p>
+<p>另一个需要注意的点是，遍历的区间是**[0, showCardCount]<strong>，也就是说实际的个数会是</strong>showCardCount+1*<em>，这里之所以需要额外的一个是用来处理滑动过程中正好没有出现最左边或者最右边的Item这种临界状态，如果没有这个多的，调用<code> offsetChildrenHorizontal()</code>方法会无效，因为子View们加起来的宽度正好是</em>RecyclerView*的宽度，只有多一个才能左右滑动；</p>
+<p>最后是<code>fixPosition()</code>方法，就是实现无限列表的逻辑：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 实现无限列表的逻辑</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">fixPosition</span><span class="params">(position: <span class="type">Int</span>)</span></span> = <span class="keyword">when</span> &#123;</span><br><span class="line">  position &gt;= itemCount -&gt; position % itemCount</span><br><span class="line">  position &lt; <span class="number">0</span> -&gt; itemCount - <span class="number">1</span></span><br><span class="line">  <span class="keyword">else</span> -&gt; position</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为这里每次获取的<em>View</em>数量就是屏幕上的显示数量加1，所以不需要额外进行第三个步骤，回收多余的<em>View</em>，在常规的自定义<em>LayoutManager</em>的实现里，往往在<code>layout()</code>，实际<strong>attach的view数量是大于屏幕需要显示的view数量的，所以需要对屏幕外的view进行detach和Scrap操作</strong>。</p>
+<h3 id="实现滑动"><a href="#实现滑动" class="headerlink" title="实现滑动"></a>实现滑动</h3><p>滑动的逻辑处理主要在<code>scrollHorizontallyBy()</code>方法中，这个方法在<em>ActionEvent.MOVE</em>事件和<em>Fling</em>中都会被调用，在这个方法里需要做的事主要是根据滑动的距离，偏移子<em>View</em>，如果最左边或者最右边的View已经偏移完了，就需要layout新的Item进来。实现的思路上和*LinearLayout大体上差不过，只不过我这里是一个简版的，很多情况没有去处理。</p>
+<p>先根据入参<code>dx</code>的正负来判断滑动的方向，分开处理左滑和右滑：</p>
+<ul>
+<li><p>左滑：<code>dx&lt;0</code>是左滑的情况，先获取到当前最左边的View，去判断它的左边在哪儿，</p>
+<ul>
+<li><p>如果它的左边是小于0的，说明这个Item还没有整个滑出来，那么直接调用<code>offsetChildrenHorizontal(recycler)</code>偏移所有的子<em>View</em>就行了；以下是伪代码</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">dx &lt; <span class="number">0</span> -&gt; &#123; <span class="comment">// 左滑</span></span><br><span class="line">  <span class="keyword">var</span> scrolled = <span class="number">0</span></span><br><span class="line">  <span class="keyword">while</span> (scrolled &gt; dx) &#123;</span><br><span class="line">    <span class="keyword">val</span> view = getChildAt(<span class="number">0</span>) <span class="keyword">as</span> View</span><br><span class="line">    <span class="keyword">val</span> hangingLeft = max(<span class="number">0</span>, -getDecoratedLeft(view))</span><br><span class="line">    <span class="keyword">val</span> scrollBy = min(hangingLeft, scrolled - dx)</span><br><span class="line">    offsetChildrenHorizontal(scrollBy)</span><br><span class="line">    scrolled -= scrollBy</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">  scrolled</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里通过<em>while</em>不断计算滑动的值，解释下<code>hangingLeft</code>和<code>scrollBy</code>的计算逻辑，<code>hangingLeft</code>代表的是当前最左边的View还可以滑动的最大值，对应的就是没有滑出来的部分，当整个View都滑出后，就需要重新layout，这个时候<strong>最左边的View就会从当前这个position，变成position-1的View了</strong>，那么<code>-getDecoratedLeft(view)</code>就会变成整个item的宽度，又可以整个偏移滑动了；而<code>scrollBy</code>就是看<strong>剩下没有滑动的距离</strong>和<strong>LeftView还没有滑出的距离</strong>哪个小了，滑动小的部分，以便处理这个Item整个滑出来后还没有来得及layout 的情况；</p>
+</li>
+<li><p>如果它的左边已经大于0了，说明这个Item整个已经滑动出来了，这个时候就需要重新layout，并对锚点position做一个左偏移了。额外注意的是因为重新调用了<code>layout</code>的方法，那么整体偏移量需要进行重置;</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 已经滑动到边界，需要新增item了</span></span><br><span class="line"><span class="keyword">if</span> (scrollBy == <span class="number">0</span> &amp;&amp; scrolled &gt; dx) &#123;</span><br><span class="line">  anchorPosition = fixPosition(anchorPosition - <span class="number">1</span>)</span><br><span class="line">  <span class="comment">// 以showCardCount=3为例，整个视图里可以容纳两个完整的card和两个space，所以当滑动到左边界时</span></span><br><span class="line">  <span class="comment">// 新的视图显示的情况是anchorView|space|leftView|space|...|,其中anchorView|space 是需要新layout的</span></span><br><span class="line">  <span class="comment">//             ┌─────────────┐</span></span><br><span class="line">  <span class="comment">//             │RecyclerView │</span></span><br><span class="line">  <span class="comment">//           ┌─┴─────────────┴─┐</span></span><br><span class="line">  <span class="comment">//  ┌───────┐├───────┐┌───────┐│</span></span><br><span class="line">  <span class="comment">//  │anchor ││ left  ││ right ││</span></span><br><span class="line">  <span class="comment">//  └───────┘├───────┘└───────┘│</span></span><br><span class="line">  <span class="comment">//           └─────────────────┘</span></span><br><span class="line">  anchorOffset = -itemWidth - fixSpace()</span><br><span class="line">  layoutChildrenWithIndex(recycler)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码里有个简易的图来说明<code>anchorOffset</code>的值的计算逻辑，看图应该很清晰了；</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>完整的代码如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">scrollHorizontallyBy</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">  dx: <span class="type">Int</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">  recycler: <span class="type">RecyclerView</span>.<span class="type">Recycler</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">  state: <span class="type">RecyclerView</span>.<span class="type">State</span></span></span></span><br><span class="line"><span class="params"><span class="function">)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (itemCount == <span class="number">0</span> || state.isPreLayout) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">when</span> &#123;</span><br><span class="line">    itemCount == <span class="number">0</span> -&gt; <span class="number">0</span></span><br><span class="line">    dx &lt; <span class="number">0</span> -&gt; &#123; <span class="comment">// 左滑</span></span><br><span class="line">      <span class="keyword">var</span> scrolled = <span class="number">0</span></span><br><span class="line">      <span class="keyword">while</span> (scrolled &gt; dx) &#123;</span><br><span class="line">        <span class="keyword">val</span> view = getChildAt(<span class="number">0</span>) <span class="keyword">as</span> View</span><br><span class="line">        <span class="keyword">val</span> hangingLeft = max(<span class="number">0</span>, -getDecoratedLeft(view))</span><br><span class="line">        <span class="keyword">val</span> scrollBy = min(hangingLeft, scrolled - dx)</span><br><span class="line">        offsetChildrenHorizontal(scrollBy)</span><br><span class="line">        scrolled -= scrollBy</span><br><span class="line">        <span class="comment">// 已经滑动到边界，需要新增item了</span></span><br><span class="line">        <span class="keyword">if</span> (scrollBy == <span class="number">0</span> &amp;&amp; scrolled &gt; dx) &#123;</span><br><span class="line">          anchorPosition = fixPosition(anchorPosition - <span class="number">1</span>)</span><br><span class="line">          <span class="comment">// 以showCardCount=3为例，整个视图里可以容纳两个完整的card和两个space，所以当滑动到左边界时</span></span><br><span class="line">          <span class="comment">// 新的视图显示的情况是anchorView|space|leftView|space|...|,其中anchorView|space 是需要新layout的</span></span><br><span class="line">          <span class="comment">//             ┌─────────────┐</span></span><br><span class="line">          <span class="comment">//             │RecyclerView │</span></span><br><span class="line">          <span class="comment">//           ┌─┴─────────────┴─┐</span></span><br><span class="line">          <span class="comment">//  ┌───────┐├───────┐┌───────┐│</span></span><br><span class="line">          <span class="comment">//  │anchor ││ left  ││ right ││</span></span><br><span class="line">          <span class="comment">//  └───────┘├───────┘└───────┘│</span></span><br><span class="line">          <span class="comment">//           └─────────────────┘</span></span><br><span class="line">          anchorOffset = -itemWidth - fixSpace()</span><br><span class="line">          layoutChildrenWithIndex(recycler)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      scrolled</span><br><span class="line">    &#125;</span><br><span class="line">    dx &gt; <span class="number">0</span> -&gt; &#123; <span class="comment">// 右滑</span></span><br><span class="line">      <span class="keyword">var</span> scrolled = <span class="number">0</span></span><br><span class="line">      <span class="keyword">while</span> (scrolled &lt; dx) &#123;</span><br><span class="line">        <span class="keyword">val</span> rightView = getChildAt(childCount - <span class="number">1</span>) <span class="keyword">as</span> View</span><br><span class="line">        <span class="keyword">val</span> hangingRight = max(<span class="number">0</span>, getDecoratedRight(rightView) - width)</span><br><span class="line">        <span class="keyword">val</span> scrollBy = min(hangingRight, dx - scrolled)</span><br><span class="line">        offsetChildrenHorizontal(-scrollBy)</span><br><span class="line">        scrolled += scrollBy</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 已经滑动到边界，需要新增item了</span></span><br><span class="line">        <span class="keyword">if</span> (scrollBy == <span class="number">0</span> &amp;&amp; scrolled &lt; dx) &#123;</span><br><span class="line">          anchorPosition = fixPosition(anchorPosition + <span class="number">1</span>)</span><br><span class="line">          <span class="comment">// 以showCardCount=3为例，整个视图里可以容纳两个完整的card和两个space，所以当滑动到右边界时</span></span><br><span class="line">          <span class="comment">//  新的视图显示的情况是anchorView|space|leftView|space|centerView|space|rightView，其中anchorView已存在的,其现在的位置就是-itemWidth</span></span><br><span class="line">          <span class="comment">//           ┌─────────────┐</span></span><br><span class="line">          <span class="comment">//           │RecyclerView │</span></span><br><span class="line">          <span class="comment">//         ┌─┴─────────────┴─┐</span></span><br><span class="line">          <span class="comment">// ┌───────┤┌───────┐┌───────┤</span></span><br><span class="line">          <span class="comment">// │anchor ││left   ││right  │</span></span><br><span class="line">          <span class="comment">// └───────┤└───────┘└───────┤</span></span><br><span class="line">          <span class="comment">//         └─────────────────┘</span></span><br><span class="line">          anchorOffset = -itemWidth</span><br><span class="line">          layoutChildrenWithIndex(recycler)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      scrolled</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> -&gt; <span class="number">0</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是右滑的处理中，使用的是<strong>childCount - 1</strong>，因为<strong>childCount</strong>是<em>RecyclerView</em>维护的当前显示的Item个数；</p>
+<h3 id="实现居中滑动"><a href="#实现居中滑动" class="headerlink" title="实现居中滑动"></a>实现居中滑动</h3><p>上面的代码加上<em>LinearSnapHelper</em>可以简单的实现居中滑动，但是效果不好，如上所说，有一个顿挫感。自己实现的<em>SnapHelper</em>大体的结构和系统的<em>SnapHelper</em>差不多，唯一区别在最后的计算方式和滚动上：</p>
+<ol>
+<li>首先是计算模型，要正好滑动到目标position的中间，需要先使用<em>Scroller</em>通过加速度计算出最远的滑动距离</li>
+<li>根据计算的滑动距离判断落在了哪个position上，这里的position是把无限列表铺开了后计算的，如position下标排列为<code>3012301230</code>这样。</li>
+<li>因为滑动的起点是居中Item的中间，终点也是中间，中间滑过的距离就是相差的position乘以itemWidth+间距；</li>
+</ol>
+<p>通过上面的逻辑实现后，发现还有一个问题，就是在接受到<em>Fling</em>事件时，因为<strong>MOVE</strong>事件滑动的View已经不居中，所以还需要减去已经偏移量</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">snapFromFling</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">  velocityX: <span class="type">Int</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">  velocityY: <span class="type">Int</span></span></span></span><br><span class="line"><span class="params"><span class="function">)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">  <span class="comment">// 根据速度计算滑动的距离</span></span><br><span class="line">  scroller.fling(</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    velocityX,</span><br><span class="line">    velocityY,</span><br><span class="line">    <span class="built_in">Int</span>.MIN_VALUE,</span><br><span class="line">    <span class="built_in">Int</span>.MAX_VALUE,</span><br><span class="line">    <span class="built_in">Int</span>.MIN_VALUE,</span><br><span class="line">    <span class="built_in">Int</span>.MAX_VALUE</span><br><span class="line">  )</span><br><span class="line">  <span class="comment">// 根据距离计算能滑动多少个position</span></span><br><span class="line">  <span class="keyword">val</span> deltaPositions = scroller.finalX / (itemWidth + fixSpace())</span><br><span class="line">  <span class="comment">// 滑动deltaPositions个item的像素</span></span><br><span class="line">  recyclerView.smoothScrollBy(</span><br><span class="line">    (fixSpace() + itemWidth) * deltaPositions + getCenterViewOffset(),</span><br><span class="line">    scroller.finalY,</span><br><span class="line">    interpolator</span><br><span class="line">  )</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 获取到居中的view当前便宜中线的偏移量</span></span><br><span class="line"><span class="comment"> * 处理场景，1.滑动距离小于半个item时，需要回弹</span></span><br><span class="line"><span class="comment"> *         2.fling事件之前是move事件，在fling时已经偏移了一段距离，计算fling最终的position时需要减去这段距离</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">getCenterViewOffset</span><span class="params">()</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (childCount == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">  <span class="keyword">var</span> centerView = getChildAt(<span class="number">0</span>) <span class="keyword">as</span> View</span><br><span class="line">  <span class="keyword">var</span> minDistance =</span><br><span class="line">    abs((getDecoratedRight(centerView) - getDecoratedLeft(centerView)) / <span class="number">2</span> - width / <span class="number">2</span>)</span><br><span class="line">  <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until childCount) &#123;</span><br><span class="line">    <span class="keyword">val</span> view = getChildAt(i) <span class="keyword">as</span> View</span><br><span class="line">    <span class="keyword">val</span> currentDistance =</span><br><span class="line">      abs((getDecoratedRight(view) + getDecoratedLeft(view)) / <span class="number">2</span> - width / <span class="number">2</span>)</span><br><span class="line">    <span class="keyword">if</span> (currentDistance &lt; minDistance) &#123;</span><br><span class="line">      centerView = view</span><br><span class="line">      minDistance = currentDistance</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> (getDecoratedLeft(centerView) + itemWidth / <span class="number">2</span>) - width / <span class="number">2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="实现变换"><a href="#实现变换" class="headerlink" title="实现变换"></a>实现变换</h3><p>变换的实现，目前是直接在<code>layout</code>之后根据每个Item到中心的距离，算出一个百分比，然后进行变换</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> View.<span class="title">applyScale</span><span class="params">()</span></span> &#123;</span><br><span class="line">  <span class="keyword">val</span> center = (getDecoratedRight(<span class="keyword">this</span>) + getDecoratedLeft(<span class="keyword">this</span>)) / <span class="number">2</span></span><br><span class="line">  <span class="keyword">var</span> percent =</span><br><span class="line">    <span class="keyword">if</span> (abs(center - <span class="keyword">this</span><span class="symbol">@ArtLayoutManager</span>.width / <span class="number">2</span>) &gt; scaleMaxDistance) <span class="number">0F</span> <span class="keyword">else</span> <span class="number">1</span> - (abs(center - <span class="keyword">this</span><span class="symbol">@ArtLayoutManager</span>.width / <span class="number">2</span>)) * <span class="number">1F</span> / scaleMaxDistance</span><br><span class="line">  percent = <span class="keyword">when</span> &#123;</span><br><span class="line">    percent &gt; <span class="number">1F</span> -&gt; <span class="number">1F</span></span><br><span class="line">    percent &lt; <span class="number">0</span> -&gt; <span class="number">0F</span></span><br><span class="line">    <span class="keyword">else</span> -&gt; percent</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  scaleX = scaleT + (<span class="number">1</span> - scaleT) * percent</span><br><span class="line">  scaleY = scaleT + (<span class="number">1</span> - scaleT) * percent</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="剩下的问题"><a href="#剩下的问题" class="headerlink" title="剩下的问题"></a>剩下的问题</h2><p>虽然现在很好的实现的UI<strong>小姐姐</strong>想要的效果，但是这个类还是有小细节需要处理，比如设置的间距小于缩小的距离时，UI的效果还有一些差异；</p>
+  </div>
+  
+    
+      <a id="older" class="blog-nav" href="/2022/05/15/Unity%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">OLDER&nbsp;&gt;</a>
+      
+        
+          <a id="newer" class="blog-nav" href="/2022/08/31/UI%20%E5%AD%A6%E4%B9%A0%E6%97%A5%E8%AE%B0/">&lt;&nbsp;NEWER</a>
+          
+            
+</div>
+        <div class="footer">
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Copyright © Leedom 2021</a>
+        
+    </div>
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Theme by Leedom | Powered by Hexo</a>
+        
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="back-to-top hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+      
+  <div class="search-icon" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-box">
+        <div class="search-title">
+          <!-- <span class="search-icon-input">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </span> -->
+          
+            <input type="text" class="search-input" id="search-input" placeholder="$ grep...">
+          
+          <span class="search-close-icon" id="search-close-icon">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-close"></i>
+            </a>
+          </span>
+        </div>
+        <div class="search-result" id="search-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    // inputArea.onclick = function() {
+    //   getSearchFile()
+    //   this.onclick = null
+    // }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        inputArea.focus()
+        getSearchFile()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'><span></ul>";
+      // $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'><h2>" + orig_data_title + "</h2></a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<h3 class=\"search-result-abstract\">" + match_content + "...</h3>"
+                }
+                str += "<hr></li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/leedom92/hexo-theme-leedom#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+    </div>
+  </body>
+</html>

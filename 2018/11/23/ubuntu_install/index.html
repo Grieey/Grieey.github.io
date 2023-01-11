@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="John Doe" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Ubuntu18.04.1的化妆之术 
+      
+      
+    
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto:400,400italic,600|Roboto+Mono" rel="stylesheet">
+
+  <!-- hexo site css -->
+  
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/common.css">
+<link rel="stylesheet" href="/iconfont/iconfont.css">
+
+
+  
+
+  
+    
+<link rel="stylesheet" href="/css/post.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <script async src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <a href="/">LEEDOM</a>
+</div>
+
+
+      <p class="links">
+  
+    <a title="archives" target="" href="/archives/">
+      <i class="iconfont icon-bookmark"></i>
+    </a>
+  
+    <a title="github" target="_blank" href="https://github.com/leedom92/hexo-theme-leedom">
+      <i class="iconfont icon-github"></i>
+    </a>
+  
+    <a title="email" target="" href="">
+      <i class="iconfont icon-envelope"></i>
+    </a>
+  
+    <a title="facebook" target="" href="">
+      <i class="iconfont icon-facebooksquare"></i>
+    </a>
+  
+    <a title="twitter" target="" href="">
+      <i class="iconfont icon-twitter"></i>
+    </a>
+  
+    <a title="wechat" target="" href="">
+      <i class="iconfont icon-wechat"></i>
+    </a>
+  
+    <a title="weibo" target="" href="">
+      <i class="iconfont icon-weibo"></i>
+    </a>
+  
+    <a title="rss" target="_blank" href="/atom.xml">
+      <i class="iconfont icon-rss"></i>
+    </a>
+  
+</p>
+
+
+      <div class="main">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+
+<div class="post">
+  <h3 class="date">
+    Nov 23, 2018
+  </h3>
+  <h1>
+    Ubuntu18.04.1的化妆之术
+  </h1>
+  <div class="content markdown-body">
+    <h1 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h1><p>把U盘插入电脑，启动电脑时进入BOIS菜单，切换为U盘启动，然后保存重启。重启后就会进入Ubuntu的安装，这里没有啥特别的，基本和普通的软件一样点击下一步设置完就好了。</p>
+<h1 id="配置系统环境"><a href="#配置系统环境" class="headerlink" title="配置系统环境"></a>配置系统环境</h1><h3 id="基础设置"><a href="#基础设置" class="headerlink" title="基础设置"></a>基础设置</h3><p>启动了系统后呢先别急着搞事情，有些东西需要先初始化下，一般在进入系统前，如果你安装时选择的是中文，那么这时候会提示不完整的语言支持，点击**[现在执行此动作]**，就可以了。然后再使用命令行工具进行下更新,接下来就是悄悄咪咪的等待了。。。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get upgrade</span><br></pre></td></tr></table></figure>
+
+<p>更改系统的时区和设置好终端的样式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install git</span><br><span class="line">sudo apt-get install zsh</span><br><span class="line">wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | sh</span><br><span class="line">chsh -s /usr/bin/zsh</span><br></pre></td></tr></table></figure>
+
+<h3 id="工具配置"><a href="#工具配置" class="headerlink" title="工具配置"></a>工具配置</h3><p>首先是输入法，这里选择搜狗的输入法<a target="_blank" rel="noopener" href="https://pinyin.sogou.com/mac/">传送门在此</a>。安装输入法需要先安装**[Fcitx]**框架。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install fcitx</span><br></pre></td></tr></table></figure>
+
+<p>然后到搜狗官网选择Linux版本的输入法下载,会得到一个deb包，下载成功后到下载目录打开终端执行以下的命令。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 首先移步到文件管理器的下载目录，终端下输入以下命令进行安装</span></span><br><span class="line">sudo dpkg -i sogoupinyin_2.2.0.0108_amd64.deb</span><br><span class="line"></span><br><span class="line"><span class="comment"># 一般情况下会提示安装失败，缺失依赖，所以先解决依赖问题</span></span><br><span class="line">sudo apt install -f</span><br><span class="line"></span><br><span class="line"><span class="comment"># 接着重复第一步安装搜狗输入法的命令</span></span><br><span class="line"><span class="comment"># 一般 deb 包都是如此安装的，如果失败就去解决依赖问题</span></span><br></pre></td></tr></table></figure>
+
+<p>然后移步到 <strong>设置 → 区域和语言</strong> ，删除一部分输入源，只保留 <strong>汉语</strong> 。接着选择 <strong>管理已安装的语言</strong> ，修改 <strong>键盘输入法系统</strong> 为 <strong>fcitx</strong> 。关闭窗口，打开所有程序，选择软件 <strong>Fctix 配置</strong>，选择加号添加搜狗输入法(<code>如果添加输入法中没有搜狗输入法，重启下系统</code>)</p>
+<h3 id="主题配置"><a href="#主题配置" class="headerlink" title="主题配置"></a>主题配置</h3><p>在Ubuntu18.04上使用的<strong>gnome</strong>，所以先下载安装<strong>gnome-tweak-tools</strong> 和 <strong>gnome-shell</strong>两个东东</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install gnome-tweak-tool</span><br><span class="line">sudo apt install gnome-shell</span><br></pre></td></tr></table></figure>
+
+<p><strong>gnome</strong>有一个主题网站，上面有各种各样的主题，可以根据自己的喜好选择，<a target="_blank" rel="noopener" href="https://www.gonme-look.org/">gnome-look传送门</a>，<br><strong>flat-remix-gtk</strong>系列的主题个人感觉挺酷的，于是就打算装这个啦，在其github主页也有详细的安装教程<a target="_blank" rel="noopener" href="https://github.com/daniruiz/flat-remix-gtk">Flat-remix-gtk传送门</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository ppa:daniruiz/flat-remix</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install flat-remix-gtk</span><br><span class="line">sudo apt-get install flat-remix-icon</span><br></pre></td></tr></table></figure>
+
+<p>如果在终端无法拉取下来安装，可以直接用git将主题包拉取到本地，然后将对应主题的文件夹移动到相应目录</p>
+<pre><code>主题存放目录：/usr/share/themes 或 ~/.themes
+图标存放目录：/usr/share/icons 或 ~/.icons
+字体存放目录：/usr/share/fonts 或 ~/.fonts
+</code></pre>
+<p>其中如果需要使用界面进行拷贝复制到 <strong>&#x2F;usr&#x2F;share&#x2F;</strong> 路径下，需要 <strong>root</strong> 权限</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 终端下打开一个具有管理员权限的文件管理器</span></span><br><span class="line"><span class="comment"># 打开后终端最小化，不要关闭</span></span><br><span class="line">sudo nautilus</span><br></pre></td></tr></table></figure>
+
+<p>主题搞定了后在全部应用打开gnome(<code>中文名叫做优化</code>),就可以在外观中选择主题了，但是这个时候会发现 <strong>Shell</strong> 对应的选项有红色的感叹号，这个时候需要安装 <strong>User theme</strong> 的插件才能使用，一个简单的方法是 在Extension的网站<a target="_blank" rel="noopener" href="https://extensions.gnome.org/extension/19/user-themes/">传送门</a> 点击 <strong>Click here to install browser extension</strong> 安装后刷新网页，在 <strong>User theme</strong> 右边就有一个开关，打开它就可以了，再回到优化中，就可以在外观中选择shell theme了。这个时候顶部栏和全部应用的样式就改好了。(<code>这步骤中如果进入网页没有 Install browser extension 这个提示，检测下 gnome-shell 是否安装</code>)</p>
+<p>然后是 <strong>Dock</strong> 的样式，其实 <strong>Docky</strong> 蛮好用的，但是他没有全部应用，也不好添加应用图标。所以这里还是使用主题推荐的扩展 <strong>Dash to Dock</strong> 在刚刚的扩展网页可以直接搜索这个扩展，和上面一样的操作打开 <strong>ON</strong> 就可以啦，然后如果需要设置为主题中的样式，需要把在扩展的设置中把透明度设置为固定大小，然后下面的数值才能拖动为0。</p>
+<p>还有朋友喜欢应用全面屏的，可以先设置 <strong>Dock</strong> 智能隐藏， 然后添加扩展 <strong>Hide top bar</strong>。</p>
+<p>这样呢，使用时的主题样式就差不多了，但是呢（没错，但是前都是废话），开机的时候如果是多系统会发现Ubuntu原生的系统选择不好看，还有登录用户的界面也差那么多点意思。我找了一款看起来清新简洁的 <a target="_blank" rel="noopener" href="https://www.gnome-look.org/p/1176413/">没错我是传送门</a> ,这个主题只需要执行以下的命令就可以使用了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 稳的方法</span></span><br><span class="line">wget -P /tmp https://github.com/shvchk/poly-light/raw/master/install.sh</span><br><span class="line">bash /tmp/install.sh</span><br><span class="line"><span class="comment"># 浪的方法</span></span><br><span class="line">wget -O - https://github.com/shvchk/poly-light/raw/master/install.sh | bash</span><br></pre></td></tr></table></figure>
+
+<p>最后就是装饰下门面啦，修改掉系统开机动画和登录界面。登录界面修改掉背景就会好很多啦<br>主要修改<code>/etc/alternatives/gdm3.css</code>文件中的 <strong>lockDialogGroup</strong>属性，将里面的background 的url指向你想设置的图片就OK了。</p>
+<p>开机动画需要先下好一个，我选了个酷酷的<a target="_blank" rel="noopener" href="https://www.gnome-look.org/p/1009456/">传送门</a>，直接下载下来解压，然后将里面的 <strong>ubuntu-spinner-logo</strong> 文件夹拷贝到 <code>/usr/share/plymouth/themes/</code>下，然后修改<code>/etc/alternatives/default.plymouth</code>中的属性为你刚刚下载的动画的</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[script]</span><br><span class="line">ImageDir=/usr/share/plymouth/themes/ubuntu-spinner-logo</span><br><span class="line">ScriptFile=/usr/share/plymouth/themes/ubuntu-spinner-logo//usr/share/plymouth/themes/ubuntu-spinner-logo.script</span><br></pre></td></tr></table></figure>
+<p>保存关机重启应该就能看到效果啦。</p>
+<h1 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/41708902">https://zhuanlan.zhihu.com/p/41708902</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.k-xzy.xyz/archives/5577/comment-page-6">https://www.k-xzy.xyz/archives/5577/comment-page-6</a></li>
+</ul>
+  </div>
+  
+    
+      <a id="older" class="blog-nav" href="/2018/11/02/building-blogs/">OLDER&nbsp;&gt;</a>
+      
+        
+          <a id="newer" class="blog-nav" href="/2019/04/01/Hexo%20%E4%BD%BF%E7%94%A8/">&lt;&nbsp;NEWER</a>
+          
+            
+</div>
+        <div class="footer">
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Copyright © Leedom 2021</a>
+        
+    </div>
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Theme by Leedom | Powered by Hexo</a>
+        
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="back-to-top hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+      
+  <div class="search-icon" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-box">
+        <div class="search-title">
+          <!-- <span class="search-icon-input">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </span> -->
+          
+            <input type="text" class="search-input" id="search-input" placeholder="$ grep...">
+          
+          <span class="search-close-icon" id="search-close-icon">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-close"></i>
+            </a>
+          </span>
+        </div>
+        <div class="search-result" id="search-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    // inputArea.onclick = function() {
+    //   getSearchFile()
+    //   this.onclick = null
+    // }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        inputArea.focus()
+        getSearchFile()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'><span></ul>";
+      // $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'><h2>" + orig_data_title + "</h2></a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<h3 class=\"search-result-abstract\">" + match_content + "...</h3>"
+                }
+                str += "<hr></li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/leedom92/hexo-theme-leedom#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+    </div>
+  </body>
+</html>

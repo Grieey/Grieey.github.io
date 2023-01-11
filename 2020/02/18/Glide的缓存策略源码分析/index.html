@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="John Doe" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Glide的缓存策略源码分析 
+      
+      
+    
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto:400,400italic,600|Roboto+Mono" rel="stylesheet">
+
+  <!-- hexo site css -->
+  
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/common.css">
+<link rel="stylesheet" href="/iconfont/iconfont.css">
+
+
+  
+
+  
+    
+<link rel="stylesheet" href="/css/post.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <script async src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <a href="/">LEEDOM</a>
+</div>
+
+
+      <p class="links">
+  
+    <a title="archives" target="" href="/archives/">
+      <i class="iconfont icon-bookmark"></i>
+    </a>
+  
+    <a title="github" target="_blank" href="https://github.com/leedom92/hexo-theme-leedom">
+      <i class="iconfont icon-github"></i>
+    </a>
+  
+    <a title="email" target="" href="">
+      <i class="iconfont icon-envelope"></i>
+    </a>
+  
+    <a title="facebook" target="" href="">
+      <i class="iconfont icon-facebooksquare"></i>
+    </a>
+  
+    <a title="twitter" target="" href="">
+      <i class="iconfont icon-twitter"></i>
+    </a>
+  
+    <a title="wechat" target="" href="">
+      <i class="iconfont icon-wechat"></i>
+    </a>
+  
+    <a title="weibo" target="" href="">
+      <i class="iconfont icon-weibo"></i>
+    </a>
+  
+    <a title="rss" target="_blank" href="/atom.xml">
+      <i class="iconfont icon-rss"></i>
+    </a>
+  
+</p>
+
+
+      <div class="main">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+
+<div class="post">
+  <h3 class="date">
+    Feb 18, 2020
+  </h3>
+  <h1>
+    Glide的缓存策略源码分析
+  </h1>
+  <div class="content markdown-body">
+    <p>接着我们先看看第一步中的<code>load</code>方法：</p>
+<p>从下面的代码可以看到，先会从缓存中获取资源，如果不存在，才会新开线程从硬盘获取或者从其他远端（文件、网络等等）加载新资源。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_engine_load.png" alt="glide_engine_load"></p>
+<h2 id="内存缓存"><a href="#内存缓存" class="headerlink" title="内存缓存"></a>内存缓存</h2><p>内存缓存的设置也有两级，这里就是引言中使用的<strong>弱引用+Lru</strong>的方式：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_engine_load_detail.png" alt="glide_engine_load_detail"></p>
+<p><code>activeResource</code>中的逻辑很简单清晰，内部维护了一个<code>HashMap</code>用键值对的形式保存了<code>key</code>和<code>WeakReference</code>，这里直接去获取，当存在就返回：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_engine_load_weak.png" alt="glide_engine_load_weak"></p>
+<p>如果弱引用中不存在了，就从<code>Lru</code>中去获取，从方法的调用上看也是一层层的获取，当缓存存在时，从<code>Lru</code>中取出来，并重新加入弱引用中。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_engine_load_lru.png" alt="glide_engine_load_lru"></p>
+<p>到这里为止，都是正常的流程。但我们知道，弱引用会在下一次<code>GC</code>时被回收，如果被回收了又没有加入<code>Lru</code>不就炸了么？对弱引用的使用不太了解的同学也许会存在这样的疑问，<code>Reference</code>有一个构造方法可以传入一个<code>ReferenceQueue</code>，这个队列的作用就是用于检测<strong>对象</strong>本身可达性发生变化时，通过Map来反向获取指向<strong>对象</strong>的包装引用（即<code>Reference</code>对象），将其放入到队列，来进行后续的操作，<a target="_blank" rel="noopener" href="https://hongjiang.info/java-referencequeue/">这里有一篇关于引用队列的介绍</a>。</p>
+<p>正如上面的介绍一样，<code>Glide</code>的内部也是通过引用队列来实现<strong>弱引用</strong>对象被回收时，将其放入<code>Lru</code>中。</p>
+<p>流程如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_cache_weak.png" alt="glide_cache_weak"></p>
+<ol>
+<li>当我们第一次加载成功后，会创建弱引用对象来缓存它。</li>
+<li>创建弱引用对象时也会传入弱引用队列。</li>
+<li>同时这个对象资源在初始时会新开一个线程去无限循环的检测弱引用队列。</li>
+<li>弱引用队列的<code>remove()</code>方法是个阻塞方法，当队列中存在元素时才会执行，所以当<code>gc()</code>回收弱引用对象后，队列中就有值了</li>
+<li>这个时候无限循环的检测中就会拿到刚刚回收的弱引用对象。就会将该对象放到<code>lru</code>中去缓存。</li>
+<li>另一边是如果使用的资源被主动释放了，<code>Lru</code>内部是维护了一个引用计数<code>acquired</code>的数字，当这个数子为0时就代表没有引用了，也会缓存到<code>Lru</code>中去。</li>
+</ol>
+<p>看看具体的实现：</p>
+<p>首先<code>ActiveResources</code>的构造方法中，会生成一个子线程执行检测任务，随时检测引用队列的<code>remove()</code>方法（这是一个阻塞方法，队列没有值的时候会一直阻塞），当还没有引用别回收时，这个检测的线程就会因为阻塞而休眠，而一旦出现了被回收的对象，就会被引用队列唤醒，执行<code>remove</code>方法的后续。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_ar_init.png" alt="glide_ar_init"></p>
+<p>在资源首次被添加时，会去生成一个弱引用的对象，然后在上面的检测中检测它的回收</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_ar_active.png" alt="glide_ar_active"></p>
+<p>在<code>cleanupActiveReference</code>中，引用的资源还在时，就会新建一个<code>resource</code>然后通知<code>engine</code>把这个新的存到<code>lru</code>中，这样就完成了一次弱引用到<code>lru</code>的转换了</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_ar_turn2_lru.png" alt="glide_ar_turn2_lru"></p>
+<p>这里还有一个细节就是每一次获取成功后都会调用<code>cached.acquire()</code>这个方法，这个方法内会自增一个计算的变量，用于统计资源的使用，每次<code>release</code>时都会自减，当这个值为0时说明没有使用他的地方了，同样的也会调用<code>listener.onResourceReleased</code>方法来将该变量存到<code>Lru</code>中。</p>
+<h2 id="硬盘缓存"><a href="#硬盘缓存" class="headerlink" title="硬盘缓存"></a>硬盘缓存</h2><p>硬盘缓存的使用是<code>DiskLruCache</code>，<code>Glide</code>也提供了几种缓存的策略如下</p>
+<ul>
+<li><p>DiskCacheStrategy.NONE： 表示不缓存任何内容。</p>
+</li>
+<li><p>DiskCacheStrategy.SOURCE： 表示只缓存原始图片。</p>
+</li>
+<li><p>DiskCacheStrategy.RESULT： 表示只缓存转换过后的图片（默认选项）。</p>
+</li>
+<li><p>DiskCacheStrategy.ALL ： 表示既缓存原始图片，也缓存转换过后的图片。</p>
+</li>
+</ul>
+<p>在最开始的图中，<code>waitForExistingOrStartNewJob</code>这个命名就基本说明了接下来的流程，先从本地的硬盘缓存中查找，如果没有就从远端资源获取。只不过这个地方的源码稍微有点绕。</p>
+<p><code>engine</code>在<code>waitForExistingOrStartNewJob</code>方法中构建了<code>DecodeJob</code>对象，并且开启了新的线程去执行它（这个对象实现了<code>runnable</code>）。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_decode_job_run.png" alt="glide_decode_job_run"></p>
+<p>根据上面不同中的<code>runReason</code>会生成不同的<code>stage</code>，然后生成不同的<code>generator</code>，主要有三种：</p>
+<ul>
+<li>ResourceCacheGenerator：这个类中会去寻找经过处理之后的资源</li>
+<li>DataCacheGenerator:这个类中会去寻找原始的资源</li>
+<li>SourceGenerator:这个类就是去远端获取资源</li>
+</ul>
+<p>在<code>glide</code>可以同时缓存原始的资源和经过转换后的资源，当然这都是根据你设置的缓存策略来实现了。在<code>DecodeJob</code>中会去调用他们的<code>startNext()</code>方法，接下来就分别看看上面两个缓存的实现：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_genertor_start.png" alt="glide_genertor_start"></p>
+<p>这两个里面的实现大体逻辑都差不多，只是对于的<code>key</code>不一样，而这个<code>helper.getDiskCache</code>最后拿到的就是<code>DiskLruCacheWrapper</code>的实例，在他的<code>getDiskCache</code>中去获取磁盘的缓存：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Grieey/ImgHosting@main/img/glide_disk_lru_cache.png" alt="glide_disk_lru_cache"></p>
+<p>到这里，会通过之前设置好的<code>callback</code>一步步调用到<code>engine</code>中，返回这个磁盘缓存的资源。</p>
+  </div>
+  
+    
+      <a id="older" class="blog-nav" href="/2020/02/14/%E6%88%90%E9%95%BF%E6%97%A5%E8%AE%B0/">OLDER&nbsp;&gt;</a>
+      
+        
+          <a id="newer" class="blog-nav" href="/2020/04/06/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E7%B3%BB%E5%88%97%E7%9A%84%E6%80%BB%E7%BB%93/">&lt;&nbsp;NEWER</a>
+          
+            
+</div>
+        <div class="footer">
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Copyright © Leedom 2021</a>
+        
+    </div>
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Theme by Leedom | Powered by Hexo</a>
+        
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="back-to-top hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+      
+  <div class="search-icon" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-box">
+        <div class="search-title">
+          <!-- <span class="search-icon-input">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </span> -->
+          
+            <input type="text" class="search-input" id="search-input" placeholder="$ grep...">
+          
+          <span class="search-close-icon" id="search-close-icon">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-close"></i>
+            </a>
+          </span>
+        </div>
+        <div class="search-result" id="search-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    // inputArea.onclick = function() {
+    //   getSearchFile()
+    //   this.onclick = null
+    // }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        inputArea.focus()
+        getSearchFile()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'><span></ul>";
+      // $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'><h2>" + orig_data_title + "</h2></a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<h3 class=\"search-result-abstract\">" + match_content + "...</h3>"
+                }
+                str += "<hr></li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/leedom92/hexo-theme-leedom#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+    </div>
+  </body>
+</html>

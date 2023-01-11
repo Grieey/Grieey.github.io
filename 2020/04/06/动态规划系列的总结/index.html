@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="John Doe" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      动态规划 
+      
+      
+    
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto:400,400italic,600|Roboto+Mono" rel="stylesheet">
+
+  <!-- hexo site css -->
+  
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/common.css">
+<link rel="stylesheet" href="/iconfont/iconfont.css">
+
+
+  
+
+  
+    
+<link rel="stylesheet" href="/css/post.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <script async src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <a href="/">LEEDOM</a>
+</div>
+
+
+      <p class="links">
+  
+    <a title="archives" target="" href="/archives/">
+      <i class="iconfont icon-bookmark"></i>
+    </a>
+  
+    <a title="github" target="_blank" href="https://github.com/leedom92/hexo-theme-leedom">
+      <i class="iconfont icon-github"></i>
+    </a>
+  
+    <a title="email" target="" href="">
+      <i class="iconfont icon-envelope"></i>
+    </a>
+  
+    <a title="facebook" target="" href="">
+      <i class="iconfont icon-facebooksquare"></i>
+    </a>
+  
+    <a title="twitter" target="" href="">
+      <i class="iconfont icon-twitter"></i>
+    </a>
+  
+    <a title="wechat" target="" href="">
+      <i class="iconfont icon-wechat"></i>
+    </a>
+  
+    <a title="weibo" target="" href="">
+      <i class="iconfont icon-weibo"></i>
+    </a>
+  
+    <a title="rss" target="_blank" href="/atom.xml">
+      <i class="iconfont icon-rss"></i>
+    </a>
+  
+</p>
+
+
+      <div class="main">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+
+<div class="post">
+  <h3 class="date">
+    Apr 06, 2020
+  </h3>
+  <h1>
+    动态规划
+  </h1>
+  <div class="content markdown-body">
+    <p>针对斐波那契数列，原本的题意是从所求参数依次往<strong>base case（F(0),F(1)）</strong>去求。换个思路就是，从<strong>base case <strong>向所求参数去凑。比如</strong>F(4)<strong>，用自顶向下的思路就是因为要求</strong>F(4)<strong>，所以我需要先求</strong>F(3)<strong>和</strong>F(2)</strong>(这样满足公式嘛)，而自底向上的思路就是要求<strong>F(4)<strong>，我可以先求</strong>F(2)</strong>(因为<strong>F(0)<strong>和</strong>F(1)<strong>已知，很轻易可以求出</strong>F(2)</strong>)，这样往我们需要求的参数一步一步向上去凑，直到求到**F(4)**。</p>
+<p>那么这种思路的伪代码就如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">fib</span><span class="params">(n:<span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">  	<span class="keyword">if</span> (n &lt; <span class="number">2</span>) <span class="keyword">return</span> n</span><br><span class="line">  	</span><br><span class="line">  	<span class="keyword">var</span> fn = <span class="number">1</span></span><br><span class="line">  	<span class="keyword">var</span> fn1 = <span class="number">0</span></span><br><span class="line">  	<span class="keyword">var</span> res = fn + fn1</span><br><span class="line">  	<span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">2.</span>.n) &#123;</span><br><span class="line">      	res = fn + fn1</span><br><span class="line">      	fn1 = fn</span><br><span class="line">      	fn = res</span><br><span class="line">       &#125;</span><br><span class="line">  </span><br><span class="line">  	<span class="keyword">return</span> res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每一步向上求，只和前两个值有关，所以这里一共需要三个变量就可以解决。</p>
+<h2 id="打家劫舍的问题"><a href="#打家劫舍的问题" class="headerlink" title="打家劫舍的问题"></a>打家劫舍的问题</h2><p>一般针对有求解最值的题目，可以考虑使用动态规划来处理，在打家劫舍这一系列的题目中，我们需要求的都是能打劫到的最多的钱。</p>
+<p>1.明确状态：可以理解为，状态是为选择提供的一种基础，对于抢劫来说，基础就是有人被你抢，所以这个题目中，一间间房屋就是我们需要的状态。（像凑硬币的题目，一种硬币其实就是一种状态）</p>
+<p>2.明确选择：状态分析出来后，针对状态我们存在的选择只有两个，抢劫或者不抢。</p>
+<p>3.dp方程式：dp的值要计算的当前的房间进行操作后，能得到的钱是多少，比如在第一间房，如果选择抢，那么得到的钱应该是当前房间的钱加上下下间房屋里抢的钱（中间需要间隔一个），而如果选择不抢，那么直接计算下个房间就可以了。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dp = max(dp1, currentRoomMoney + dp2)</span><br><span class="line"><span class="comment">// 这里做数据更新</span></span><br><span class="line">dp2 = dp1</span><br><span class="line">dp1 = dp</span><br></pre></td></tr></table></figure>
+
+<p>4.baseCase:其实可以从两个角度想，一个是当你下个房间能抢到的数目为0时，其实就已经结束了（因为题目给的数是非零正整数），而另一个就是房间的数目是有限的，遍历完就是结束了。</p>
+<p>这个的时间复杂度的计算，就是子问题的个数*解决一个子问题的时间，对于抢劫一间房，执行的时间是O(1)，而子问题的个数是N，所以总的来说是O(N)的时间复杂度。</p>
+<p>同样有<strong>自顶向下</strong>和<strong>自底向上</strong> 两种思路来实现。一般画了二叉树，使用自顶向下的方案会比较容易理解，因为这个方案是从暴力解中优化来了，解决了重叠子问题的问题。伪代码的逻辑如下，</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 自顶向下的伪代码</span></span><br><span class="line"><span class="comment">// 使用备忘录来优化重叠子问题</span></span><br><span class="line"><span class="keyword">val</span> memo = mutableMapOf&lt;<span class="built_in">Int</span>, <span class="built_in">Int</span>&gt;()</span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">rob</span><span class="params">(nums: <span class="type">IntArray</span>,  start:<span class="type">Int</span>)</span></span> &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">if</span> (memo.containsKey(start)) <span class="keyword">return</span> memo[start]</span><br><span class="line">  <span class="keyword">val</span> res =  max(rob(next), nums[current] + rob(next+<span class="number">1</span>))</span><br><span class="line">  memo[start] = res</span><br><span class="line">  <span class="keyword">return</span> res</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 自底向上的伪代码</span></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">rob</span> <span class="params">(nums:<span class="type">IntArray</span>)</span></span> &#123;</span><br><span class="line">  <span class="keyword">for</span> ( i <span class="keyword">in</span> nums.lastIndex downTo <span class="number">0</span>) &#123;</span><br><span class="line">  	dp = max (dp1, nums[i] + dp2)</span><br><span class="line">       dp2 = dp1</span><br><span class="line">       dp1 = dp</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> dp</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>第二个题将数组变成了环形了，环形的问题就是首尾的房间不能同时被抢，所以分别计算抢首部和抢尾部两种方法的钱，就知道了</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 将上面的循环遍历的区间从整个数组修改为指定的即可</span></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">rob</span> <span class="params">(nums: <span class="type">IntArray</span>)</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> max(robRange(nums,  <span class="number">0</span> ,  nums.lastIndex - <span class="number">1</span>)</span><br><span class="line">            , robRange(nums, <span class="number">1</span> ,nums.lastIndex)</span><br><span class="line">   )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第三个问题将数组变成了二叉树，在树结构上相邻的两个房间不能别抢，就是父节点如果抢了的话，就不能去抢子节点了，而是应该去抢子节点的子节点,<code>注意：这两的子节点的子节点应该是四个了，分别是左子树的两个子节点和右子树的两个子节点</code>。如果没有抢，那么就直接就计算子节点。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">rob</span><span class="params">(node:<span class="type">Node</span>?)</span></span> &#123;</span><br><span class="line">  <span class="comment">// 当前房间要抢，那最终的钱就是当前房间的加上子节点的子节点的钱</span></span><br><span class="line">  rob = node.monkey + (rob(node.left?.left) ?: <span class="number">0</span> + rob(node.left?.right ?: <span class="number">0</span>)) + (rob(node.right?.left ?: <span class="number">0</span>) + rob(node.right?.right ?: <span class="number">0</span>))</span><br><span class="line">  notRob = rob(node.left) + rob(node.right)</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> max(rob, notRob)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当然，上面的方案仍然要使用备忘录来进行优化，记录已经计算过的节点。</p>
+<p>最后是另有一个比较不错的解法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">rob</span><span class="params">(TreeNode root)</span> &#123;</span><br><span class="line">    <span class="type">int</span>[] res = dp(root);</span><br><span class="line">    <span class="keyword">return</span> Math.max(res[<span class="number">0</span>], res[<span class="number">1</span>]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 返回一个大小为 2 的数组 arr</span></span><br><span class="line"><span class="comment">arr[0] 表示不抢 root 的话，得到的最大钱数</span></span><br><span class="line"><span class="comment">arr[1] 表示抢 root 的话，得到的最大钱数 */</span></span><br><span class="line"><span class="type">int</span>[] dp(TreeNode root) &#123;</span><br><span class="line">    <span class="keyword">if</span> (root == <span class="literal">null</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">int</span>[]&#123;<span class="number">0</span>, <span class="number">0</span>&#125;;</span><br><span class="line">    <span class="type">int</span>[] left = dp(root.left);</span><br><span class="line">    <span class="type">int</span>[] right = dp(root.right);</span><br><span class="line">    <span class="comment">// 抢，下家就不能抢了</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">rob</span> <span class="operator">=</span> root.val + left[<span class="number">0</span>] + right[<span class="number">0</span>];</span><br><span class="line">    <span class="comment">// 不抢，下家可抢可不抢，取决于收益大小</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">not_rob</span> <span class="operator">=</span> Math.max(left[<span class="number">0</span>], left[<span class="number">1</span>])</span><br><span class="line">                + Math.max(right[<span class="number">0</span>], right[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">int</span>[]&#123;not_rob, rob&#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个解法的思路类似于股票买卖问题，在决定一个房间是不是需要抢的选择时，可以决定下一个房间（股票问题是当前的利润来自前面一天的决定）。对于房间来说，如果当前抢了，那么下间房间一定不能抢，而如果没有抢，那么下间房间可能抢也可能不抢（股票的问题是，第i天时，手上没有持有股票，可能来自两种操作的结果，一个是前一天卖掉了，二个是前一天也没有买，所以今天也就延续了前一天的状态）。</p>
+<h2 id="鸡蛋掉落问题"><a href="#鸡蛋掉落问题" class="headerlink" title="鸡蛋掉落问题"></a>鸡蛋掉落问题</h2><p>题目的简单描述，就是说给你<strong>K</strong>个鸡蛋，然后有<strong>N</strong>层楼，问最少需要多少次能测出鸡蛋在几楼掉落刚好不碎（或者说可以测出鸡蛋的质量）。</p>
+<p>这是一道很经典的动态规划的问题，解法还是和之前一样，有自顶向下和自底向上两种思路可以来解决这个问题。</p>
+<h4 id="自顶向下"><a href="#自顶向下" class="headerlink" title="自顶向下"></a>自顶向下</h4><p>在这个题目中，状态有两个，一个是鸡蛋的个数，另一个是楼层。所以对应状态的变化就是两种，首先是楼层的变化，我们可以想象为有一个鸡蛋，那么至少需要多少次可以去确定楼层，这里可以用二分搜索的方式来处理，就是$\log(N)$的时间复杂度；第二个就是鸡蛋个数的变化，其实就是可操作次数的<strong>Max</strong>值。</p>
+<p>状态如何转移呢，当我们在一层楼落下鸡蛋时，只有两个可能的结果，就是蛋碎了或者蛋没有碎，蛋碎了就减少一个蛋的数目，然后继续向上搜索楼层，没碎则直接进行向下搜索楼层的操作。最后我们需要的至少的次数，就是遍历过程中最小的操作。那么dp的状态转移方程就是</p>
+<p>$$dp &#x3D; min \lbrace dp(k, n - mid) + 1, dp(k - 1, mid - 1) + 1; k \in K, mid &#x3D; (lo + hi)  &#x2F; 2 \rbrace$$</p>
+<p>这个方程的详细解释就是，当我们使用二分法进行楼层的搜索时，这层的状态结果有两个，其中$dp(k, mid - 1)$对应的是在这层路鸡蛋掉下去没有碎，鸡蛋的个数不会减少的情况下，后面总共还需要多少次来测试，所以后面加1的目的是加上这次，同时，因为鸡蛋没有碎，说明楼层的高度还不够，那么下次就应该搜索当前楼层的上面楼层区间了；后面也是一样，如果鸡蛋碎了，鸡蛋数目需要减少，同时应该搜索的区间就是当前楼层的下面楼层了。</p>
+<p>最后的就是结束条件(base case)，什么情况下就不能测试了，需要看我们的状态：首先是楼层，当楼层<strong>N</strong> 为0的时候，肯定没有法测了，这就是不存在的条件；第二，如果鸡蛋数目<strong>K</strong>为1的时候，不就是上面我们讲的最简单的情况了，不过需要注意的是，这个考虑的是最坏的情况，不是说一个鸡蛋，用二分的方式至少$log(N)$次就可以了，而是需要$N$次，最坏的情况就是从一楼开始，到楼顶才测出来。</p>
+<p>伪代码如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">dp</span><span class="params">(K:<span class="type">Int</span>, N:<span class="type">Int</span>)</span></span>:<span class="built_in">Int</span> &#123;</span><br><span class="line">  	<span class="keyword">if</span> (K == <span class="number">1</span>) <span class="keyword">return</span> n</span><br><span class="line">  	<span class="keyword">if</span> (N == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">  	<span class="comment">// 使用备忘录模式来优化重叠子问题</span></span><br><span class="line">  	<span class="keyword">if</span> (memo[K][N] != -<span class="number">1</span>) <span class="keyword">return</span> memo[K][N]</span><br><span class="line">  </span><br><span class="line">       <span class="keyword">var</span> lo = <span class="number">1</span></span><br><span class="line">  	<span class="keyword">var</span> hi = N</span><br><span class="line">  	<span class="keyword">var</span> res = <span class="built_in">Int</span>.MAX_VALUE</span><br><span class="line">  	<span class="keyword">while</span> (lo &lt;= hi) &#123;</span><br><span class="line">      	<span class="keyword">val</span> mid = (lo + hi) / <span class="number">2</span></span><br><span class="line">      	<span class="comment">// 碎了，那么接下来需要计算的是K- 1个鸡蛋在(N - mid) 楼中掉落的子问题</span></span><br><span class="line">      	<span class="keyword">val</span> brohen = dp(K - <span class="number">1</span>,  n - mid)</span><br><span class="line">      	<span class="keyword">val</span> notBrohen = dp(K, mid - <span class="number">1</span>)</span><br><span class="line">      	</span><br><span class="line">      	<span class="keyword">if</span> (borken &gt; notBroken) &#123;</span><br><span class="line">          	hi = mid - <span class="number">1</span></span><br><span class="line">          	res = min(res, borken + <span class="number">1</span>)</span><br><span class="line">           &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          	lo = mid + <span class="number">1</span></span><br><span class="line">          	res = min(res, notBroken + <span class="number">1</span>)</span><br><span class="line">          &#125;</span><br><span class="line">      	memo[K][N] = res</span><br><span class="line">      &#125;</span><br><span class="line">  	<span class="keyword">return</span> res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>时间复杂度：有两个状态，每一个状态组合下的子问题解决的时间复杂度是$log(N)$，一共有$K \cdot N$个问题，所以总的时间复杂度就是$ K \cdot N \cdot log(N)$。</p>
+<h4 id="自底向上"><a href="#自底向上" class="headerlink" title="自底向上"></a>自底向上</h4><p>自底向上就是使用dp数组来解决问题，可以换个思路来思考题目，题目说的是在<strong>N</strong>层楼的情况下，<strong>K</strong>个鸡蛋至少需要<strong>F</strong>次才知道哪层楼才能刚好摔碎$\implies$也就是说我们可以算，<strong>K</strong>个鸡蛋，操作<strong>F</strong>次的情况下，最多可以测试的最高楼层数是多少，只要这个最高楼层数大于等于题目给出的<strong>N</strong>，那么这个<strong>F</strong>就是我们的答案了。</p>
+<p>根据这个思路可以得出dp的计算方式<code>dp[k] = dp[k] + dp[k - 1] + 1</code>，<code>dp[k]</code> 代表的在当前的楼层，是<strong>k</strong>个鸡蛋的时候，能测出的楼层数目，所有最后的<code>+1</code>代表的就是本次楼层，等于后面的<code>dp[k]</code>代表的是本次楼层落下后，鸡蛋没有碎，那么继续向上测试楼层总共能测出还有多少楼，而<code>dp[k - 1]</code>代表的是如果鸡蛋正好在本层楼落下碎了，想楼下测试总共还能测出多少楼。最后就是看<code>dp[K]</code>和<code>N</code>的关系，当<code>dp[K] &gt; N</code>时，就符合上面说的<strong>K</strong>个鸡蛋操作了<strong>F</strong>次后，最多有**dp[K]**层楼刚刚碎。 代码如下:</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">dp</span><span class="params">(K;<span class="built_in">Int</span>, N:<span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line"> 	<span class="keyword">val</span> dp = IntArray(K + <span class="number">1</span>)</span><br><span class="line">   <span class="keyword">var</span> ans = <span class="number">0</span></span><br><span class="line">   <span class="keyword">while</span> (dp[K] &lt; N) &#123;</span><br><span class="line">       <span class="comment">// 这里为啥是K倒序到1 而不是从1正序遍历，还没搞懂</span></span><br><span class="line">     	<span class="keyword">for</span> (k <span class="keyword">in</span> K downTo <span class="number">1</span>) dp[k] = dp[k] + dp[k - <span class="number">1</span>] + <span class="number">1</span></span><br><span class="line">     	ans++</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> ans</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样计算的时间复杂度就更好一些，为 $O(KN)$。</p>
+  </div>
+  
+    
+      <a id="older" class="blog-nav" href="/2020/02/18/Glide%E7%9A%84%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">OLDER&nbsp;&gt;</a>
+      
+        
+          <a id="newer" class="blog-nav" href="/2020/04/06/Git%20%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">&lt;&nbsp;NEWER</a>
+          
+            
+</div>
+        <div class="footer">
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Copyright © Leedom 2021</a>
+        
+    </div>
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Theme by Leedom | Powered by Hexo</a>
+        
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="back-to-top hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+      
+  <div class="search-icon" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-box">
+        <div class="search-title">
+          <!-- <span class="search-icon-input">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </span> -->
+          
+            <input type="text" class="search-input" id="search-input" placeholder="$ grep...">
+          
+          <span class="search-close-icon" id="search-close-icon">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-close"></i>
+            </a>
+          </span>
+        </div>
+        <div class="search-result" id="search-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    // inputArea.onclick = function() {
+    //   getSearchFile()
+    //   this.onclick = null
+    // }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        inputArea.focus()
+        getSearchFile()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'><span></ul>";
+      // $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'><h2>" + orig_data_title + "</h2></a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<h3 class=\"search-result-abstract\">" + match_content + "...</h3>"
+                }
+                str += "<hr></li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/leedom92/hexo-theme-leedom#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+    </div>
+  </body>
+</html>

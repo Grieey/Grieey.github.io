@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="John Doe" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Retrofit学习总结 
+      
+      
+    
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto:400,400italic,600|Roboto+Mono" rel="stylesheet">
+
+  <!-- hexo site css -->
+  
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/common.css">
+<link rel="stylesheet" href="/iconfont/iconfont.css">
+
+
+  
+
+  
+    
+<link rel="stylesheet" href="/css/post.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <script async src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <a href="/">LEEDOM</a>
+</div>
+
+
+      <p class="links">
+  
+    <a title="archives" target="" href="/archives/">
+      <i class="iconfont icon-bookmark"></i>
+    </a>
+  
+    <a title="github" target="_blank" href="https://github.com/leedom92/hexo-theme-leedom">
+      <i class="iconfont icon-github"></i>
+    </a>
+  
+    <a title="email" target="" href="">
+      <i class="iconfont icon-envelope"></i>
+    </a>
+  
+    <a title="facebook" target="" href="">
+      <i class="iconfont icon-facebooksquare"></i>
+    </a>
+  
+    <a title="twitter" target="" href="">
+      <i class="iconfont icon-twitter"></i>
+    </a>
+  
+    <a title="wechat" target="" href="">
+      <i class="iconfont icon-wechat"></i>
+    </a>
+  
+    <a title="weibo" target="" href="">
+      <i class="iconfont icon-weibo"></i>
+    </a>
+  
+    <a title="rss" target="_blank" href="/atom.xml">
+      <i class="iconfont icon-rss"></i>
+    </a>
+  
+</p>
+
+
+      <div class="main">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+
+<div class="post">
+  <h3 class="date">
+    Apr 14, 2020
+  </h3>
+  <h1>
+    Retrofit学习总结
+  </h1>
+  <div class="content markdown-body">
+    <h2 id="原理及流程分析"><a href="#原理及流程分析" class="headerlink" title="原理及流程分析"></a>原理及流程分析</h2><p><strong>Retrofit2</strong>的大概原理是利用动态代理来实现的，简单说就是将我们配置好的接口类，在程序运行时通过动态代理生成实际的代理类，然后由代理具体的去生成请求需要的Call对象。这个Call对象会具体的调用进行请求的异步接口<code>enqueue</code>或者是同步接口<code>execute</code>，来触发实际的请求操作。</p>
+<p>下面是<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/45cb536be2f4">stay</a>所绘制的一张流程图</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/625299-29a632638d9f518f.png"></p>
+<p>从上图不仅仅可以很清晰的看出一个请求的大概流程，还能知道整个Retrofit的大概结构是怎么样的。接下来就结合上图和具体的源码来看看在Retrofit中上图的细节是如何实现的。</p>
+<h3 id="建立请求的配置"><a href="#建立请求的配置" class="headerlink" title="建立请求的配置"></a>建立请求的配置</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建Retrofit对象，并对其进行配置</span></span><br><span class="line"><span class="keyword">val</span> retrofit: Retrofit = Retrofit.Builder()</span><br><span class="line">      .baseUrl(BASE_URL)</span><br><span class="line">      .addCallAdapterFactory(RxJavaCallAdapterFactory.create())</span><br><span class="line">      .client(client)</span><br><span class="line">      .addConverterFactory(GsonConverterFactory.create())</span><br><span class="line">      .build()</span><br></pre></td></tr></table></figure>
+
+<p>构建<code>Retrofit</code>使用了构建者模式，这个模式可以很好的解构构建的条件和需要构建的对象，让我们可以根据自己需要来构建不同的请求。如上除了配置<code>baseUrl</code>，还添加了<code>CallAdapterFactory</code>和<code>GsonConverterFactory</code>两个对象，一个用于发起请求一个用于解析请求。</p>
+<h3 id="生成Call对象"><a href="#生成Call对象" class="headerlink" title="生成Call对象"></a>生成Call对象</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> service: GitHubService = retrofit.create(GitHubService::<span class="keyword">class</span>.java)</span><br><span class="line"><span class="keyword">val</span> call = service.listRepo(<span class="string">&quot;xxx&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">GitHubService</span> &#123;</span><br><span class="line">  <span class="meta">@GET(<span class="string">&quot;users/&#123;user&#125;/repos&quot;</span>)</span></span><br><span class="line">  <span class="function"><span class="keyword">fun</span> <span class="title">listRepos</span><span class="params">(<span class="meta">@Path(<span class="string">&quot;user&quot;</span>)</span> user: <span class="type">String</span>?)</span></span>: Call&lt;List&lt;Repo?&gt;?&gt;?</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里的<code>GitHubService</code>就是我们自己定义的Api的接口类，里面生命了业务中需要使用的Api。接下里的重点是<code>create</code>这个方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;T&gt; T <span class="title function_">create</span><span class="params">(<span class="keyword">final</span> Class&lt;T&gt; service)</span> &#123;</span><br><span class="line">    <span class="comment">// 1.验证接口 </span></span><br><span class="line">    validateServiceInterface(service);</span><br><span class="line">    <span class="comment">// 2.返回动态代理的对象</span></span><br><span class="line">    <span class="keyword">return</span> (T)</span><br><span class="line">        Proxy.newProxyInstance(</span><br><span class="line">            service.getClassLoader(),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Class</span>&lt;?&gt;[] &#123;service&#125;,</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvocationHandler</span>() &#123;</span><br><span class="line">              <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Platform</span> <span class="variable">platform</span> <span class="operator">=</span> Platform.get();</span><br><span class="line">              <span class="keyword">private</span> <span class="keyword">final</span> Object[] emptyArgs = <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">              <span class="meta">@Override</span></span><br><span class="line">              <span class="keyword">public</span> <span class="meta">@Nullable</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method, <span class="meta">@Nullable</span> Object[] args)</span></span><br><span class="line">                  <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                <span class="comment">// If the method is a method from Object then defer to normal invocation.</span></span><br><span class="line">                <span class="keyword">if</span> (method.getDeclaringClass() == Object.class) &#123;</span><br><span class="line">                  <span class="keyword">return</span> method.invoke(<span class="built_in">this</span>, args);</span><br><span class="line">                &#125;</span><br><span class="line">                args = args != <span class="literal">null</span> ? args : emptyArgs;</span><br><span class="line">                <span class="keyword">return</span> platform.isDefaultMethod(method)</span><br><span class="line">                    ? platform.invokeDefaultMethod(method, service, proxy, args)</span><br><span class="line">                    : loadServiceMethod(method).invoke(args);</span><br><span class="line">              &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>先看第一步，验证接口，代码如下，代码的逻辑主要是两块。</p>
+<p>先是遍历的验证，如果接口是泛型接口就会直接抛出异常。然后第二个是一个提前验证和缓存，如果<code>validateEagerly</code>这个变量我们设置为true，这个时候就会先调用<code>loadServiceMethod</code>这个方法，从上面的代码我们也可以看到，这个方法其实也是动态代理最后调用的方法，那么这里先调用的目的就是为了验证接口是否合法从而提前暴露出问题，但是由于该方法里面是反射来进行的，接口一次性都加载会比较耗费性能，一般都是调试时打开，正式环境会关闭。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">validateServiceInterface</span><span class="params">(Class&lt;?&gt; service)</span> &#123;</span><br><span class="line">   <span class="keyword">if</span> (!service.isInterface()) &#123;</span><br><span class="line">     <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;API declarations must be interfaces.&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   Deque&lt;Class&lt;?&gt;&gt; check = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;&gt;(<span class="number">1</span>);</span><br><span class="line">   check.add(service);</span><br><span class="line">   <span class="keyword">while</span> (!check.isEmpty()) &#123;</span><br><span class="line">     Class&lt;?&gt; candidate = check.removeFirst();</span><br><span class="line">     <span class="comment">// 验证是否是泛型接口</span></span><br><span class="line">     <span class="keyword">if</span> (candidate.getTypeParameters().length != <span class="number">0</span>) &#123;</span><br><span class="line">       <span class="type">StringBuilder</span> <span class="variable">message</span> <span class="operator">=</span></span><br><span class="line">           <span class="keyword">new</span> <span class="title class_">StringBuilder</span>(<span class="string">&quot;Type parameters are unsupported on &quot;</span>).append(candidate.getName());</span><br><span class="line">       <span class="keyword">if</span> (candidate != service) &#123;</span><br><span class="line">         message.append(<span class="string">&quot; which is an interface of &quot;</span>).append(service.getName());</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(message.toString());</span><br><span class="line">     &#125;</span><br><span class="line">     Collections.addAll(check, candidate.getInterfaces());</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">if</span> (validateEagerly) &#123;</span><br><span class="line">     <span class="type">Platform</span> <span class="variable">platform</span> <span class="operator">=</span> Platform.get();</span><br><span class="line">     <span class="keyword">for</span> (Method method : service.getDeclaredMethods()) &#123;</span><br><span class="line">       <span class="keyword">if</span> (!platform.isDefaultMethod(method) &amp;&amp; !Modifier.isStatic(method.getModifiers())) &#123;</span><br><span class="line">         loadServiceMethod(method);</span><br><span class="line">       &#125;</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下里就是第二步，第二步调用了<code>Proxy.newProxyInstance</code>方法来生成动态代理类，这个方法会接收三个参数，第一个是一个<code>classLoader</code>，是<strong>JVM</strong>中用于生成代理类的，第二个就是需要代理的接口的数组，第三个是一个<code>InvocationHandler</code>的匿名类，这个中就是我们动态代理类最后实际生成的代理类会执行的代码。例如我们的接口如下声明</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> call = service.listRepo(<span class="string">&quot;xxx&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这里的<code>service</code>是我们声明的接口类，那它的具体实现类就是上面的代理所生成的，大概会如下伪代码</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">xxPro</span> : <span class="type">GitHubService</span> &#123;</span><br><span class="line">  <span class="keyword">val</span> handler: InvocationHandler</span><br><span class="line"> <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">listRepos</span><span class="params">(user: <span class="type">String</span>?)</span></span>: Call? &#123;</span><br><span class="line">    <span class="keyword">val</span> method = getMethod(<span class="string">&quot;&quot;</span>listRepos<span class="string">&quot;&quot;</span>) </span><br><span class="line">    <span class="keyword">return</span> handler.invoke(<span class="keyword">this</span>, method, user )</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在代理中会持有我们传入的那个<code>InvocationHandler</code>匿名类的对象，然后调用其<code>invoke</code>方法，这个方法正好就是上面<code>create</code>中所实现的逻辑。这一段就实现了将我们配置的接口进行了统一的封装处理，使得我们只需要关注接口的配置即可。回到上面的代码，在<code>invoke</code>内部也有两个处理，一个是判断了调用的方法是否是<code>Object</code>对象的方法，因为所有的对象都是继承自<code>Object</code>对象，所以如果调用的方法是<code>Object</code>的就直接执行，这里还判断了是否是<code>platform.isDefaultMethod(method)</code>，以下是该方法的实现，这个方法就是判断的是否是<strong>Java8</strong>的默认方法(关于啥是默认方法，<a target="_blank" rel="noopener" href="https://www.runoob.com/java/java8-default-methods.html">这里有解释</a>)，如果是也直接执行即可。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">boolean</span> <span class="title function_">isDefaultMethod</span><span class="params">(Method method)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> hasJava8Types &amp;&amp; method.isDefault();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后就是调用的一开始验证准备调用的那个<code>loadServiceMethod</code> 来获取一个 <code>ServiceMethod</code>对象并调用其<code>invoke</code>方法，我们来看看实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ServiceMethod&lt;?&gt; loadServiceMethod(Method method) &#123;</span><br><span class="line">  ServiceMethod&lt;?&gt; result = serviceMethodCache.get(method);</span><br><span class="line">  <span class="keyword">if</span> (result != <span class="literal">null</span>) <span class="keyword">return</span> result;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">synchronized</span> (serviceMethodCache) &#123;</span><br><span class="line">    result = serviceMethodCache.get(method);</span><br><span class="line">    <span class="keyword">if</span> (result == <span class="literal">null</span>) &#123;</span><br><span class="line">      result = ServiceMethod.parseAnnotations(<span class="built_in">this</span>, method);</span><br><span class="line">      serviceMethodCache.put(method, result);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个方法，其实就做了两件事，一是建立<code>ServiceMethod</code>对象，而是建立缓存。所以我们直接看<code>parseAnnotations</code>方法就可以了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">ServiceMethod</span>&lt;T&gt; &#123;</span><br><span class="line">  <span class="keyword">static</span> &lt;T&gt; ServiceMethod&lt;T&gt; <span class="title function_">parseAnnotations</span><span class="params">(Retrofit retrofit, Method method)</span> &#123;</span><br><span class="line">    <span class="type">RequestFactory</span> <span class="variable">requestFactory</span> <span class="operator">=</span> RequestFactory.parseAnnotations(retrofit, method);</span><br><span class="line">	...非核心逻辑...</span><br><span class="line">    <span class="keyword">return</span> HttpServiceMethod.parseAnnotations(retrofit, method, requestFactory);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">abstract</span> <span class="meta">@Nullable</span> T <span class="title function_">invoke</span><span class="params">(Object[] args)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这是个抽象方法，但是它其实只有一个实现类，那就是&#96;HttpServiceMethod ,然后看看具体的实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> &lt;ResponseT, ReturnT&gt; HttpServiceMethod&lt;ResponseT, ReturnT&gt; <span class="title function_">parseAnnotations</span><span class="params">(</span></span><br><span class="line"><span class="params">     Retrofit retrofit, Method method, RequestFactory requestFactory)</span> &#123;</span><br><span class="line">  ...</span><br><span class="line">   CallAdapter&lt;ResponseT, ReturnT&gt; callAdapter =</span><br><span class="line">       createCallAdapter(retrofit, method, adapterType, annotations);</span><br><span class="line">  ...</span><br><span class="line">   Converter&lt;ResponseBody, ResponseT&gt; responseConverter =</span><br><span class="line">       createResponseConverter(retrofit, method, responseType);</span><br><span class="line"></span><br><span class="line">   okhttp3.Call.<span class="type">Factory</span> <span class="variable">callFactory</span> <span class="operator">=</span> retrofit.callFactory;</span><br><span class="line">   <span class="keyword">if</span> (!isKotlinSuspendFunction) &#123;</span><br><span class="line">     <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">CallAdapted</span>&lt;&gt;(requestFactory, callFactory, responseConverter, callAdapter);</span><br><span class="line">   &#125; <span class="keyword">else</span> <span class="keyword">if</span> (continuationWantsResponse) &#123;</span><br><span class="line">     <span class="comment">//noinspection unchecked Kotlin compiler guarantees ReturnT to be Object.</span></span><br><span class="line">     <span class="keyword">return</span> (HttpServiceMethod&lt;ResponseT, ReturnT&gt;)</span><br><span class="line">         <span class="keyword">new</span> <span class="title class_">SuspendForResponse</span>&lt;&gt;(</span><br><span class="line">             requestFactory,</span><br><span class="line">             callFactory,</span><br><span class="line">             responseConverter,</span><br><span class="line">             (CallAdapter&lt;ResponseT, Call&lt;ResponseT&gt;&gt;) callAdapter);</span><br><span class="line">   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">     <span class="comment">//noinspection unchecked Kotlin compiler guarantees ReturnT to be Object.</span></span><br><span class="line">     <span class="keyword">return</span> (HttpServiceMethod&lt;ResponseT, ReturnT&gt;)</span><br><span class="line">         <span class="keyword">new</span> <span class="title class_">SuspendForBody</span>&lt;&gt;(</span><br><span class="line">             requestFactory,</span><br><span class="line">             callFactory,</span><br><span class="line">             responseConverter,</span><br><span class="line">             (CallAdapter&lt;ResponseT, Call&lt;ResponseT&gt;&gt;) callAdapter,</span><br><span class="line">             continuationBodyNullable);</span><br><span class="line">   &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个方法精简一下就是上面的样子了，依次创建了<code>CallAdapter、responseConverter、callFactory</code>这几个对象，然后根据条件去创建<code>CallAdapted</code>(<strong>isKotlinSuspendFunction</strong>是指是否是Kotlin中的<code>suspend</code>关键字修饰的方法，目前一般都不是，如果有用到协程可以去看看下面的实现，看看有啥区别)。这里的<code>CallAdapted</code>是<code>HttpServiceMethod</code>的子类。最后我们就是看看它的<code>invoke</code>方法的实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="meta">@Nullable</span> ReturnT <span class="title function_">invoke</span><span class="params">(Object[] args)</span> &#123;</span><br><span class="line">  Call&lt;ResponseT&gt; call = <span class="keyword">new</span> <span class="title class_">OkHttpCall</span>&lt;&gt;(requestFactory, args, callFactory, responseConverter);</span><br><span class="line">  <span class="keyword">return</span> adapt(call, args);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里创建了一个<code>OkhttpCall</code>，然后调用<code>adapt</code>方法。而<code>adapt</code>方法本身是一个抽象方法，它的具体实现是在刚刚创建的那个<code>CallAdapted</code>类中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> ReturnT <span class="title function_">adapt</span><span class="params">(Call&lt;ResponseT&gt; call, Object[] args)</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> callAdapter.adapt(call);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>看到这里其实也能猜到大概的功能了，调用<code>callAdapter</code>无非就是对<code>call</code>对象做了一层适配的转换，所以最主要的还是那个<code>call</code>对象。</p>
+<p>那么到这里，这一段开头的<code>create</code>方法创建<code>call</code>对象的流程算是完成了。</p>
+<h3 id="请求的发起和调度"><a href="#请求的发起和调度" class="headerlink" title="请求的发起和调度"></a>请求的发起和调度</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">call?.enqueue(<span class="keyword">object</span> : Callback &#123;</span><br><span class="line">      <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onFailure</span><span class="params">(call: <span class="type">Call</span>, e: <span class="type">IOException</span>)</span></span> &#123;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onResponse</span><span class="params">(call: <span class="type">Call</span>, response: <span class="type">Response</span>)</span></span> &#123;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>这是一个<code>call</code>进行异步请求的代码，调用了<code>enqueue</code>方法，通过上面的分析我们知道，在<code>retrofit</code>内部实际是生成的一个<code>OkhttpCall</code>，所以接下来就是去分析它了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">enqueue</span><span class="params">(<span class="keyword">final</span> Callback&lt;T&gt; callback)</span> &#123;</span><br><span class="line">...</span><br><span class="line">   okhttp3.Call call;</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">   <span class="keyword">synchronized</span> (<span class="built_in">this</span>) &#123;</span><br><span class="line">...</span><br><span class="line">   call.enqueue(</span><br><span class="line">       <span class="keyword">new</span> <span class="title class_">okhttp3</span>.Callback() &#123;</span><br><span class="line">         <span class="meta">@Override</span></span><br><span class="line">         <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onResponse</span><span class="params">(okhttp3.Call call, okhttp3.Response rawResponse)</span> &#123;</span><br><span class="line">           Response&lt;T&gt; response;</span><br><span class="line">           <span class="keyword">try</span> &#123;</span><br><span class="line">             response = parseResponse(rawResponse);</span><br><span class="line">           &#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">             throwIfFatal(e);</span><br><span class="line">             callFailure(e);</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">try</span> &#123;</span><br><span class="line">             callback.onResponse(OkHttpCall.<span class="built_in">this</span>, response);</span><br><span class="line">           &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">             throwIfFatal(t);</span><br><span class="line">             t.printStackTrace(); <span class="comment">// TODO this is not great</span></span><br><span class="line">           &#125;</span><br><span class="line">         &#125;</span><br><span class="line"></span><br><span class="line">         <span class="meta">@Override</span></span><br><span class="line">         <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onFailure</span><span class="params">(okhttp3.Call call, IOException e)</span> &#123;</span><br><span class="line">           callFailure(e);</span><br><span class="line">         &#125;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">callFailure</span><span class="params">(Throwable e)</span> &#123;</span><br><span class="line">           <span class="keyword">try</span> &#123;</span><br><span class="line">             callback.onFailure(OkHttpCall.<span class="built_in">this</span>, e);</span><br><span class="line">           &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">             throwIfFatal(t);</span><br><span class="line">             t.printStackTrace(); <span class="comment">// TODO this is not great</span></span><br><span class="line">           &#125;</span><br><span class="line">         &#125;</span><br><span class="line">       &#125;);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>OkhttpCall</code>的<code>enqueue</code>方法中，调用了<code>Okhttp3</code>的<code>call</code>(注意这里，<strong>OkHttpCall</strong>是<strong>Retrofit</strong>中定义的对象，而<strong>Okhttp3.call</strong>是<strong>OkHttp3</strong>中定义的对象)。这里就是进行实际的请求了，那么线程的切换是在哪儿进行的呢？回想下上面我们最后最终的代码进行一次猜想，那就是最后调用的<code>callAdapter.adapt</code>这个方法，代码我们就没有跟下去了，所以我回头去看了看这个<code>callAdapter</code>的生成，发现了如下代码(在Retrofit中)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">List&lt;CallAdapter.Factory&gt; callAdapterFactories = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(<span class="built_in">this</span>.callAdapterFactories);</span><br><span class="line">callAdapterFactories.addAll(platform.defaultCallAdapterFactories(callbackExecutor));</span><br></pre></td></tr></table></figure>
+
+<p>也就是<code>callAdapter</code>是从这个<code>defaultCallAdapterFactories</code>中产生的，这里还接收了一个<code>callbackExector</code>的参数，从命名可以看出这个对象应该是一个<code>ExecutorService</code>对象（从代码上也能印证这一点）。而这个<code>Factory</code>中的<code>adapt</code>方法是把<code>OkhttpCall</code>封装为了<code>ExecutorCallbackCall</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Call&lt;Object&gt; <span class="title function_">adapt</span><span class="params">(Call&lt;Object&gt; call)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> executor == <span class="literal">null</span> ? call : <span class="keyword">new</span> <span class="title class_">ExecutorCallbackCall</span>&lt;&gt;(executor, call);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个call的内部接管了<code>enqueue</code>方法的调用，调用了<code>callbackExecutor.execute</code>的方法，从而实现了线程的切换。而这个<code>delegate</code>就是刚刚传入的<code>OkhttpCall</code>对象。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">enqueue</span><span class="params">(<span class="keyword">final</span> Callback&lt;T&gt; callback)</span> &#123;</span><br><span class="line">  Objects.requireNonNull(callback, <span class="string">&quot;callback == null&quot;</span>);</span><br><span class="line"></span><br><span class="line">  delegate.enqueue(</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">Callback</span>&lt;T&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onResponse</span><span class="params">(Call&lt;T&gt; call, <span class="keyword">final</span> Response&lt;T&gt; response)</span> &#123;</span><br><span class="line">          callbackExecutor.execute(</span><br><span class="line">              () -&gt; &#123;</span><br><span class="line">                <span class="keyword">if</span> (delegate.isCanceled()) &#123;</span><br><span class="line">                  <span class="comment">// Emulate OkHttp&#x27;s behavior of throwing/delivering an IOException on</span></span><br><span class="line">                  <span class="comment">// cancellation.</span></span><br><span class="line">                  callback.onFailure(ExecutorCallbackCall.<span class="built_in">this</span>, <span class="keyword">new</span> <span class="title class_">IOException</span>(<span class="string">&quot;Canceled&quot;</span>));</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                  callback.onResponse(ExecutorCallbackCall.<span class="built_in">this</span>, response);</span><br><span class="line">                &#125;</span><br><span class="line">              &#125;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onFailure</span><span class="params">(Call&lt;T&gt; call, <span class="keyword">final</span> Throwable t)</span> &#123;</span><br><span class="line">          callbackExecutor.execute(() -&gt; callback.onFailure(ExecutorCallbackCall.<span class="built_in">this</span>, t));</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>请求是在子线程，通过代码测试，发现最后的<code>Response</code>回调中，是在主线程。所以我们回去印证下我们的猜想，发现这个<code>executor</code>的具体实现如下，它是一个在主线程的<code>handler</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">MainThreadExecutor</span> <span class="keyword">implements</span> <span class="title class_">Executor</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Handler</span> <span class="variable">handler</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Handler</span>(Looper.getMainLooper());</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(Runnable r)</span> &#123;</span><br><span class="line">    handler.post(r);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  </div>
+  
+    
+      <a id="older" class="blog-nav" href="/2020/04/06/Git%20%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">OLDER&nbsp;&gt;</a>
+      
+        
+          <a id="newer" class="blog-nav" href="/2021/01/09/%E7%BB%93%E6%9E%84%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/">&lt;&nbsp;NEWER</a>
+          
+            
+</div>
+        <div class="footer">
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Copyright © Leedom 2021</a>
+        
+    </div>
+  
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/leedom92/hexo-theme-leedom">Theme by Leedom | Powered by Hexo</a>
+        
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="back-to-top hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+      
+  <div class="search-icon" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-box">
+        <div class="search-title">
+          <!-- <span class="search-icon-input">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </span> -->
+          
+            <input type="text" class="search-input" id="search-input" placeholder="$ grep...">
+          
+          <span class="search-close-icon" id="search-close-icon">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-close"></i>
+            </a>
+          </span>
+        </div>
+        <div class="search-result" id="search-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    // inputArea.onclick = function() {
+    //   getSearchFile()
+    //   this.onclick = null
+    // }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        inputArea.focus()
+        getSearchFile()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'><span></ul>";
+      // $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'><h2>" + orig_data_title + "</h2></a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<h3 class=\"search-result-abstract\">" + match_content + "...</h3>"
+                }
+                str += "<hr></li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/leedom92/hexo-theme-leedom#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+    </div>
+  </body>
+</html>
